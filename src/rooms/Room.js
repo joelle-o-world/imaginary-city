@@ -31,4 +31,6 @@ class Room {
     room.addExit(room, name)
   }
 }
+Room.prototype.isRoom = true
+
 module.exports = Room

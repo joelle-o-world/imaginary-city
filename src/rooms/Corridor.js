@@ -7,4 +7,5 @@ const InteriorRoom = require("./InteriorRoom.js")
 class Corridor extends InteriorRoom {
   // TODO
 }
+Corridor.prototype.isCorridor = true
 module.exports = Corridor

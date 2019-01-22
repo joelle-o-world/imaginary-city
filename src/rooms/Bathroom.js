@@ -7,4 +7,5 @@ const InteriorRoom = require("./InteriorRoom.js")
 class Bathroom extends InteriorRoom {
   // TODO
 }
+Bathroom.prototype.isBathroom = true
 module.exports = Bathroom

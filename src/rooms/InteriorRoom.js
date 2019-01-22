@@ -8,4 +8,5 @@ const Room = require("./Room.js")
 class InteriorRoom extends Room {
   // TODO
 }
+InteriorRoom.prototype.isInteriorRoom = true
 module.exports = InteriorRoom
