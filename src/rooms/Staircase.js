@@ -8,4 +8,6 @@ class Staircase extends InteriorRoom {
   // TODO
 }
 Staircase.prototype.isStaircase = true
+Staircase.prototype.roomType = "staircase"
+
 module.exports = Staircase

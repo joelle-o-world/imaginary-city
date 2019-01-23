@@ -8,4 +8,6 @@ class Kitchen extends InteriorRoom {
   // TODO
 }
 Kitchen.prototype.isKitchen = true
+Kitchen.prototype.roomType = "kitchen"
+
 module.exports = Kitchen

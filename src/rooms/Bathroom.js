@@ -8,4 +8,6 @@ class Bathroom extends InteriorRoom {
   // TODO
 }
 Bathroom.prototype.isBathroom = true
+Bathroom.prototype.roomType = "bathroom"
+
 module.exports = Bathroom

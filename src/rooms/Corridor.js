@@ -8,4 +8,5 @@ class Corridor extends InteriorRoom {
   // TODO
 }
 Corridor.prototype.isCorridor = true
+Corridor.prototype.roomType = "corridor"
 module.exports = Corridor
