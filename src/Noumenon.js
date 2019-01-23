@@ -2,11 +2,15 @@
   Noumenon is the super class for everything which exists in the world.
 */
 
+const random = require("./random")
+
 class Noumenon {
 
   // Suspended Initialisation
     /* This allows a Noumenon to delay the generation of properties until they are needed. This is done by adding temporary getter/setters for the property which self delete when called, replacing themselves with the generated value. */
   __suspendInit__(propertyName, func) {
+    if(!func && random[propertyName])
+      func = random[propertyName]
     this.__defineGetter__(propertyName, function() {
       delete this[propertyName]
       this[propertyName] = func.apply(this)

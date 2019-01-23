@@ -7,6 +7,15 @@ const Room = require("./Room.js")
 
 class InteriorRoom extends Room {
   // TODO
+  constructor() {
+    super()
+    this.__suspendInit__("flooring")
+  }
 }
 InteriorRoom.prototype.isInteriorRoom = true
+
+InteriorRoom.prototype.addDescriptiveReferences(
+  (room) => "the room with a " + room.flooring + " floor",
+)
+
 module.exports = InteriorRoom

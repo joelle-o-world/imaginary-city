@@ -40,15 +40,23 @@ const Kitchen = require("../rooms/Kitchen")
 const LivingRoom = require("../rooms/LivingRoom")
 const Staircase = require("../rooms/Staircase")
 
+const random = require("../random")
+
 class TownHouse extends Noumenon {
-  constructor({
+  constructor(seed={}) {
+    super()
+    this.generateRooms(seed)
+    this.__suspendInit__("buildingMaterial")
+    this.__suspendInit__("color")
+    // ... TO DO
+  }
+
+  generateRooms({
     numberOfBedrooms = 1 + Math.floor(Math.random()*5),
     numberOfBathrooms = 1,
     numberOfFloors = 1 + Math.floor(Math.random()*2),
     livingRoom=Math.random() < 0.5,
   }) {
-    super()
-
     // declare indexes
     this.allRooms = []
     this.publicRooms = []
@@ -104,7 +112,6 @@ class TownHouse extends Noumenon {
     }
     this.publicRooms.push(this.vestibule)
 
-    console.log(this.allRooms)
     // connect all rooms to the vestibule
     for(var i in this.allRooms) {
       var room = this.allRooms[i]
@@ -121,9 +128,6 @@ class TownHouse extends Noumenon {
 
       this.vestibule.addDoor(room)
     }
-
-
-    // ... TO DO
   }
 
   addFrontDoor(leadingTo) {
@@ -133,6 +137,12 @@ class TownHouse extends Noumenon {
   randomBedroom() {
     return this.bedrooms[Math.floor(Math.random()*this.bedrooms.length)]
   }
+  randomRoom() {
+    return this.allRooms[Math.floor(Math.random() * this.allRooms.length)]
+  }
+
+  get numberOfBedrooms() { return this.bedrooms.length }
+  get numberOfRooms() { return this.allRooms.length }
 }
 
 TownHouse.prototype.isTownHouse = true
@@ -140,7 +150,13 @@ TownHouse.prototype.isBuilding = true
 
 TownHouse.prototype.addDescriptiveReferences(
   () => "the house",
-  (house) => "the house with " + house.allRooms.length + " rooms"
+  (house) => "the house with " + house.allRooms.length + " rooms",
+  (house) => "the " + house.numberOfBedrooms + " bedroom house",
+  (house) => "the house made of " + house.buildingMaterial,
+  (house) => "the " + house.buildingMaterial + " house",
+  (house) => "the " + house.color + " house",
+  (house) => "the house with " + house.randomRoom().descriptiveReference(),
+  (house) => "the "+house.color+" "+house.buildingMaterial+" house"
 )
 
 module.exports = TownHouse
