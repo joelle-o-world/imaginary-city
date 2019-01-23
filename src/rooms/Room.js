@@ -11,6 +11,7 @@ const Doorway = require("./Doorway.js")
 
 class Room extends Noumenon {
   constructor() {
+    super()
     this.items = []   // a list of all the items contained in this room
     this.exits = []  // a list of all the Doorways from this room to others
     this.entrances = [] // a list of all the Doorways leading from other rooms to this one

@@ -47,6 +47,7 @@ class TownHouse extends Noumenon {
     numberOfFloors = 1 + Math.floor(Math.random()*2),
     livingRoom=Math.random() < 0.5,
   }) {
+    super()
 
     // declare indexes
     this.allRooms = []
