@@ -10,6 +10,6 @@ class Staircase extends InteriorRoom {
 Staircase.prototype.isStaircase = true
 Staircase.prototype.roomType = "staircase"
 
-Staircase.prototype.addNouns("staircase")
+Staircase.prototype.nouns = ["staircase"]
 
 module.exports = Staircase

@@ -42,6 +42,8 @@ const Staircase = require("../rooms/Staircase")
 
 const random = require("../random")
 
+const {printList} = require("../utility")
+
 class TownHouse extends Noumenon {
   constructor(seed={}) {
     super()
@@ -167,6 +169,12 @@ TownHouse.prototype.addDescriptorFunctions({
   ],
   containing: [
     house => house.randomRoom().getDescriptiveReference({article:"a"}),
+    house => (
+      printList(
+        house.allRooms
+          .map(room => room.getDescriptiveReference({article: "a"}))
+      )
+    )
   ]
 })
 

@@ -10,6 +10,6 @@ class Corridor extends InteriorRoom {
 Corridor.prototype.isCorridor = true
 Corridor.prototype.roomType = "corridor"
 
-Corridor.prototype.addNouns("corridor")
+Corridor.prototype.nouns = ["corridor"]
 
 module.exports = Corridor
