@@ -18,6 +18,34 @@ class Noumenon {
       return this[propertyName]
     })
   }
+
+
+  // Natural Language Descriptions
+  describe() {
+    // make a standalone sentence/clause describing this Noumenon
+    if(this.describeFunctions && this.describeFunctions.length) {
+      var func = this.describeFunctions[Math.floor(Math.random()*this.describeFunctions.length)]
+      return func(this)
+    } else
+      return null
+  }
+  descriptiveReference() {
+    // make a noun phrase to be used in another sentence which reveals details about this Noumenon
+    if(this.descriptiveReferenceFunctions && this.descriptiveReferenceFunctions.length) {
+      var func = this.descriptiveReferenceFunctions[Math.floor(this.descriptiveReferenceFunctions.length * Math.random())]
+      return func(this)
+    } else
+      return "something indescribable"
+  }
 }
 Noumenon.prototype.isNoumenon = true
+
+Noumenon.prototype.describeFunctions = []
+Noumenon.prototype.descriptiveReferenceFunctions = []
+Noumenon.prototype.addDescriptiveReferences = function(...functions) {
+  // safeley add functions for generating descriptive references.
+  // NOTE: call on the prototype
+  this.descriptiveReferenceFunctions = this.descriptiveReferenceFunctions.concat(functions)
+}
+
 module.exports = Noumenon

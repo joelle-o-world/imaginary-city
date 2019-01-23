@@ -126,8 +126,21 @@ class TownHouse extends Noumenon {
     // ... TO DO
   }
 
+  addFrontDoor(leadingTo) {
+    this.vestibule.addDoor(leadingTo)
+  }
+
   randomBedroom() {
     return this.bedrooms[Math.floor(Math.random()*this.bedrooms.length)]
   }
 }
+
+TownHouse.prototype.isTownHouse = true
+TownHouse.prototype.isBuilding = true
+
+TownHouse.prototype.addDescriptiveReferences(
+  () => "the house",
+  (house) => "the house with " + house.allRooms.length + " rooms"
+)
+
 module.exports = TownHouse
