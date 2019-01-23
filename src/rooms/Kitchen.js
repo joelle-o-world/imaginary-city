@@ -10,4 +10,6 @@ class Kitchen extends InteriorRoom {
 Kitchen.prototype.isKitchen = true
 Kitchen.prototype.roomType = "kitchen"
 
+Kitchen.prototype.addNouns("kitchen")
+
 module.exports = Kitchen

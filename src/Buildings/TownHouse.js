@@ -112,6 +112,11 @@ class TownHouse extends Noumenon {
     }
     this.publicRooms.push(this.vestibule)
 
+    for(var i in this.allRooms) {
+      this.allRooms[i].building = this
+      this.allRooms[i].house = this
+    }
+
     // connect all rooms to the vestibule
     for(var i in this.allRooms) {
       var room = this.allRooms[i]
@@ -147,16 +152,22 @@ class TownHouse extends Noumenon {
 
 TownHouse.prototype.isTownHouse = true
 TownHouse.prototype.isBuilding = true
+TownHouse.prototype.nouns = ["house"]
 
-TownHouse.prototype.addDescriptiveReferences(
-  () => "the house",
-  (house) => "the house with " + house.allRooms.length + " rooms",
-  (house) => "the " + house.numberOfBedrooms + " bedroom house",
-  (house) => "the house made of " + house.buildingMaterial,
-  (house) => "the " + house.buildingMaterial + " house",
-  (house) => "the " + house.color + " house",
-  (house) => "the house with " + house.randomRoom().descriptiveReference(),
-  (house) => "the "+house.color+" "+house.buildingMaterial+" house"
-)
+TownHouse.prototype.addDescriptorFunctions({
+  adj: [
+    house => house.color,
+  ],
+  with: [
+    house => house.numberOfRooms + " rooms",
+    house => house.randomRoom().getDescriptiveReference({article:"a"}),
+  ],
+  "made of": [
+    house => house.buildingMaterial,
+  ],
+  containing: [
+    house => house.randomRoom().getDescriptiveReference({article:"a"}),
+  ]
+})
 
 module.exports = TownHouse
