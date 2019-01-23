@@ -32,6 +32,7 @@
 
 */
 
+const Noumenon = require("../Noumenon")
 const Bathroom = require("../rooms/Bathroom")
 const Bedroom = require("../rooms/Bedroom")
 const Corridor = require("../rooms/Corridor")
@@ -39,7 +40,7 @@ const Kitchen = require("../rooms/Kitchen")
 const LivingRoom = require("../rooms/LivingRoom")
 const Staircase = require("../rooms/Staircase")
 
-class TownHouse {
+class TownHouse extends Noumenon {
   constructor({
     numberOfBedrooms = 1 + Math.floor(Math.random()*5),
     numberOfBathrooms = 1,

@@ -3,8 +3,9 @@
   however two way doors can be represented as two identical/inverted Doorways.
 */
 
+const Noumenon = require("../Noumenon")
 
-class Doorway {
+class Doorway extends Noumenon{
   constructor(from, to) {
     this.name = "untitled door"
     this.leadingFrom = from   // the Room for which this doorway is an exit

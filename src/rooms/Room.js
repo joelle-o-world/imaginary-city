@@ -6,9 +6,10 @@
   Street, Garden, Bathroom, TrainStation etc.
 */
 
+const Noumenon = require("../Noumenon")
 const Doorway = require("./Doorway.js")
 
-class Room {
+class Room extends Noumenon {
   constructor() {
     this.items = []   // a list of all the items contained in this room
     this.exits = []  // a list of all the Doorways from this room to others
