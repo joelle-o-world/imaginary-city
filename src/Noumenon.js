@@ -11,9 +11,11 @@ class Noumenon {
   __suspendInit__(propertyName, func) {
     if(!func && random[propertyName])
       func = random[propertyName]
+    if(!func)
+      throw "no function defined for " + propertyName
     this.__defineGetter__(propertyName, function() {
       delete this[propertyName]
-      this[propertyName] = func.apply(this)
+      this[propertyName] = func.call(this)
       return this[propertyName]
     })
     this.__defineSetter__(propertyName, function(val) {
@@ -43,6 +45,10 @@ class Noumenon {
     if(noun.constructor == Function)
       noun = noun(this)
 
+    // check if proper noun
+    if(noun[0] == noun[0].toUpperCase())
+      article = null
+
     // choose adjectives
     if(this.descriptorFunctions["adj"]) {
       var adjectives = this.descriptorFunctions["adj"]
@@ -60,14 +66,23 @@ class Noumenon {
     var clauses = []
     for(var i=0; i<numberOfAdditionalPrepositions; i++) {
       var prep = options[Math.floor(Math.random()*options.length)]
-      var clause = prep + " " + this.getDescriptor(prep)
-      if(clause)
+      var descriptor = this.getDescriptor(prep)
+      var clause = prep + " " + descriptor
+      if(prep && descriptor)
         clauses.push(clause)
     }
 
 
     // return the finished bit
-    return [article, ...adjectives, noun, ...clauses].join(" ")
+    var output = []
+    if(article)
+      output.push(article)
+    for(var i in adjectives)
+      output.push(adjectives[i])
+    output.push(noun)
+    for(var i in clauses)
+      output.push(clauses[i])
+    return output.join(" ")
   }
 }
 Noumenon.prototype.isNoumenon = true
