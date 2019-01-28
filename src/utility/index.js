@@ -1,5 +1,8 @@
-module.exports = {
+/*
+  Language utility. A set of tools for quickly formatting english.
+*/
 
+module.exports = {
   printList: function printList(list) {
     if(list.length == 1)
       return list[0]
