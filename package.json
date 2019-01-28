@@ -12,6 +12,7 @@
   "author": "Joel",
   "license": "ISC",
   "dependencies": {
-    "node-diagrams": "^0.1.0"
+    "node-diagrams": "^0.1.0",
+    "random-name": "^0.1.2"
   }
 }

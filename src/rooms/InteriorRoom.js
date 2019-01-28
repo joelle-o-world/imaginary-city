@@ -14,8 +14,15 @@ class InteriorRoom extends Room {
 }
 InteriorRoom.prototype.isInteriorRoom = true
 
-InteriorRoom.prototype.addDescriptiveReferences(
-  (room) => "the "+room.roomType+" with a " + room.flooring + " floor",
-)
+InteriorRoom.prototype.nouns = ["room"]
+
+InteriorRoom.prototype.addDescriptorFunctions({
+  with: [
+    room => room.flooring+" flooring",
+  ],
+  in: [
+    room => room.house.getDescriptiveReference({article:"a"})
+  ]
+})
 
 module.exports = InteriorRoom

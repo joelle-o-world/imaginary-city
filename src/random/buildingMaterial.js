@@ -1,8 +1,8 @@
 const buildingMaterials = [
   // adjectives for describing building materials
-  "brick",
+  "bricks",
   "concrete",
-  "wooden",
+  "wood",
   "steel and glass",
 ]
 

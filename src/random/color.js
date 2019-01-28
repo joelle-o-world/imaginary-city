@@ -4,8 +4,7 @@ const colors = [
   "yellow",
   "green",
   "blue",
-  "indigo",
-  "violet"
+  "purple",
 ]
 
 function randomColor() {
