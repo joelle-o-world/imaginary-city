@@ -1,9 +1,13 @@
 const readline = require("readline")
 const CommandTemplate = require("./CommandTemplate")
+const Enviroment = require("./Enviroment")
 
 class Explorer {
-  constructor() {
+  constructor(enviroment) {
+    if(!enviroment)
+      throw "Explorer requires an enviroment"
     this.commandTemplates = []
+    this.enviroment = enviroment
   }
 
   addCommandTemplate(templateString) {
@@ -13,7 +17,8 @@ class Explorer {
   input(str) {
     for(var i in this.commandTemplates) {
       var objectStrings = this.commandTemplates[i].parse(str)
-      if(objectStrings){
+      if(objectStrings) {
+        objectStrings = objectStrings.map(str => this.enviroment.findNoumenon(str))
         console.log("Understood!", objectStrings)
         return;
       }
