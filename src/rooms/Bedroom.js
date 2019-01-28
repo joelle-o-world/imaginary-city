@@ -7,6 +7,11 @@ const utility = require("../utility")
 
 class Bedroom extends InteriorRoom {
   // TODO
+  generateContents() {
+    return [
+      "bed",
+    ]
+  }
 }
 Bedroom.prototype.isBedroom = true
 Bedroom.prototype.roomType = "bedroom"

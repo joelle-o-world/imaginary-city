@@ -6,5 +6,6 @@ module.exports = {
   flooring: require("./flooring.js"),
   firstName: randomName.first,
   surname: randomName.last,
-  title: require("./title.js")
+  title: require("./title.js"),
+  material: require("./material.js"),
 }

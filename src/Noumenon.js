@@ -9,6 +9,7 @@ class Noumenon {
   // Suspended Initialisation
     /* This allows a Noumenon to delay the generation of properties until they are needed. This is done by adding temporary getter/setters for the property which self delete when called, replacing themselves with the generated value. */
   __suspendInit__(propertyName, func) {
+    delete this[propertyName]
     if(!func && random[propertyName])
       func = random[propertyName]
     if(!func)

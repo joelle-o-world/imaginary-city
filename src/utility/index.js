@@ -10,5 +10,14 @@ module.exports = {
 
   possessive: function possessive(str) {
     return str + "'s"
-  }
+  },
+
+  quantify: function quantify(n, noun) {
+    if(n == 1)
+      return "one "+noun
+    if(n == 0)
+      return "no "+noun+"s"
+    if(n > 1)
+      return n + " " + noun + "s"
+  },
 }

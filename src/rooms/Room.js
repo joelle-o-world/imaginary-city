@@ -8,11 +8,28 @@
 
 const Noumenon = require("../Noumenon")
 const Door = require("./Door.js")
+const items = require("../items")
+const GenericItem = require("../items/GenericItem")
 
 class Room extends Noumenon {
   constructor() {
     super()
-    this.items = []   // a list of all the items contained in this room
+    this.__suspendInit__("items", function() {
+      if(this.generateContents) {
+        let contents = this.generateContents(this)
+
+        // convert strings to GenericItem's
+        for(var i in contents) {
+          if(contents[i].constructor == String)
+            contents[i] = new GenericItem(contents[i])
+
+          contents[i].location = this
+        }
+        return contents
+
+      } else
+        return []
+    })   // a list of all the items contained in this room
     this.doors = []   // a list of all the doors connected to this room
   }
 
@@ -34,6 +51,14 @@ class Room extends Noumenon {
       (door.A == this && door.allowBA) ||
       (door.B == this && door.allowAB)
     )
+  }
+
+  randomItem() {
+    // return a random item from this room
+    if(this.items.length)
+      return this.items[Math.floor(Math.random()*this.items.length)]
+    else
+      return null
   }
 }
 Room.prototype.isRoom = true

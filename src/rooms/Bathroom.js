@@ -6,6 +6,12 @@ const InteriorRoom = require("./InteriorRoom.js")
 
 class Bathroom extends InteriorRoom {
   // TODO
+  generateContents() {
+    return [
+      "toilet",
+      "sink",
+    ]
+  }
 }
 Bathroom.prototype.isBathroom = true
 Bathroom.prototype.roomType = "bathroom"
