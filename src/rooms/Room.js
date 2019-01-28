@@ -7,30 +7,33 @@
 */
 
 const Noumenon = require("../Noumenon")
-const Doorway = require("./Doorway.js")
+const Door = require("./Door.js")
 
 class Room extends Noumenon {
   constructor() {
     super()
     this.items = []   // a list of all the items contained in this room
-    this.exits = []  // a list of all the Doorways from this room to others
-    this.entrances = [] // a list of all the Doorways leading from other rooms to this one
+    this.doors = []   // a list of all the doors connected to this room
   }
 
-  addExit(room, name) {
-    let doorway = new Doorway(this, room)
-    doorway.name = name
-    this.exits.push(doorway)
-    this.entrances.push(doorway)
-  }
-  addEntrance(room, name) {
-    // call addExit on the `room`
-    room.addExit(this, name)
-  }
   addDoor(room, name) {
     // add a two way door
-    this.addExit(room, name)
-    room.addExit(room, name)
+    new Door(this, room)
+  }
+
+  get exits() {
+    // list of doors which lead from this room
+    return this.doors.filter(door =>
+      (door.A == this && door.allowAB) ||
+      (door.B == this && door.allowBA)
+    )
+  }
+  get entrances() {
+    // list of doors which lead to this room
+    return this.doors.filter(door =>
+      (door.A == this && door.allowBA) ||
+      (door.B == this && door.allowAB)
+    )
   }
 }
 Room.prototype.isRoom = true
