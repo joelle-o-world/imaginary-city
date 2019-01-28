@@ -3,7 +3,7 @@ module.exports = {
   Noumenon: require("./Noumenon"),
   Room: require("./rooms/Room"),
   Person: require("./people/Person"),
-  Item: require("./items/Item")
+  Item: require("./items/Item"),
 
   // class groups
   rooms: require("./rooms"),
