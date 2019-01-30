@@ -26,11 +26,7 @@ InteriorRoom.prototype.addDescriptorFunctions({
     room => room.house.getDescriptiveReference({article:"a"})
   ],
   containing:[
-    room => {
-      let item = room.randomItem()
-      if(item)
-        return item.getDescriptiveReference()
-    }
+    room => room.items.map(item => item.refRegex()),
   ]
 })
 

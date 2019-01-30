@@ -16,6 +16,6 @@ class Bathroom extends InteriorRoom {
 Bathroom.prototype.isBathroom = true
 Bathroom.prototype.roomType = "bathroom"
 
-Bathroom.prototype.nouns = ["bathroom", "toilet"]
+Bathroom.prototype.addNouns("bathroom", "toilet")
 
 module.exports = Bathroom

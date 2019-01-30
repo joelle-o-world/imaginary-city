@@ -13,6 +13,8 @@ class Person extends Noumenon {
     this.__suspendInit__("firstName")
     this.__suspendInit__("surname")
     this.__suspendInit__("title")
+
+    this.location = null
   }
 
   get fullName() {
@@ -23,10 +25,19 @@ class Person extends Noumenon {
 Person.prototype.isPerson = true
 
 Person.prototype.nouns = [
+  "person", "human", "human being",
+]
+Person.prototype.properNouns = [
   person => person.fullName,
   person => person.firstName,
   person => person.title + " " + person.surname,
   person => person.title + " " + person.fullName,
 ]
+
+Person.prototype.addDescriptorFunctions({
+  "adj": [
+    person => person.hairColor + " haired",
+  ]
+})
 
 module.exports = Person

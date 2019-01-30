@@ -162,20 +162,10 @@ TownHouse.prototype.addDescriptorFunctions({
   ],
   with: [
     house => house.numberOfRooms + " rooms",
-    house => house.randomRoom().getDescriptiveReference({article:"a"}),
   ],
   "made of": [
     house => house.buildingMaterial,
   ],
-  containing: [
-    house => house.randomRoom().getDescriptiveReference({article:"a"}),
-    house => (
-      printList(
-        house.allRooms
-          .map(room => room.getDescriptiveReference({article: "a"}))
-      )
-    )
-  ]
 })
 
 module.exports = TownHouse
