@@ -25,6 +25,9 @@ class Person extends Noumenon {
 Person.prototype.isPerson = true
 
 Person.prototype.nouns = [
+  "person", "human", "human being",
+]
+Person.prototype.properNouns = [
   person => person.fullName,
   person => person.firstName,
   person => person.title + " " + person.surname,
@@ -32,8 +35,8 @@ Person.prototype.nouns = [
 ]
 
 Person.prototype.addDescriptorFunctions({
-  "who has": [
-    person => person.hairColor + " hair"
+  "adj": [
+    person => person.hairColor + " haired",
   ]
 })
 
