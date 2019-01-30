@@ -4,8 +4,11 @@ function sourcify(list) {
     .map(item => item.constructor == RegExp ? item.source : item)
 }
 
+function bracket(str) {
+  return "(" + str + ")"
+}
 function autoBracket(str) {
-  if(/\(.*\)/.test(str) || /\w+/.test(str))
+  if(/^[\w ]+$/.test(str))
     return str
   else
     return "(" + str + ")"
@@ -32,9 +35,30 @@ function or(...operands) {
       .join("|")
   )
 }
+function optional(operand) {
+  operand = new RegExp(operand).source
+  operand = bracket(operand)
+  return operand + "?"
+}
+function kleene(operand) {
+  operand = new RegExp(operand).source
+  operand = bracket(operand)
+  return operand + "*"
+}
+
+function optionalConcatSpaced(stem, ...optionalAppendages) {
+  stem = autoBracket(new RegExp(stem).source)
+  optionalAppendages = sourcify(optionalAppendages)
+    .map(a => autoBracket(a))
+    .map(a => optional(" " + a))
+  return concat(stem, ...optionalAppendages)
+}
 
 module.exports = {
   concat: concat,
   concatSpaced: concatSpaced,
   or: or,
+  optional: optional,
+  kleene: kleene,
+  optionalConcatSpaced: optionalConcatSpaced,
 }
