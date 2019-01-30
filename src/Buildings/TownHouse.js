@@ -167,7 +167,7 @@ TownHouse.prototype.addDescriptorFunctions({
   "made of": [
     house => house.buildingMaterial,
   ],
-  containing: [
+  /*containing: [
     house => house.randomRoom().getDescriptiveReference({article:"a"}),
     house => (
       printList(
@@ -175,7 +175,7 @@ TownHouse.prototype.addDescriptorFunctions({
           .map(room => room.getDescriptiveReference({article: "a"}))
       )
     )
-  ]
+  ]*/
 })
 
 module.exports = TownHouse

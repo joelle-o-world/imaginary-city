@@ -20,4 +20,15 @@ class Door extends Noumenon {
     this.B.doors.push(this)
   }
 }
+
+Door.prototype.isDoor = true
+Door.prototype.nouns = ["door"]
+
+Door.prototype.addDescriptorFunctions({
+  connecting: [
+    door => door.A.ref() + " to " + door.B.ref(),
+    door => door.B.ref() + " to " + door.A.ref(),
+  ]
+})
+
 module.exports = Door

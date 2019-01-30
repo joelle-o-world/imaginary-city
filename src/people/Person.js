@@ -31,4 +31,10 @@ Person.prototype.nouns = [
   person => person.title + " " + person.fullName,
 ]
 
+Person.prototype.addDescriptorFunctions({
+  "who has": [
+    person => person.hairColor + " hair"
+  ]
+})
+
 module.exports = Person
