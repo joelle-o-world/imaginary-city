@@ -37,8 +37,9 @@ class Noumenon {
   }
   getDescriptiveReference({
     article=Math.random() < 0.5 ? "the" : "a",
-    numberOfAdjectives = Math.floor(Math.random()*3),
-    numberOfAdditionalPrepositions = Math.floor(Math.random()*2)
+    detail = 1,
+    numberOfAdjectives = Math.floor(Math.random()*detail),
+    numberOfAdditionalPrepositions = Math.floor(Math.random()*(detail-numberOfAdjectives))
   }={}) {
 
     // choose a noun
@@ -84,6 +85,10 @@ class Noumenon {
     for(var i in clauses)
       output.push(clauses[i])
     return output.join(" ")
+  }
+  ref(options) {
+    // quick alias for get getDescriptiveReference
+    return this.getDescriptiveReference(options)
   }
 }
 Noumenon.prototype.isNoumenon = true

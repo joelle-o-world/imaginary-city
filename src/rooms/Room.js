@@ -45,6 +45,9 @@ class Room extends Noumenon {
       (door.B == this && door.allowBA)
     )
   }
+  get numberOfExits() {
+    return this.exits.length
+  }
   get entrances() {
     // list of doors which lead to this room
     return this.doors.filter(door =>
@@ -53,6 +56,21 @@ class Room extends Noumenon {
     )
   }
 
+  get accessibleRooms() {
+    // list of rooms which can by accessed by an exit from this room
+    let exits = this.exits
+    let rooms = []
+    for(var i in exits) {
+      let room = this.exits[i].A == this ? this.exits[i].B : this.exits[i].A
+      if(rooms.indexOf(room) == -1)
+        rooms.push(room)
+    }
+    return rooms
+  }
+
+  get numberOfItems() {
+    return this.items.length
+  }
   randomItem() {
     // return a random item from this room
     if(this.items.length)

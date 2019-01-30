@@ -13,6 +13,8 @@ class Person extends Noumenon {
     this.__suspendInit__("firstName")
     this.__suspendInit__("surname")
     this.__suspendInit__("title")
+
+    this.location = null
   }
 
   get fullName() {

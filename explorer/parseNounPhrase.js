@@ -10,7 +10,6 @@ const articles = [
 function parseNounPhrase(str) {
   // - seperate the words as abstract from the punctuation
   var words = parseText(str).filter(parseText.isWord)
-  console.log("words:", words)
 
   // - identify the article or possessive adjective, if exists
   // Assumption: if there is an article or possessive adjective, it will be the first word.

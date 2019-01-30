@@ -22,12 +22,51 @@ const {Person} = require("../src")
 
 class Enviroment {
   constructor() {
-    this.character = new Person
+    this.protagonist = new Person
   }
 
-  findNoumenon(str) {
-    var parsed = parseNounPhrase(str)
-    console.log(parsed)
+  find(str) {
+    let parsed = parseNounPhrase(str)
+    let all = this.allNoumena
+    let matches = all.filter(obj => obj.nouns.indexOf(parsed.noun) != -1)
+    if(matches.length == 1)
+      return matches[0]
+    else if(matches.length > 1) {
+      if(parsed.article == "a")
+        return matches[Math.floor(Math.random()*matches.length)]
+      console.log("Ambiguous:\n", ...matches.map(match => "\t"+match.ref()+"\n"))
+    } else if(matches.length == 0)
+      return null
+  }
+
+  get location() {
+    if(this.protagonist)
+      return this.protagonist.location
+  }
+
+  get allNoumena() {
+    let all = []
+
+    // character
+    all.push(this.protagonist)
+
+    // the room
+    if(this.location) {
+      all.push(this.location)
+
+      // items in the room
+      all = all.concat(this.location.items)
+
+      // doors in the room
+      all = all.concat(this.location.exits)
+
+      // rooms accessible by the doors
+      all = all.concat(this.location.accessibleRooms)
+    }
+
+
+
+    return all
   }
 }
 module.exports = Enviroment

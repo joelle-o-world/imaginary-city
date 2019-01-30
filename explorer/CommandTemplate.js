@@ -3,13 +3,15 @@
 */
 
 class CommandTemplate {
-  constructor(templateString) {
+  constructor(templateString, action) { // action is the function
     if(!templateString)
       throw "No templateString"
 
     this.templateString = templateString
     let regexstr = "^"+templateString.replace(/_/g, "(.+)") + "$"
     this.regex = new RegExp(regexstr, "i")
+
+    this.action = action || null
   }
 
   parse(str) {

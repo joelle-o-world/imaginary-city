@@ -10,17 +10,25 @@ class Explorer {
     this.enviroment = enviroment
   }
 
-  addCommandTemplate(templateString) {
-    this.commandTemplates.push(new CommandTemplate(templateString))
+  addCommand(templateString, action) {
+    this.commandTemplates.push(new CommandTemplate(templateString, action))
   }
 
   input(str) {
     for(var i in this.commandTemplates) {
-      var objectStrings = this.commandTemplates[i].parse(str)
+      let command = this.commandTemplates[i]
+      let objectStrings = command.parse(str)
       if(objectStrings) {
-        objectStrings = objectStrings.map(str => this.enviroment.findNoumenon(str))
-        console.log("Understood!", objectStrings)
-        return;
+        let noumena = objectStrings.map(str => this.enviroment.find(str))
+        if(!noumena.includes(null) && !noumena.includes(undefined)) {
+          // found a match
+          if(command.action) {
+            let result = command.action.apply(this, noumena)
+            if(result && result.constructor == String)
+              console.log(result)
+          }
+          return;
+        }
       }
     }
     console.log("Not understood.")
@@ -34,7 +42,9 @@ class Explorer {
 
     rl.prompt()
     rl.on("line", str => {
+      console.log(" ")
       this.input(str)
+      console.log(" ")
       rl.prompt()
     })
   }
