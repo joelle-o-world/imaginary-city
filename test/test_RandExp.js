@@ -17,8 +17,8 @@ console.log(person.nounRegex())
 console.log(randexp(person.nounRegex()))
 
 let house = new TownHouse
-console.log(house.refRegex())
-console.log(randexp(house.refRegex()))
+console.log(house.kitchen.refRegex())
+console.log(randexp(house.kitchen.refRegex()))
 
 console.log(regops.optionalConcatSpaced(
   "hello",
