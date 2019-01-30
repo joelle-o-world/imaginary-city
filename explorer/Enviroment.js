@@ -32,9 +32,13 @@ class Enviroment {
     if(matches.length == 1)
       return matches[0]
     else if(matches.length > 1) {
-      if(parsed.article == "a")
-        return matches[Math.floor(Math.random()*matches.length)]
-      console.log("Ambiguous:\n", ...matches.map(match => "\t"+match.ref()+"\n"))
+      console.warn(
+        "Warning Ambiguous!",
+        matches.length, "possible matches for", str,
+        "\n",
+        matches.map(match => "\t- "+match.ref()).join("\n"),
+      )
+      return matches[0]
     } else if(matches.length == 0)
       return null
   }
