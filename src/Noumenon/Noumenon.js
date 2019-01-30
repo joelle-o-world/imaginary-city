@@ -32,7 +32,7 @@ class Noumenon {
 
   matchesRef(str) {
     // check if a natural lang ref matches this noumena
-    return new RegExp(this.refRegex(), "i").test(str)
+    return new RegExp("^"+this.refRegex().source+"$", "i").test(str)
   }
 
   // Natural Language Descriptions
