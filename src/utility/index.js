@@ -23,4 +23,6 @@ module.exports = {
     if(n > 1)
       return n + " " + noun + "s"
   },
+
+  regex: require("./regex"),
 }
