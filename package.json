@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "node-diagrams": "^0.1.0",
+    "randexp": "^0.5.3",
     "random-name": "^0.1.2"
   }
 }

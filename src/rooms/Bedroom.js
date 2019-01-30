@@ -16,7 +16,7 @@ class Bedroom extends InteriorRoom {
 Bedroom.prototype.isBedroom = true
 Bedroom.prototype.roomType = "bedroom"
 
-Bedroom.prototype.nouns = ["bedroom"]
+Bedroom.prototype.addNouns("bedroom")
 
 Bedroom.prototype.addDescriptorFunctions({
   "belonging to": [

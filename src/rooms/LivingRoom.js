@@ -10,6 +10,6 @@ class LivingRoom extends InteriorRoom {
 LivingRoom.prototype.isLivingRoom = true
 LivingRoom.prototype.roomType = "living room"
 
-LivingRoom.prototype.nouns = ["living room", "lounge"]
+LivingRoom.prototype.addNouns("living room", "lounge")
 
 module.exports = LivingRoom
