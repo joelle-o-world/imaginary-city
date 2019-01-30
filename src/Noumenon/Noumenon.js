@@ -30,6 +30,10 @@ class Noumenon {
     })
   }
 
+  matchesRef(str) {
+    // check if a natural lang ref matches this noumena
+    return new RegExp(this.refRegex(), "i").test(str)
+  }
 
   // Natural Language Descriptions
   getDescriptiveReference() {
@@ -63,7 +67,9 @@ class Noumenon {
       }
     }
 
-    return regOp.or(...list)
+    if(list.length)
+      return regOp.or(...list)
+    else return null
   }
 
   adjRegex() {
@@ -104,10 +110,12 @@ class Noumenon {
     )
 
     // preposition clauses
-    reg = regOp.optionalConcatSpaced(
-      reg,
-      this.prepositionClauseRegex()
-    )
+    let prepRegex = this.prepositionClauseRegex()
+    if(prepRegex)
+      reg = regOp.optionalConcatSpaced(
+        reg,
+        prepRegex
+      )
 
     // or just use a proper noun
     if(this.properNounRegex) {

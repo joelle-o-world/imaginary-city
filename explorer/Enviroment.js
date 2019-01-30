@@ -28,7 +28,7 @@ class Enviroment {
   find(str) {
     let parsed = parseNounPhrase(str)
     let all = this.allNoumena
-    let matches = all.filter(obj => obj.nouns.indexOf(parsed.noun) != -1)
+    let matches = all.filter(obj => obj.matchesRef(str))
     if(matches.length == 1)
       return matches[0]
     else if(matches.length > 1) {
