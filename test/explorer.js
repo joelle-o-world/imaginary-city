@@ -51,10 +51,12 @@ game.addCommand(
 
 game.addCommand("go to _", room => moveCharacter(room))
 game.addCommand("go into _", room => moveCharacter(room))
-game.addCommand("go out", () => moveCharacter(person.location.randomAccessibleRoom()))
-game.addCommand("leave", () => moveCharacter(person.location.randomAccessibleRoom()))
 game.addCommand(
-  "what color is _",
+  ["go out", "leave", "exit"],
+  () => moveCharacter(person.location.randomAccessibleRoom())
+)
+game.addCommand(
+  ["what color is _", "what colour is _"],
   o => o.color
         ? "The "+o.noun+" is "+o.color+"."
         : "The "+o.noun+" is without color.",

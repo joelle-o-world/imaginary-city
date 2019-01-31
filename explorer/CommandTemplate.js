@@ -3,23 +3,30 @@
 */
 
 class CommandTemplate {
-  constructor(templateString, action) { // action is the function
-    if(!templateString)
-      throw "No templateString"
+  constructor(templateStrings, action) { // action is the function
+    if(!templateStrings)
+      throw "No templateStrings"
+    if(templateStrings.constructor == String)
+      templateStrings = [templateStrings]
 
-    this.templateString = templateString
-    let regexstr = "^"+templateString.replace(/_/g, "(.+)") + "$"
-    this.regex = new RegExp(regexstr, "i")
+    this.templateStrings = templateStrings
+    this.regexs = this.templateStrings.map(
+      str => new RegExp("^"+str.replace(/_/g, "(.+)") + "$", "i")
+    )
 
     this.action = action || null
   }
 
   parse(str) {
-    var result = this.regex.exec(str)
-    if(!result)
-      return null
+    for(var i in this.regexs) {
+      let reg = this.regexs[i]
+      let result = reg.exec(str)
+      if(!result)
+        continue
 
-    return result.slice(1)
+      return result.slice(1)
+    }
+    return null
   }
 }
 module.exports = CommandTemplate
