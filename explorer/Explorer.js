@@ -1,6 +1,7 @@
 const readline = require("readline")
 const CommandTemplate = require("./CommandTemplate")
 const Enviroment = require("./Enviroment")
+const confusionLog = require("./confusionLog.js")
 
 class Explorer {
   constructor(enviroment) {
@@ -15,10 +16,12 @@ class Explorer {
   }
 
   input(str) {
+    let commandsMatched = 0
     for(var i in this.commandTemplates) {
       let command = this.commandTemplates[i]
       let objectStrings = command.parse(str)
       if(objectStrings) {
+        ++commandsMatched
         let noumena = objectStrings.map(str => this.enviroment.find(str))
         if(!noumena.includes(null) && !noumena.includes(undefined)) {
           // found a match
@@ -32,6 +35,7 @@ class Explorer {
       }
     }
     console.log("Not understood.")
+    confusionLog(str, commandsMatched)
   }
 
   listen() {

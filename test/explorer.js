@@ -10,7 +10,6 @@ let house = new TownHouse
 person.location = house.randomRoom()
 
 let allNoumena = enviroment.allNoumena
-console.log(allNoumena.map(thing => thing.getDescriptiveReference()))
 
 function describeSurroundings() {
   let room = person.location
@@ -52,7 +51,10 @@ game.addCommand("go to _", room => {
 })
 
 // intro
+console.log("\n\n")
 console.log(person.ref(), "is in", person.location.ref({article:"the"}) + ".")
 describeSurroundings()
+
+console.log("\n")
 
 game.listen()
