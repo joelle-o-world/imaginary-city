@@ -51,6 +51,12 @@ class Noumenon {
   nounRegex() { // noun RegExp
     return regOp.or(...interpretSpecialArray(this, this.nouns))
   }
+  get noun() {
+    return randexp(this.nounRegex())
+  }
+  set noun(noun) {
+    this.nouns = [noun]
+  }
 
   prepositionClauseRegex() {
     let list = []

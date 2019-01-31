@@ -29,13 +29,7 @@ function describeSurroundings() {
   )
 }
 
-var game = new Explorer(enviroment)
-game.addCommand(
-  "look at _",
-  thing => person.ref() + " looks at " + thing.ref({detail: 3}) + ".",
-)
-
-game.addCommand("go to _", room => {
+function moveCharacter(room) {
   if(!room.isRoom)
     return person.ref() + " walked into "+ room.ref() + ", "+
       "which proved inadvantageous."
@@ -47,8 +41,24 @@ game.addCommand("go to _", room => {
 
   // report items
   describeSurroundings()
+}
 
-})
+var game = new Explorer(enviroment)
+game.addCommand(
+  "look at _",
+  thing => person.ref() + " looks at " + thing.ref({detail: 3}) + ".",
+)
+
+game.addCommand("go to _", room => moveCharacter(room))
+game.addCommand("go into _", room => moveCharacter(room))
+game.addCommand("go out", () => moveCharacter(person.location.randomAccessibleRoom()))
+game.addCommand("leave", () => moveCharacter(person.location.randomAccessibleRoom()))
+game.addCommand(
+  "what color is _",
+  o => o.color
+        ? "The "+o.noun+" is "+o.color+"."
+        : "The "+o.noun+" is without color.",
+)
 
 // intro
 console.log("\n\n")

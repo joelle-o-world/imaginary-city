@@ -9,7 +9,7 @@ class GenericItem extends Item {
   constructor(noun) {
     super()
     this.noun = noun
-    this.nouns = [noun]
+    //this.nouns = [noun] handled automatically by setter
     this.__suspendInit__("color")
      this.__suspendInit__("madeOf", random.material)
   }
