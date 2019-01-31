@@ -39,6 +39,7 @@ const Corridor = require("../rooms/Corridor")
 const Kitchen = require("../rooms/Kitchen")
 const LivingRoom = require("../rooms/LivingRoom")
 const Staircase = require("../rooms/Staircase")
+const LiteralDoor = require("../rooms/LiteralDoor")
 
 const random = require("../random")
 
@@ -128,17 +129,20 @@ class TownHouse extends Noumenon {
       if(room.isBathroom && room != this.bathrooms[0] && Math.random() < 0.5) {
         var bedroom = this.randomBedroom()
         if(!bedroom.hasBathroom){
-          bedroom.addDoor(room)
+        //  bedroom.addDoor(room)
+          new LiteralDoor(bedroom, room)
           continue
         }
       }
 
-      this.vestibule.addDoor(room)
+      //this.vestibule.addDoor(room)
+      new LiteralDoor(this.vestibule, room)
     }
   }
 
   addFrontDoor(leadingTo) {
-    this.vestibule.addDoor(leadingTo)
+    new LiteralDoor(this.vestibule, leadingTo)
+    //this.vestibule.addDoor(leadingTo)
   }
 
   randomBedroom() {
