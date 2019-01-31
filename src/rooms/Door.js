@@ -48,6 +48,12 @@ Door.prototype.addDescriptorFunctions({
   connecting: [
     door => door.A.ref() + " to " + door.B.ref(),
     door => door.B.ref() + " to " + door.A.ref(),
+  ],
+  "leading to": [
+    door => regOp.or(
+      door.A.nounRegex(),
+      door.B.nounRegex(),
+    ),
   ]
 })
 
