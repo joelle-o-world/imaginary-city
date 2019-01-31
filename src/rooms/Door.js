@@ -5,6 +5,7 @@
 */
 
 const Noumenon = require("../Noumenon")
+const regOp = require("../utility/regex")
 
 class Door extends Noumenon {
   constructor(room1, room2) {
@@ -19,6 +20,15 @@ class Door extends Noumenon {
     this.A.doors.push(this)
     this.B.doors.push(this)
   }
+
+  fromTo(room) { // given a room, where does this door lead.
+    if(room == this.A)
+      return this.B
+    else if(room == this.B)
+      return this.A
+    else
+      return null
+  }
 }
 
 Door.prototype.isDoor = true
@@ -27,6 +37,10 @@ Door.prototype.nouns = ["door"]
 Door.prototype.addDescriptorFunctions({
   adj: [
     door => door.color,
+    door => regOp.or(
+      door.A.nounRegex(),
+      door.B.nounRegex(),
+    ),
   ],
   "made of": [
     door => door.material,

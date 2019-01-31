@@ -17,6 +17,10 @@ class Room extends Noumenon {
     this.__suspendInit__("items", function() {
       if(this.generateContents) {
         let contents = this.generateContents(this)
+        if(!contents) {
+          console.warn("Generate contents failed")
+          return []
+        }
 
         // convert strings to GenericItem's
         for(var i in contents) {
@@ -66,6 +70,10 @@ class Room extends Noumenon {
         rooms.push(room)
     }
     return rooms
+  }
+  randomAccessibleRoom() {
+    var rooms = this.accessibleRooms
+    return rooms[Math.floor(Math.random()*rooms.length)]
   }
 
   get numberOfItems() {

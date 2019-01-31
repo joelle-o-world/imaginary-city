@@ -42,15 +42,27 @@ function moveCharacter(room) {
   // report items
   describeSurroundings()
 }
+function goThroughDoor(door) {
+  if(!door.isDoor)
+    return person.ref() +
+      " attempted to go through "+ door.ref() +
+      " as though it were a door."
+
+  let to = door.fromTo(person.location)
+  if(to)
+    return moveCharacter(to)
+  else
+    return person.ref() +
+    " tried to walk through a door which was not connected to the room they were in."
+}
 
 var game = new Explorer(enviroment)
+
 game.addCommand(
   "look at _",
   thing => person.ref() + " looks at " + thing.ref({detail: 3}) + ".",
 )
-
-game.addCommand("go to _", room => moveCharacter(room))
-game.addCommand("go into _", room => moveCharacter(room))
+game.addCommand(["go to _", "go into _"], room => moveCharacter(room))
 game.addCommand(
   ["go out", "leave", "exit"],
   () => moveCharacter(person.location.randomAccessibleRoom())
@@ -61,6 +73,7 @@ game.addCommand(
         ? "The "+o.noun+" is "+o.color+"."
         : "The "+o.noun+" is without color.",
 )
+game.addCommand("go through _", door => goThroughDoor(door))
 
 // intro
 console.log("\n\n")
