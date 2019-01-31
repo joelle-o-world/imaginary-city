@@ -24,6 +24,9 @@ function interpretSpecialArray(target, specialArr) {
     else if(item.constructor == RegExp) // accept regular expressions
       out.push(item)
 
+    else if(item.isNoumenon)
+      out.push(item.refRegex())
+
     else if(item.constructor == Function) {
       // call function on the target
       let result = item(target)
