@@ -14,8 +14,12 @@ const GenericItem = require("../items/GenericItem")
 class Room extends Noumenon {
   constructor() {
     super()
-    this.__suspendInit__("items", function() {
+
+    // contents
+    this.contents = [] // list of stuff thats in the room.
+    this.__suspendInit__("contents", function() {
       if(this.generateContents) {
+        this.contents = []
         let contents = this.generateContents(this)
         if(!contents) {
           console.warn("Generate contents failed")
@@ -76,15 +80,28 @@ class Room extends Noumenon {
     return rooms[Math.floor(Math.random()*rooms.length)]
   }
 
-  get numberOfItems() {
-    return this.items.length
-  }
   randomItem() {
     // return a random item from this room
-    if(this.items.length)
-      return this.items[Math.floor(Math.random()*this.items.length)]
+    if(this.contents.length)
+      return this.contents[Math.floor(Math.random()*this.contents.length)]
     else
       return null
+  }
+
+  removeContent(obj) {
+    // remove an object from the contents of the room
+    if(this.contents.includes(obj))
+      this.contents.splice(this.contents.indexOf(obj), 1)
+    else
+      console.warn("WARNING: Tried to remove an object from a room but it couldn't be found")
+  }
+
+  get all() {
+    // recursively generate list of all objects in the room
+    let list = []
+    for(var i in this.contents)
+      list.push(...this.contents[i].all)
+    return list
   }
 }
 Room.prototype.isRoom = true

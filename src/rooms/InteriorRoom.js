@@ -26,7 +26,7 @@ InteriorRoom.prototype.addDescriptorFunctions({
     room => room.house.getDescriptiveReference({article:"a"})
   ],
   containing:[
-    room => room.items.map(item => item.refRegex()),
+    room => room.contents.map(item => item.refRegex()),
   ]
 })
 

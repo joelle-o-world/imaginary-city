@@ -13,10 +13,16 @@ let allNoumena = enviroment.allNoumena
 
 function describeSurroundings() {
   let room = person.location
-  if(room.numberOfItems) {
-    console.log("Inside", room.ref({article:"the"}), "there's", utility.quantify(room.numberOfItems, "item")+":")
-    for(var i in room.items)
-      console.log("\t-", room.items[i].ref({article:"a", detail:2}))
+  let allContents = room.all
+  if(room.contents.length) {
+    console.log(
+      "Inside",
+      room.ref({article:"the"}),
+      "there's",
+      utility.quantify(allContents.length, "object")+":"
+    )
+    for(var i in allContents)
+      console.log("\t-", allContents[i].ref({article:"a", detail:2}))
   } else
     console.log(room.ref({article:"The"}), "is empty.")
   // report doors

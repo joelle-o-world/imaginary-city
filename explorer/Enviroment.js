@@ -59,7 +59,7 @@ class Enviroment {
       all.push(this.location)
 
       // items in the room
-      all = all.concat(this.location.items)
+      all = all.concat(this.location.all)
 
       // doors in the room
       all = all.concat(this.location.exits)

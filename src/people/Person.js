@@ -1,11 +1,11 @@
 /*
-  A class representing a person
+  A class representing a person.
 */
 
-const Noumenon = require("../Noumenon")
+const PhysicalObject = require("../PhysicalObject")
 const random = require("../random")
 
-class Person extends Noumenon {
+class Person extends PhysicalObject {
   constructor() {
     super()
 

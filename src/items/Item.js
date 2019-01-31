@@ -3,10 +3,9 @@
   desk or a lamp.
 */
 
-const Noumenon = require("../Noumenon")
+const PhysicalObject = require("../PhysicalObject")
 
-class Item extends Noumenon {
-  // TODO
+class Item extends PhysicalObject {
 }
 Item.prototype.isItem = true
 
