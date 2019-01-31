@@ -4,12 +4,15 @@
 
 const InteriorRoom = require("./InteriorRoom.js")
 const utility = require("../utility")
+const Person = require("../people/Person")
 
 class Bedroom extends InteriorRoom {
   // TODO
   generateContents() {
+    this.occupant = new Person()
     return [
       "bed",
+      this.occupant,
     ]
   }
 }
@@ -20,7 +23,7 @@ Bedroom.prototype.addNouns("bedroom")
 
 Bedroom.prototype.addDescriptorFunctions({
   "belonging to": [
-    room => room.occupant ? room.occupant.getDescriptiveReference() : null
+    room => room.occupant ? room.occupant.refRegex() : null
   ]
 })
 
