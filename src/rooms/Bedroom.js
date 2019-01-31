@@ -5,13 +5,14 @@
 const InteriorRoom = require("./InteriorRoom.js")
 const utility = require("../utility")
 const Person = require("../people/Person")
+const Bed = require("../items/Bed")
 
 class Bedroom extends InteriorRoom {
   // TODO
   generateContents() {
     this.occupant = new Person()
     return [
-      "bed",
+      new Bed(),
       this.occupant,
     ]
   }
