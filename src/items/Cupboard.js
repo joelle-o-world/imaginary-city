@@ -1,0 +1,15 @@
+/*
+  A base class for all kinds of cupboards.
+*/
+
+const Item = require("./Item.js")
+
+class Cupboard extends Item {
+  constructor() {
+    super()
+    this.isContainer = true
+  }
+}
+Cupboard.prototype.isCupboard = true
+Cupboard.prototype.nouns = ['cupboard']
+module.exports = Cupboard

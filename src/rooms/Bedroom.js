@@ -10,6 +10,7 @@ const Person = require("../people/Person")
 const Bed = require("../items/Bed")
 const Desk = require("../items/Desk")
 const BedsideTable = require("../items/BedsideTable")
+const Wardrobe = require("../items/Wardrobe")
 
 class Bedroom extends InteriorRoom {
   // TODO
@@ -23,6 +24,8 @@ class Bedroom extends InteriorRoom {
       stuff.push(new BedsideTable)
     if(Math.random() < 0.5) // 50% chance of desk
       stuff.push(new Desk)
+    if(Math.random() < 0.75) // 75% chance of wardrobe
+      stuff.push(new Wardrobe)
 
     return stuff
   }

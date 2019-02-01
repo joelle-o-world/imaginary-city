@@ -21,13 +21,11 @@ class Kitchen extends InteriorRoom {
     let spoon = new GenericItem("spoon")
     stuff[1].isContainer = true
     spoon.container = stuff[1]
-    console.log(spoon.refRegex())
 
     let table = new GenericItem('table')
     table.isSurface = true
     let courgette = new GenericItem('courgette')
     courgette.location = table
-    console.log(courgette.refRegex())
     stuff.push(table)
 
 
