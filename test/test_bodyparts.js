@@ -1,0 +1,10 @@
+const Body = require("../src/body/Body.js")
+const BodyPart = require("../src/body/BodyPart.js")
+const Eyes = require("../src/body/Eyes.js")
+const Head = require("../src/body/Head.js")
+
+let head = new Head()
+console.log(head.ref())
+console.log(head.eyes.ref())
+console.log(head.mouth.ref())
+console.log(head.nose.ref())
