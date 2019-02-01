@@ -22,10 +22,6 @@ class PhysicalObject extends Noumenon {
     super()
     this.location = null
 
-    this.canRestOnSurface = true      // bool, can this object sit on top of something
-    this.isSurface = false    // bool, can other objects be placed on top of this object
-    this.isContainer = false  // bool, can other objects be placed inside of this object
-
     this.containing = [] // list of objects contained inside this object
     this.supporting = [] // list of objects resting on the surface of this object
   }
@@ -72,12 +68,17 @@ class PhysicalObject extends Noumenon {
   }
   set room(room) {
     // set the location of this object to a Room
-    this.removeSelfFromLocation()
     if(room.isRoom) {
+      this.removeSelfFromLocation()
       this.locationType = 'room'
       this._location = room
       room.contents.push(this)
-    }
+    }  else console.warn(
+      "Tried to set the room of an object",
+      "("+this.ref()+")",
+       "on top of a non-room",
+       "("+room.ref()+")"
+    );
   }
 
   get container() {
@@ -90,12 +91,17 @@ class PhysicalObject extends Noumenon {
   }
   set container(container) {
     // set the location of this object to a container
-    this.removeSelfFromLocation()
     if(container.isContainer) {
+      this.removeSelfFromLocation()
       this.locationType = 'container'
       this._location = container
       container.containing.push(this)
-    }
+    } else console.warn(
+      "Tried to put an object",
+      "("+this.ref()+")",
+       "inside of a non-surface",
+       "("+container.ref()+")"
+    );
   }
 
   // TODO: PhysicalObject#surface (getter/setter)
@@ -107,12 +113,17 @@ class PhysicalObject extends Noumenon {
   }
   set surface(surface) {
     // set the location of this object to a surface
-    this.removeSelfFromLocation()
     if(surface.isSurface) {
+      this.removeSelfFromLocation()
       this.locationType = 'surface'
       this._location = surface
       surface.supporting.push(this)
-    }
+    } else console.warn(
+      "Tried to put an object",
+      "("+this.ref()+")",
+       "on top of a non-surface",
+       "("+surface.ref()+")"
+    );
   }
 
   get location() {
@@ -121,8 +132,8 @@ class PhysicalObject extends Noumenon {
   }
   set location(location) {
     // set the location of this object
-    this.removeSelfFromLocation()
     if(!location) {
+      this.removeSelfFromLocation()
     } else if(location.isRoom) {
       this.room = location
     } else if(location.isPhysicalObject) {
@@ -155,6 +166,15 @@ class PhysicalObject extends Noumenon {
   }
 }
 PhysicalObject.prototype.isPhysicalObject = true
+
+PhysicalObject.prototype.canRestOnSurface = true
+// bool, can this object sit on top of something
+
+PhysicalObject.prototype.isSurface = false
+// bool, can other objects be placed on top of this object
+
+PhysicalObject.prototype.isContainer = false  
+// bool, can other objects be placed inside of this object
 
 PhysicalObject.prototype.addDescriptorFunctions({
   on: [
