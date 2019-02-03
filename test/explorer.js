@@ -116,7 +116,7 @@ game.addCommand(["what is on _", "look on _"], surface => {
 
     return str
   } else
-    return "There is nothing on "+surface.ref()
+    return "There is nothing on "+surface.ref()+'.'
 })
 game.addCommand(["what is in _", "look in _"], container => {
   if(container.isContainer && container.containing.length) {
@@ -126,8 +126,13 @@ game.addCommand(["what is in _", "look in _"], container => {
 
     return str
   } else
-    return "There is nothing in "+container.ref()
+    return "There is nothing in "+container.ref()+'.'
 })
+game.addCommand("look under _", o =>
+  o.surface ?
+    "Under "+o.ref()+" there is "+o.surface.ref()+"." :
+    "There is nothing is under "+o.ref()+"."
+)
 
 // intro
 console.log("\n\n")
