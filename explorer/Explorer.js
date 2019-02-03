@@ -46,11 +46,25 @@ class Explorer {
 
     rl.prompt()
     rl.on("line", str => {
-      console.log(" ")
-      this.input(str)
-      console.log(" ")
+      if(str.length) {
+        console.log("")
+        this.input(str)
+      } else {
+        let command = this.randomCommand()
+        console.log("(chosen random command) > "+command, "\n")
+        this.input(command)
+      }
+      console.log("")
       rl.prompt()
     })
+  }
+
+  randomCommand() {
+    let template = this.commandTemplates[Math.floor(Math.random()*this.commandTemplates.length)]
+    let objs = this.enviroment.randomNoumena(template.nObjects)
+    let obStrings = objs.map(o=>o.ref())
+    let command = template.subIn(...obStrings)
+    return command
   }
 }
 module.exports = Explorer

@@ -14,7 +14,7 @@ let allNoumena = enviroment.allNoumena
 function describeSurroundings() {
   let room = person.location
   let allContents = room.all
-  if(room.contents.length) {
+  if(allContents.length) {
     console.log(
       "Inside",
       room.ref({article:"the"}),
@@ -26,7 +26,7 @@ function describeSurroundings() {
   } else
     console.log(room.ref({article:"The"}), "is empty.")
   // report doors
-  var accessibleRooms = room.accessibleRooms
+  var accessibleRooms = person.room.accessibleRooms
   console.log(
     "There's",
     utility.quantify(accessibleRooms.length, "door"),
@@ -36,7 +36,9 @@ function describeSurroundings() {
 }
 
 function moveCharacter(room) {
-  if(!room.isRoom)
+  if(room.isDoor)
+    room = room.fromTo(person.location)
+  if(!room.isRoom && !room.isContainer)
     return person.ref() + " walked into "+ room.ref() + ", "+
       "which proved inadvantageous."
 
@@ -65,13 +67,18 @@ function goThroughDoor(door) {
 var game = new Explorer(enviroment)
 
 game.addCommand(
-  "look at _",
+  ["look at _", "_"],
   thing => person.ref() + " looks at " + thing.ref({detail: 3}) + ".",
 )
 game.addCommand(["go to _", "go into _"], room => moveCharacter(room))
 game.addCommand(
   ["go out", "leave", "exit"],
-  () => moveCharacter(person.location.randomAccessibleRoom())
+  () => {
+    if(person.location.isRoom)
+      moveCharacter(person.location.randomAccessibleRoom())
+    else
+      moveCharacter(person.location.location)
+  }
 )
 game.addCommand(
   ["what color is _", "what colour is _"],
@@ -79,7 +86,48 @@ game.addCommand(
         ? "The "+o.noun+" is "+o.color+"."
         : "The "+o.noun+" is without color.",
 )
-game.addCommand("go through _", door => goThroughDoor(door))
+game.addCommand(["go through _", "go through _ as thought it is a door"], door => goThroughDoor(door))
+game.addCommand(["not understood","not understood."], () => "That's my line.")
+game.addCommand("I understand", () => "How nice.")
+game.addCommand("hello _", o => person.ref() + " says hello to "+o.ref())
+game.addCommand("goodbye _", o => person.ref() + " says goodbye to "+o.ref())
+game.addCommand("put _ on _", (item, surface) => {
+  if(!surface.isSurface)
+    return "It is not possible to put things on "+surface.ref()
+  if(!surface.canRestOnSurface)
+    return "It is not possible to put "+surface.ref()+" on top of anything."
+  item.surface = surface
+  return person.ref() + " put "+item.ref()+" on top of "+surface.ref()+"."
+})
+game.addCommand("where is _", o => {
+  if(o.location) {
+    if(o.locationType == 'surface')
+      return o.ref()+" is on "+o.location.ref()
+    else
+      return o.ref()+" is in "+o.location.ref()
+  } else
+    return o.ref()+" is nowhere."
+})
+game.addCommand(["what is on _", "look on _"], surface => {
+  if(surface.isSurface && surface.supporting.length) {
+    let str = "There are "+surface.supporting.length+" things on "+container.ref()+".\n"
+    for(var i in surface.supporting)
+      str += "\t- "+surface.supporting[i].ref() + '\n'
+
+    return str
+  } else
+    return "There is nothing on "+surface.ref()
+})
+game.addCommand(["what is in _", "look in _"], container => {
+  if(container.isContainer && container.containing.length) {
+    let str = "There are "+container.containing.length+" things in "+container.ref()+".\n"
+    for(var i in container.containing)
+      str += "\t- "+container.containing[i].ref() + '\n'
+
+    return str
+  } else
+    return "There is nothing in "+container.ref()
+})
 
 // intro
 console.log("\n\n")

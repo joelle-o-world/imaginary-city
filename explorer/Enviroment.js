@@ -47,12 +47,16 @@ class Enviroment {
     if(this.protagonist)
       return this.protagonist.location
   }
+  get room() {
+    if(this.protagonist)
+      return this.protagonist.room
+  }
 
   get allNoumena() {
     let all = []
 
     // character
-    all.push(this.protagonist)
+    //all.push(this.protagonist)
 
     // the room
     if(this.location) {
@@ -62,15 +66,21 @@ class Enviroment {
       all = all.concat(this.location.all)
 
       // doors in the room
-      all = all.concat(this.location.exits)
+      all = all.concat(this.room.exits)
 
       // rooms accessible by the doors
-      all = all.concat(this.location.accessibleRooms)
+      all = all.concat(this.room.accessibleRooms)
     }
 
-
-
     return all
+  }
+
+  randomNoumena(n=1 /* how many*/) {
+    let noumena = this.allNoumena
+    let list = []
+    for(var i=0; i<n; i++)
+      list.push(noumena[Math.floor(Math.random()*noumena.length)])
+    return list
   }
 }
 module.exports = Enviroment
