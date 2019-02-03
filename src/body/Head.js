@@ -20,6 +20,9 @@ class Head extends BodyPart {
     this.nose = new Nose()
     this.nose.surface = this
 
+    this.ears = new Ears()
+    this.ears.surface = this
+
     this.neck = new Neck()
     this.surface = this.neck
   }
