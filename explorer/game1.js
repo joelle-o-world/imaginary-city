@@ -142,3 +142,5 @@ describeSurroundings()
 console.log("\n")
 
 game.listen()
+
+console.log(window)
