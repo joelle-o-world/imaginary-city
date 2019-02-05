@@ -37,47 +37,12 @@ class Noumenon {
     return new RegExp("^"+this.refRegex().source+"$", "i").test(str)
   }
 
-  getDescriptiveReference(ctx={}) {
-    // return a noun phrase which refers to this noumenon
-    ctx.mode = "generate"
-    let reg = this.refRegex(ctx)
-    let ret = randexp(reg)
-    return ret
-  }
-  ref(ctx) {
-    // quick alias for get getDescriptiveReference
-    return this.getDescriptiveReference(ctx)
-  }
-
   // Regular expression functions
-  nounRegex(ctx) { // noun RegExp
-    return regOp.or(...interpretSpecialArray(this, this.nouns, ctx))
-  }
   get noun() {
     return randexp(this.nounRegex())
   }
   set noun(noun) {
     this.nouns = [noun]
-  }
-
-  prepositionClauseRegex(ctx) {
-    let list = []
-    for(var i in this.descriptorFunctions) {
-      if(i == "adj")
-        continue
-      let descriptors = interpretSpecialArray(this, this.descriptorFunctions[i], ctx)
-      if(descriptors.length) {
-        let clauseRegex = regOp.concatSpaced(
-          i,
-          regOp.or(...descriptors)
-        )
-        list.push(clauseRegex)
-      }
-    }
-
-    if(list.length)
-      return regOp.or(...list)
-    else return null
   }
 
   adjs(ctx) {
@@ -86,56 +51,6 @@ class Noumenon {
       return null
 
     return interpretSpecialArray(this, this.descriptorFunctions.adj, ctx)
-  }
-
-  properNounRegex(ctx) {
-    if(!this.properNouns || this.properNouns.length == 0)
-      return null
-    return regOp.or(
-      ...interpretSpecialArray(this, this.properNouns, ctx)
-    )
-  }
-
-  refRegex(ctx={}) {
-    // article
-    let reg = ctx.article || /the|a/
-
-    // adjectives
-    let adjs = this.adjs(ctx)
-    if(adjs && adjs.length)
-      reg = regOp.optionalConcatSpaced(
-        reg,
-        ...adjs,
-      )
-    // noun
-    reg = regOp.concatSpaced(
-      reg,
-      this.nounRegex(ctx),
-    )
-
-    // preposition clauses
-    let prepRegex = this.prepositionClauseRegex(ctx)
-    if(prepRegex)
-      reg = regOp.optionalConcatSpaced(
-        reg,
-        prepRegex
-      )
-
-    // or just use a proper noun
-    let properNounRegex = this.properNounRegex(ctx)
-    if(properNounRegex) {
-      reg = regOp.or(
-        reg,
-        properNounRegex
-      )
-    }
-
-    return reg
-  }
-
-  parseRegex(ctx={}) {
-    ctx.mode == "parse"
-    return this.refRegex(ctx)
   }
 }
 Noumenon.prototype.isNoumenon = true

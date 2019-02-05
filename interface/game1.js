@@ -140,7 +140,7 @@ class Enviroment {
 }
 module.exports = Enviroment
 
-},{"../src":27,"./parseNounPhrase":6}],3:[function(require,module,exports){
+},{"../src":29,"./parseNounPhrase":6}],3:[function(require,module,exports){
 (function (process){
 const readline = require("readline")
 const CommandTemplate = require("./CommandTemplate")
@@ -227,7 +227,7 @@ class Explorer {
 module.exports = Explorer
 
 }).call(this,require('_process'))
-},{"./CommandTemplate":1,"./Enviroment":2,"./confusionLog.js":4,"_process":60,"readline":58}],4:[function(require,module,exports){
+},{"./CommandTemplate":1,"./Enviroment":2,"./confusionLog.js":4,"_process":62,"readline":60}],4:[function(require,module,exports){
 (function (__dirname){
 const fs = require("fs")
 const path = require("path")
@@ -246,7 +246,7 @@ function confusionLog(str, nCommandsMatched) {
 module.exports = confusionLog
 
 }).call(this,"/explorer")
-},{"fs":58,"path":59}],5:[function(require,module,exports){
+},{"fs":60,"path":61}],5:[function(require,module,exports){
 const CommandTemplate = require("../explorer/CommandTemplate.js")
 const Explorer = require("../explorer/Explorer")
 const Enviroment = require("../explorer/Enviroment")
@@ -416,7 +416,7 @@ window.onload = function() {
 }
 window.userInput = str => game.input(str)
 
-},{"../explorer/CommandTemplate.js":1,"../explorer/Enviroment":2,"../explorer/Explorer":3,"../interface/TickyText":8,"../src/buildings/TownHouse":25,"../src/utility":56}],6:[function(require,module,exports){
+},{"../explorer/CommandTemplate.js":1,"../explorer/Enviroment":2,"../explorer/Explorer":3,"../interface/TickyText":8,"../src/buildings/TownHouse":27,"../src/utility":58}],6:[function(require,module,exports){
 const parseText = require("./parseText")
 
 const articles = [
@@ -11021,7 +11021,7 @@ if(!module.parent) {
   
 
 }).call(this,require('_process'))
-},{"./first-names.json":11,"./middle-names.json":13,"./names.json":14,"./places.json":15,"_process":60}],13:[function(require,module,exports){
+},{"./first-names.json":11,"./middle-names.json":13,"./names.json":14,"./places.json":15,"_process":62}],13:[function(require,module,exports){
 module.exports=[
 "Aaron"
 ,
@@ -83692,47 +83692,12 @@ class Noumenon {
     return new RegExp("^"+this.refRegex().source+"$", "i").test(str)
   }
 
-  getDescriptiveReference(ctx={}) {
-    // return a noun phrase which refers to this noumenon
-    ctx.mode = "generate"
-    let reg = this.refRegex(ctx)
-    let ret = randexp(reg)
-    return ret
-  }
-  ref(ctx) {
-    // quick alias for get getDescriptiveReference
-    return this.getDescriptiveReference(ctx)
-  }
-
   // Regular expression functions
-  nounRegex(ctx) { // noun RegExp
-    return regOp.or(...interpretSpecialArray(this, this.nouns, ctx))
-  }
   get noun() {
     return randexp(this.nounRegex())
   }
   set noun(noun) {
     this.nouns = [noun]
-  }
-
-  prepositionClauseRegex(ctx) {
-    let list = []
-    for(var i in this.descriptorFunctions) {
-      if(i == "adj")
-        continue
-      let descriptors = interpretSpecialArray(this, this.descriptorFunctions[i], ctx)
-      if(descriptors.length) {
-        let clauseRegex = regOp.concatSpaced(
-          i,
-          regOp.or(...descriptors)
-        )
-        list.push(clauseRegex)
-      }
-    }
-
-    if(list.length)
-      return regOp.or(...list)
-    else return null
   }
 
   adjs(ctx) {
@@ -83741,56 +83706,6 @@ class Noumenon {
       return null
 
     return interpretSpecialArray(this, this.descriptorFunctions.adj, ctx)
-  }
-
-  properNounRegex(ctx) {
-    if(!this.properNouns || this.properNouns.length == 0)
-      return null
-    return regOp.or(
-      ...interpretSpecialArray(this, this.properNouns, ctx)
-    )
-  }
-
-  refRegex(ctx={}) {
-    // article
-    let reg = ctx.article || /the|a/
-
-    // adjectives
-    let adjs = this.adjs(ctx)
-    if(adjs && adjs.length)
-      reg = regOp.optionalConcatSpaced(
-        reg,
-        ...adjs,
-      )
-    // noun
-    reg = regOp.concatSpaced(
-      reg,
-      this.nounRegex(ctx),
-    )
-
-    // preposition clauses
-    let prepRegex = this.prepositionClauseRegex(ctx)
-    if(prepRegex)
-      reg = regOp.optionalConcatSpaced(
-        reg,
-        prepRegex
-      )
-
-    // or just use a proper noun
-    let properNounRegex = this.properNounRegex(ctx)
-    if(properNounRegex) {
-      reg = regOp.or(
-        reg,
-        properNounRegex
-      )
-    }
-
-    return reg
-  }
-
-  parseRegex(ctx={}) {
-    ctx.mode == "parse"
-    return this.refRegex(ctx)
   }
 }
 Noumenon.prototype.isNoumenon = true
@@ -83816,10 +83731,35 @@ Noumenon.prototype.addDescriptorFunctions = function(functionArraysByPreposition
 
 module.exports = Noumenon
 
-},{"../random":42,"../utility":56,"./interpretSpecialArray":23,"randexp":10}],22:[function(require,module,exports){
-module.exports = require("./Noumenon.js")
+},{"../random":44,"../utility":58,"./interpretSpecialArray":24,"randexp":10}],22:[function(require,module,exports){
+const {randexp} = require("randexp")
 
-},{"./Noumenon.js":21}],23:[function(require,module,exports){
+let assignments = {
+
+  getDescriptiveReference(ctx={}) {
+    // return a noun phrase which refers to this noumenon
+    ctx.mode = "generate"
+    let reg = this.refRegex(ctx)
+    let ret = randexp(reg)
+    return ret
+  },
+
+  ref(ctx) {
+    // quick alias for get getDescriptiveReference
+    return this.getDescriptiveReference(ctx)
+  },
+
+}
+
+module.exports = Noumenon => Object.assign(Noumenon.prototype, assignments)
+
+},{"randexp":10}],23:[function(require,module,exports){
+let Noumenon = require("./Noumenon.js")
+require("./regex")(Noumenon)
+require("./getDescriptiveReference")(Noumenon)
+module.exports = Noumenon
+
+},{"./Noumenon.js":21,"./getDescriptiveReference":22,"./regex":25}],24:[function(require,module,exports){
 /*
   A function for interpretting a type of structure which exists often in
   noumenon descriptors. An array of strings, regular expressions, and functions.
@@ -83874,7 +83814,89 @@ function interpretSpecialArray(target, specialArr, ctx) {
 }
 module.exports = interpretSpecialArray
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
+const regOp = require("../utility/regex")
+const interpretSpecialArray = require("./interpretSpecialArray")
+
+let assignments = {
+  refRegex(ctx = {}) {
+    // article
+    let reg = ctx.article || /the|a/
+
+    // adjectives
+    let adjs = this.adjs(ctx)
+    if(adjs && adjs.length)
+      reg = regOp.optionalConcatSpaced(
+        reg,
+        ...adjs,
+      )
+    // noun
+    reg = regOp.concatSpaced(
+      reg,
+      this.nounRegex(ctx),
+    )
+
+    // preposition clauses
+    let prepRegex = this.prepositionClauseRegex(ctx)
+    if(prepRegex)
+      reg = regOp.optionalConcatSpaced(
+        reg,
+        prepRegex
+      )
+
+    // or just use a proper noun
+    let properNounRegex = this.properNounRegex(ctx)
+    if(properNounRegex) {
+      reg = regOp.or(
+        reg,
+        properNounRegex
+      )
+    }
+
+    return reg
+  },
+
+  properNounRegex(ctx) {
+    if(!this.properNouns || this.properNouns.length == 0)
+      return null
+    return regOp.or(
+      ...interpretSpecialArray(this, this.properNouns, ctx)
+    )
+  },
+
+  parseRegex(ctx={}) {
+    ctx.mode == "parse"
+    return this.refRegex(ctx)
+  },
+
+  prepositionClauseRegex(ctx) {
+    let list = []
+    for(var i in this.descriptorFunctions) {
+      if(i == "adj")
+        continue
+      let descriptors = interpretSpecialArray(this, this.descriptorFunctions[i], ctx)
+      if(descriptors.length) {
+        let clauseRegex = regOp.concatSpaced(
+          i,
+          regOp.or(...descriptors)
+        )
+        list.push(clauseRegex)
+      }
+    }
+
+    if(list.length)
+      return regOp.or(...list)
+    else return null
+  },
+
+  nounRegex(ctx) { // noun RegExp
+    return regOp.or(...interpretSpecialArray(this, this.nouns, ctx))
+  },
+}
+
+module.exports = Noumenon => Object.assign(Noumenon.prototype, assignments)
+
+},{"../utility/regex":59,"./interpretSpecialArray":24}],26:[function(require,module,exports){
 /*
   Sub-class of Noumenon. Base class for anything that has a material presence
   in the world.
@@ -84065,7 +84087,7 @@ PhysicalObject.prototype.addDescriptorFunctions({
 
 module.exports = PhysicalObject
 
-},{"./Noumenon":22}],25:[function(require,module,exports){
+},{"./Noumenon":23}],27:[function(require,module,exports){
 /*
   TownHouse is a generative class which builds a structure of various domestic
   subclasses of Rooms.
@@ -84242,12 +84264,12 @@ TownHouse.prototype.addDescriptorFunctions({
 
 module.exports = TownHouse
 
-},{"../Noumenon":22,"../random":42,"../rooms/Bathroom":45,"../rooms/Bedroom":46,"../rooms/Corridor":47,"../rooms/Kitchen":50,"../rooms/LiteralDoor":51,"../rooms/LivingRoom":52,"../rooms/Staircase":54,"../utility":56}],26:[function(require,module,exports){
+},{"../Noumenon":23,"../random":44,"../rooms/Bathroom":47,"../rooms/Bedroom":48,"../rooms/Corridor":49,"../rooms/Kitchen":52,"../rooms/LiteralDoor":53,"../rooms/LivingRoom":54,"../rooms/Staircase":56,"../utility":58}],28:[function(require,module,exports){
 module.exports = {
   TownHouse: require("./TownHouse"),
 }
 
-},{"./TownHouse":25}],27:[function(require,module,exports){
+},{"./TownHouse":27}],29:[function(require,module,exports){
 module.exports = {
   // classes
   Noumenon: require("./Noumenon"),
@@ -84266,7 +84288,7 @@ module.exports = {
   random: require("./random"),
 }
 
-},{"./Noumenon":22,"./buildings":26,"./items":36,"./items/Item":33,"./people":38,"./people/Person":37,"./random":42,"./rooms":55,"./rooms/Room":53,"./utility":56}],28:[function(require,module,exports){
+},{"./Noumenon":23,"./buildings":28,"./items":38,"./items/Item":35,"./people":40,"./people/Person":39,"./random":44,"./rooms":57,"./rooms/Room":55,"./utility":58}],30:[function(require,module,exports){
 /*
   Sub-class of item for representing a bed.
 */
@@ -84304,7 +84326,7 @@ Bed.prototype.addDescriptorFunctions({
 
 module.exports = Bed
 
-},{"./GenericItem":32,"./Item.js":33}],29:[function(require,module,exports){
+},{"./GenericItem":34,"./Item.js":35}],31:[function(require,module,exports){
 /*
   Sub class of Table for representing bedside tables
 */
@@ -84327,7 +84349,7 @@ BedsideTable.prototype.addNouns("bedside table", "night stand")
 BedsideTable.prototype.isBedsideTable
 module.exports = BedsideTable
 
-},{"./GenericItem":32,"./Table":34}],30:[function(require,module,exports){
+},{"./GenericItem":34,"./Table":36}],32:[function(require,module,exports){
 /*
   A base class for all kinds of cupboards.
 */
@@ -84344,7 +84366,7 @@ Cupboard.prototype.isCupboard = true
 Cupboard.prototype.nouns = ['cupboard']
 module.exports = Cupboard
 
-},{"./Item.js":33}],31:[function(require,module,exports){
+},{"./Item.js":35}],33:[function(require,module,exports){
 /*
   Sub-class of table. For representing a desk.
 */
@@ -84357,7 +84379,7 @@ Desk.prototype.nouns = ["desk"]
 Desk.prototype.isDesk = true
 module.exports = Desk
 
-},{"./Table":34}],32:[function(require,module,exports){
+},{"./Table":36}],34:[function(require,module,exports){
 /*
   Subclass of Item. A quick way to generate items which do not do very much.
 */
@@ -84376,7 +84398,7 @@ class GenericItem extends Item {
 }
 module.exports = GenericItem
 
-},{"../random":42,"./Item":33}],33:[function(require,module,exports){
+},{"../random":44,"./Item":35}],35:[function(require,module,exports){
 /*
   A subclass of Noumenon, used to represent a smallish object such as a bed, a
   desk or a lamp.
@@ -84398,7 +84420,7 @@ Item.prototype.addDescriptorFunctions({
 })
 module.exports = Item
 
-},{"../PhysicalObject":24}],34:[function(require,module,exports){
+},{"../PhysicalObject":26}],36:[function(require,module,exports){
 /*
   Base class for all manner of tables
 */
@@ -84415,7 +84437,7 @@ Table.prototype.isTable = true
 Table.prototype.nouns = ["table"]
 module.exports = Table
 
-},{"./Item":33}],35:[function(require,module,exports){
+},{"./Item":35}],37:[function(require,module,exports){
 /*
   Generative subclass of Cupboard. Automatically populated with clothes.
 */
@@ -84452,13 +84474,13 @@ Wardrobe.prototype.isWardrobe = true
 Wardrobe.prototype.addNouns("wardrobe")
 module.exports = Wardrobe
 
-},{"./Cupboard":30,"./GenericItem":32}],36:[function(require,module,exports){
+},{"./Cupboard":32,"./GenericItem":34}],38:[function(require,module,exports){
 module.exports = {
   Item: require("./Item"),
   GenericItem: require("./GenericItem"),
 }
 
-},{"./GenericItem":32,"./Item":33}],37:[function(require,module,exports){
+},{"./GenericItem":34,"./Item":35}],39:[function(require,module,exports){
 /*
   A class representing a person.
 */
@@ -84503,12 +84525,12 @@ Person.prototype.addDescriptorFunctions({
 
 module.exports = Person
 
-},{"../PhysicalObject":24,"../random":42}],38:[function(require,module,exports){
+},{"../PhysicalObject":26,"../random":44}],40:[function(require,module,exports){
 module.exports = {
   Person: require("./Person"),
 }
 
-},{"./Person":37}],39:[function(require,module,exports){
+},{"./Person":39}],41:[function(require,module,exports){
 const buildingMaterials = [
   // adjectives for describing building materials
   "bricks",
@@ -84522,7 +84544,7 @@ function randomBuildingMaterial() {
 }
 module.exports = randomBuildingMaterial
 
-},{}],40:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 const colors = [
   "red",
   "orange",
@@ -84537,7 +84559,7 @@ function randomColor() {
 }
 module.exports = randomColor
 
-},{}],41:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 const floorings = ["carpet", "tiled", "lino", "wooden", "concrete", "leather"]
 
 function randomFlooring() {
@@ -84545,7 +84567,7 @@ function randomFlooring() {
 }
 module.exports = randomFlooring
 
-},{}],42:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 const randomName = require("random-name")
 
 module.exports = {
@@ -84558,7 +84580,7 @@ module.exports = {
   material: require("./material.js"),
 }
 
-},{"./buildingMaterial":39,"./color.js":40,"./flooring.js":41,"./material.js":43,"./title.js":44,"random-name":12}],43:[function(require,module,exports){
+},{"./buildingMaterial":41,"./color.js":42,"./flooring.js":43,"./material.js":45,"./title.js":46,"random-name":12}],45:[function(require,module,exports){
 const materials = [
   "silk",
   "denim",
@@ -84578,7 +84600,7 @@ function randomMaterial() {
 }
 module.exports = randomMaterial
 
-},{}],44:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 const titles = ["Mr", "Mrs", "Ms", "Dr", "Professor"]
 
 function randomTitle() {
@@ -84586,7 +84608,7 @@ function randomTitle() {
 }
 module.exports = randomTitle
 
-},{}],45:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 /*
   Bathroom is a generative subclass of Room
 */
@@ -84609,7 +84631,7 @@ Bathroom.prototype.addNouns("bathroom", "toilet")
 
 module.exports = Bathroom
 
-},{"./InteriorRoom.js":49}],46:[function(require,module,exports){
+},{"./InteriorRoom.js":51}],48:[function(require,module,exports){
 /*
   A Bedroom is a generative subclass of Room.
 */
@@ -84655,7 +84677,7 @@ Bedroom.prototype.addDescriptorFunctions({
 
 module.exports = Bedroom
 
-},{"../items/Bed":28,"../items/BedsideTable":29,"../items/Desk":31,"../items/Wardrobe":35,"../people/Person":37,"../utility":56,"./InteriorRoom.js":49}],47:[function(require,module,exports){
+},{"../items/Bed":30,"../items/BedsideTable":31,"../items/Desk":33,"../items/Wardrobe":37,"../people/Person":39,"../utility":58,"./InteriorRoom.js":51}],49:[function(require,module,exports){
 /*
   Corridor is a generative subclass of Room
 */
@@ -84672,7 +84694,7 @@ Corridor.prototype.addNouns("corridor")
 
 module.exports = Corridor
 
-},{"./InteriorRoom.js":49}],48:[function(require,module,exports){
+},{"./InteriorRoom.js":51}],50:[function(require,module,exports){
 /*
   The Door class is a sub-class of Noumenon which connects one Room instance to
   another. It needn't represent a literal door, just as Room needn't represent
@@ -84732,7 +84754,7 @@ Door.prototype.addDescriptorFunctions({
 
 module.exports = Door
 
-},{"../Noumenon":22,"../utility/regex":57}],49:[function(require,module,exports){
+},{"../Noumenon":23,"../utility/regex":59}],51:[function(require,module,exports){
 /*
   InteriorRoom is a subclass of Room. It is used as a super class for indoor
   rooms.
@@ -84770,7 +84792,7 @@ InteriorRoom.prototype.addDescriptorFunctions({
 
 module.exports = InteriorRoom
 
-},{"../utility":56,"./Room.js":53}],50:[function(require,module,exports){
+},{"../utility":58,"./Room.js":55}],52:[function(require,module,exports){
 /*
   Kitchen is a generative subclass of Room
 */
@@ -84812,7 +84834,7 @@ Kitchen.prototype.addNouns("kitchen")
 
 module.exports = Kitchen
 
-},{"../items/GenericItem":32,"./InteriorRoom.js":49}],51:[function(require,module,exports){
+},{"../items/GenericItem":34,"./InteriorRoom.js":51}],53:[function(require,module,exports){
 /*
   A sub class of Door for representing actual doors, rather than the base class
   which is more abstract (representing any connection between two Rooms).
@@ -84830,7 +84852,7 @@ class LiteralDoor extends Door {
 }
 module.exports = LiteralDoor
 
-},{"../random":42,"./Door.js":48}],52:[function(require,module,exports){
+},{"../random":44,"./Door.js":50}],54:[function(require,module,exports){
 /*
   LivingRoom is a generative subclass of Room
 */
@@ -84847,7 +84869,7 @@ LivingRoom.prototype.addNouns("living room", "lounge")
 
 module.exports = LivingRoom
 
-},{"./InteriorRoom.js":49}],53:[function(require,module,exports){
+},{"./InteriorRoom.js":51}],55:[function(require,module,exports){
 /*
   Room is an atomic element for the geography. Rooms contain doorways leading
   to other rooms. The can also contain Items and stuff like that. They are not
@@ -84958,7 +84980,7 @@ Room.prototype.isRoom = true
 
 module.exports = Room
 
-},{"../Noumenon":22,"../items":36,"../items/GenericItem":32,"./Door.js":48}],54:[function(require,module,exports){
+},{"../Noumenon":23,"../items":38,"../items/GenericItem":34,"./Door.js":50}],56:[function(require,module,exports){
 /*
   Staircase is a generative subclass of Room
 */
@@ -84984,7 +85006,7 @@ Staircase.prototype.addDescriptorFunctions({
 
 module.exports = Staircase
 
-},{"./InteriorRoom.js":49}],55:[function(require,module,exports){
+},{"./InteriorRoom.js":51}],57:[function(require,module,exports){
 module.exports = {
   // base-classes
   Room: require("./Room"),
@@ -85000,7 +85022,7 @@ module.exports = {
   Staircase: require("./Staircase"),
 }
 
-},{"./Bathroom":45,"./Bedroom":46,"./Corridor":47,"./Door":48,"./InteriorRoom":49,"./Kitchen":50,"./LivingRoom":52,"./Room":53,"./Staircase":54}],56:[function(require,module,exports){
+},{"./Bathroom":47,"./Bedroom":48,"./Corridor":49,"./Door":50,"./InteriorRoom":51,"./Kitchen":52,"./LivingRoom":54,"./Room":55,"./Staircase":56}],58:[function(require,module,exports){
 /*
   Language utility. A set of tools for quickly formatting english.
 */
@@ -85030,7 +85052,7 @@ module.exports = {
   regex: require("./regex"),
 }
 
-},{"./regex":57}],57:[function(require,module,exports){
+},{"./regex":59}],59:[function(require,module,exports){
 function sourcify(list) {
   return list
     .filter(item => item)
@@ -85096,9 +85118,9 @@ module.exports = {
   optionalConcatSpaced: optionalConcatSpaced,
 }
 
-},{}],58:[function(require,module,exports){
+},{}],60:[function(require,module,exports){
 
-},{}],59:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -85326,7 +85348,7 @@ var substr = 'ab'.substr(-1) === 'b'
 ;
 
 }).call(this,require('_process'))
-},{"_process":60}],60:[function(require,module,exports){
+},{"_process":62}],62:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
