@@ -15,8 +15,6 @@ const typesOfClothes = [
   "blouse",
   "cardigan",
   "jumper",
-  "bra",
-  "knickers",
 ]
 
 class Wardrobe extends Cupboard {
