@@ -115,7 +115,7 @@ game.addCommand("where is _", o => {
 })
 game.addCommand(["what is on _", "look on _"], surface => {
   if(surface.isSurface && surface.supporting.length) {
-    let str = "There are "+surface.supporting.length+" things on "+container.ref()+".\n"
+    let str = "There are "+surface.supporting.length+" things on "+surface.ref()+".\n"
     for(var i in surface.supporting)
       str += "\t- "+surface.supporting[i].ref() + '\n'
 
@@ -130,13 +130,21 @@ game.addCommand(["what is in _", "look in _"], container => {
       str += "\t- "+container.containing[i].ref() + '\n'
 
     return str
-  } else
+  } else if(container.isRoom)
+    moveCharacter(container)
+   else
     return "There is nothing in "+container.ref()+'.'
 })
 game.addCommand("look under _", o =>
   o.surface ?
     "Under "+o.ref()+" there is "+o.surface.ref()+"." :
     "There is nothing is under "+o.ref()+"."
+)
+game.addCommand("who am i", o => "You are "+person.ref()+".")
+game.addCommand("what is _ made of", item =>
+  item.madeOf
+    ? item.ref({article:"the"}) +" is made from "+item.madeOf+'.'
+    : item.ref({article:"the"}) + " is not made from anything."
 )
 
 // intro

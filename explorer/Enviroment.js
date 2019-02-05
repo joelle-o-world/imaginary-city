@@ -34,7 +34,7 @@ class Enviroment {
     else if(matches.length > 1) {
       console.warn(
         "Warning Ambiguous!",
-        matches.length, "possible matches for", str,
+        matches.length, "possible matches for", "\'"+str+"\'",
         "\n",
         matches.map(match => "\t- "+match.ref()).join("\n"),
       )

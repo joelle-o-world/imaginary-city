@@ -50,10 +50,8 @@ Door.prototype.addDescriptorFunctions({
     (door,ctx) => door.B.refRegex(ctx).source + " to " + door.A.refRegex(ctx).source,
   ],
   "leading to": [
-    door => regOp.or(
-      door.A.nounRegex(),
-      door.B.nounRegex(),
-    ),
+    (door, ctx) => door.A.refRegex(ctx),
+    (door, ctx) => door.B.refRegex(ctx),
   ]
 })
 

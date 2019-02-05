@@ -89,7 +89,7 @@ class Enviroment {
     else if(matches.length > 1) {
       console.warn(
         "Warning Ambiguous!",
-        matches.length, "possible matches for", str,
+        matches.length, "possible matches for", "\'"+str+"\'",
         "\n",
         matches.map(match => "\t- "+match.ref()).join("\n"),
       )
@@ -165,17 +165,28 @@ class Explorer {
   }
 
   input(str) {
-    this.write("\n\n> "+str+"\n\n")
+    this.write("\n")
+    if(str.length == 0) {
+      let command = this.randomCommand()
+      this.write("\n(chosen random command)")
+      str = command
+    }
+
+    this.write("\n> "+str+"\n\n")
+    let strNoPunc = str.replace(/[.,?!]/g, "") // string without punctuation
     let commandsMatched = 0
+
+    // test each command template for a match
     for(var i in this.commandTemplates) {
       let command = this.commandTemplates[i]
-      let objectStrings = command.parse(str)
+      let objectStrings = command.parse(strNoPunc)
       if(objectStrings) {
         ++commandsMatched
         let noumena = objectStrings.map(str => this.enviroment.find(str))
         if(!noumena.includes(null) && !noumena.includes(undefined)) {
           // found a match
           if(command.action) {
+            // execute the first command which matches both template and objects
             let result = command.action.apply(this, noumena)
             if(result && result.constructor == String)
               this.writeln(result)
@@ -196,14 +207,10 @@ class Explorer {
 
     rl.prompt()
     rl.on("line", str => {
-      if(str.length) {
-        this.write("\n")
-        this.input(str)
-      } else {
-        let command = this.randomCommand()
-        this.writeln("(chosen random command) > "+command, "\n")
-        this.input(command)
-      }
+
+      this.write("\n")
+      this.input(str)
+
       this.write('\n')
       rl.prompt()
     })
@@ -357,7 +364,7 @@ game.addCommand("where is _", o => {
 })
 game.addCommand(["what is on _", "look on _"], surface => {
   if(surface.isSurface && surface.supporting.length) {
-    let str = "There are "+surface.supporting.length+" things on "+container.ref()+".\n"
+    let str = "There are "+surface.supporting.length+" things on "+surface.ref()+".\n"
     for(var i in surface.supporting)
       str += "\t- "+surface.supporting[i].ref() + '\n'
 
@@ -372,13 +379,21 @@ game.addCommand(["what is in _", "look in _"], container => {
       str += "\t- "+container.containing[i].ref() + '\n'
 
     return str
-  } else
+  } else if(container.isRoom)
+    moveCharacter(container)
+   else
     return "There is nothing in "+container.ref()+'.'
 })
 game.addCommand("look under _", o =>
   o.surface ?
     "Under "+o.ref()+" there is "+o.surface.ref()+"." :
     "There is nothing is under "+o.ref()+"."
+)
+game.addCommand("who am i", o => "You are "+person.ref()+".")
+game.addCommand("what is _ made of", item =>
+  item.madeOf
+    ? item.ref({article:"the"}) +" is made from "+item.madeOf+'.'
+    : item.ref({article:"the"}) + " is not made from anything."
 )
 
 // intro
@@ -84710,10 +84725,8 @@ Door.prototype.addDescriptorFunctions({
     (door,ctx) => door.B.refRegex(ctx).source + " to " + door.A.refRegex(ctx).source,
   ],
   "leading to": [
-    door => regOp.or(
-      door.A.nounRegex(),
-      door.B.nounRegex(),
-    ),
+    (door, ctx) => door.A.refRegex(ctx),
+    (door, ctx) => door.B.refRegex(ctx),
   ]
 })
 
@@ -84740,6 +84753,9 @@ InteriorRoom.prototype.isInteriorRoom = true
 InteriorRoom.prototype.nouns = ["room"]
 
 InteriorRoom.prototype.addDescriptorFunctions({
+  adj: [
+    room => (room.contents.length == 0) ? "empty" : null,
+  ],
   with: [
     room => room.flooring+" flooring",
     room => utility.quantify(room.doors.length, "door"),
@@ -84803,17 +84819,18 @@ module.exports = Kitchen
 */
 
 const Door = require("./Door.js")
+const random = require("../random")
 
 class LiteralDoor extends Door {
   constructor(A, B) { // construct a door connecting room A to room B
     super(A, B)
     this.__suspendInit__("color")
-    this.__suspendInit__("material")
+    this.__suspendInit__("madeOf", random.material)
   }
 }
 module.exports = LiteralDoor
 
-},{"./Door.js":48}],52:[function(require,module,exports){
+},{"../random":42,"./Door.js":48}],52:[function(require,module,exports){
 /*
   LivingRoom is a generative subclass of Room
 */

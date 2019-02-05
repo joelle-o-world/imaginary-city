@@ -21,17 +21,28 @@ class Explorer {
   }
 
   input(str) {
-    this.write("\n\n> "+str+"\n\n")
+    this.write("\n")
+    if(str.length == 0) {
+      let command = this.randomCommand()
+      this.write("\n(chosen random command)")
+      str = command
+    }
+
+    this.write("\n> "+str+"\n\n")
+    let strNoPunc = str.replace(/[.,?!]/g, "") // string without punctuation
     let commandsMatched = 0
+
+    // test each command template for a match
     for(var i in this.commandTemplates) {
       let command = this.commandTemplates[i]
-      let objectStrings = command.parse(str)
+      let objectStrings = command.parse(strNoPunc)
       if(objectStrings) {
         ++commandsMatched
         let noumena = objectStrings.map(str => this.enviroment.find(str))
         if(!noumena.includes(null) && !noumena.includes(undefined)) {
           // found a match
           if(command.action) {
+            // execute the first command which matches both template and objects
             let result = command.action.apply(this, noumena)
             if(result && result.constructor == String)
               this.writeln(result)
@@ -52,14 +63,10 @@ class Explorer {
 
     rl.prompt()
     rl.on("line", str => {
-      if(str.length) {
-        this.write("\n")
-        this.input(str)
-      } else {
-        let command = this.randomCommand()
-        this.writeln("(chosen random command) > "+command, "\n")
-        this.input(command)
-      }
+
+      this.write("\n")
+      this.input(str)
+
       this.write('\n')
       rl.prompt()
     })

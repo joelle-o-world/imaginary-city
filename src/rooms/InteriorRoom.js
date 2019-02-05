@@ -18,6 +18,9 @@ InteriorRoom.prototype.isInteriorRoom = true
 InteriorRoom.prototype.nouns = ["room"]
 
 InteriorRoom.prototype.addDescriptorFunctions({
+  adj: [
+    room => (room.contents.length == 0) ? "empty" : null,
+  ],
   with: [
     room => room.flooring+" flooring",
     room => utility.quantify(room.doors.length, "door"),
