@@ -29,7 +29,7 @@ function interpretSpecialArray(target, specialArr, ctx) {
 
     else if(item.constructor == Function) {
       // call function on the target
-      let result = item(target)
+      let result = item(target, ctx)
 
       // if result is null, skip.
       if(!result)

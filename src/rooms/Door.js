@@ -46,8 +46,8 @@ Door.prototype.addDescriptorFunctions({
     door => door.material,
   ],
   connecting: [
-    door => door.A.refRegex().source + " to " + door.B.refRegex().source,
-    door => door.B.refRegex().source + " to " + door.A.refRegex().source,
+    (door,ctx) => door.A.refRegex(ctx).source + " to " + door.B.refRegex(ctx).source,
+    (door,ctx) => door.B.refRegex(ctx).source + " to " + door.A.refRegex(ctx).source,
   ],
   "leading to": [
     door => regOp.or(

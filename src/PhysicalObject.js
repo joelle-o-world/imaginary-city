@@ -173,16 +173,16 @@ PhysicalObject.prototype.canRestOnSurface = true
 PhysicalObject.prototype.isSurface = false
 // bool, can other objects be placed on top of this object
 
-PhysicalObject.prototype.isContainer = false  
+PhysicalObject.prototype.isContainer = false
 // bool, can other objects be placed inside of this object
 
 PhysicalObject.prototype.addDescriptorFunctions({
   on: [
-    o => o.surface ? o.surface.refRegex() : null
+    (o, ctx) => o.surface ? o.surface.refRegex(ctx) : null
   ],
   in: [
-    o => o.container ? o.container.refRegex() : null,
-    //o => o.room ? o.room.refRegex() : null, // this line causes a stack overflow
+    (o, ctx) => o.container ? o.container.refRegex(ctx) : null,
+    //(o, ctx) => o.room ? o.room.refRegex(ctx) : null, // this line causes a stack overflow
   ]
 })
 

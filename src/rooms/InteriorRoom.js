@@ -23,10 +23,10 @@ InteriorRoom.prototype.addDescriptorFunctions({
     room => utility.quantify(room.doors.length, "door"),
   ],
   in: [
-    room => room.house.getDescriptiveReference({article:"a"})
+    (room, ctx) => room.house.getDescriptiveReference(ctx)
   ],
   containing:[
-    room => room.contents.map(item => item.refRegex()),
+    (room,ctx) => room.contents.map(item => item.refRegex(ctx)),
   ]
 })
 
