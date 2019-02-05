@@ -30,12 +30,13 @@ class Noumenon {
     })
   }
 
+
+  // Natural Language Descriptions
   matchesRef(str) {
     // check if a natural lang ref matches this noumena
     return new RegExp("^"+this.refRegex().source+"$", "i").test(str)
   }
 
-  // Natural Language Descriptions
   getDescriptiveReference(ctx) {
     // return a noun phrase which refers to this noumenon
     let reg = this.refRegex(ctx)
@@ -79,6 +80,7 @@ class Noumenon {
   }
 
   adjs(ctx) {
+    // returns a list of all adjectives
     if(!this.descriptorFunctions.adj)
       return null
 
@@ -93,9 +95,11 @@ class Noumenon {
     )
   }
 
-  refRegex(ctx) {
+  refRegex(ctx={}) {
+
+
     // article
-    let reg = /the|a/
+    let reg = ctx.article || /the|a/
 
     // adjectives
     let adjs = this.adjs(ctx)

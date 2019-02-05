@@ -83670,21 +83670,22 @@ class Noumenon {
     })
   }
 
+
+  // Natural Language Descriptions
   matchesRef(str) {
     // check if a natural lang ref matches this noumena
     return new RegExp("^"+this.refRegex().source+"$", "i").test(str)
   }
 
-  // Natural Language Descriptions
-  getDescriptiveReference() {
+  getDescriptiveReference(ctx) {
     // return a noun phrase which refers to this noumenon
-    let reg = this.refRegex()
+    let reg = this.refRegex(ctx)
     let ret = randexp(reg)
     return ret
   }
-  ref(options) {
+  ref(ctx) {
     // quick alias for get getDescriptiveReference
-    return this.getDescriptiveReference(options)
+    return this.getDescriptiveReference(ctx)
   }
 
   // Regular expression functions
@@ -83719,6 +83720,7 @@ class Noumenon {
   }
 
   adjs(ctx) {
+    // returns a list of all adjectives
     if(!this.descriptorFunctions.adj)
       return null
 
@@ -83733,9 +83735,11 @@ class Noumenon {
     )
   }
 
-  refRegex(ctx) {
+  refRegex(ctx={}) {
+
+
     // article
-    let reg = /the|a/
+    let reg = ctx.article || /the|a/
 
     // adjectives
     let adjs = this.adjs(ctx)
@@ -83828,7 +83832,7 @@ function interpretSpecialArray(target, specialArr, ctx) {
 
     else if(item.constructor == Function) {
       // call function on the target
-      let result = item(target)
+      let result = item(target, ctx)
 
       // if result is null, skip.
       if(!result)
@@ -84027,16 +84031,16 @@ PhysicalObject.prototype.canRestOnSurface = true
 PhysicalObject.prototype.isSurface = false
 // bool, can other objects be placed on top of this object
 
-PhysicalObject.prototype.isContainer = false  
+PhysicalObject.prototype.isContainer = false
 // bool, can other objects be placed inside of this object
 
 PhysicalObject.prototype.addDescriptorFunctions({
   on: [
-    o => o.surface ? o.surface.refRegex() : null
+    (o, ctx) => o.surface ? o.surface.refRegex(ctx) : null
   ],
   in: [
-    o => o.container ? o.container.refRegex() : null,
-    //o => o.room ? o.room.refRegex() : null, // this line causes a stack overflow
+    (o, ctx) => o.container ? o.container.refRegex(ctx) : null,
+    //(o, ctx) => o.room ? o.room.refRegex(ctx) : null, // this line causes a stack overflow
   ]
 })
 
@@ -84628,7 +84632,7 @@ Bedroom.prototype.addNouns("bedroom")
 
 Bedroom.prototype.addDescriptorFunctions({
   "belonging to": [
-    room => room.occupant ? room.occupant.refRegex() : null
+    (room, ctx) => room.occupant ? room.occupant.refRegex(ctx) : null
   ]
 })
 
@@ -84700,8 +84704,8 @@ Door.prototype.addDescriptorFunctions({
     door => door.material,
   ],
   connecting: [
-    door => door.A.refRegex().source + " to " + door.B.refRegex().source,
-    door => door.B.refRegex().source + " to " + door.A.refRegex().source,
+    (door,ctx) => door.A.refRegex(ctx).source + " to " + door.B.refRegex(ctx).source,
+    (door,ctx) => door.B.refRegex(ctx).source + " to " + door.A.refRegex(ctx).source,
   ],
   "leading to": [
     door => regOp.or(
@@ -84739,10 +84743,10 @@ InteriorRoom.prototype.addDescriptorFunctions({
     room => utility.quantify(room.doors.length, "door"),
   ],
   in: [
-    room => room.house.getDescriptiveReference({article:"a"})
+    (room, ctx) => room.house.getDescriptiveReference(ctx)
   ],
   containing:[
-    room => room.contents.map(item => item.refRegex()),
+    (room,ctx) => room.contents.map(item => item.refRegex(ctx)),
   ]
 })
 
