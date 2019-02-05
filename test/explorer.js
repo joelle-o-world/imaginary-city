@@ -3,39 +3,34 @@ const Explorer = require("../explorer/Explorer")
 const Enviroment = require("../explorer/Enviroment")
 const TownHouse = require("../src/buildings/TownHouse")
 const utility = require("../src/utility")
-const TickyText = require("../interface/TickyText")
 
-
-
-const enviroment = new Enviroment
-const game = new Explorer(enviroment)
-
-const person = enviroment.protagonist
-
-// createWorld
+let enviroment = new Enviroment
+let person = enviroment.protagonist
 let house = new TownHouse
 person.location = house.randomRoom()
+
+let allNoumena = enviroment.allNoumena
 
 function describeSurroundings() {
   let room = person.location
   let allContents = room.all
   if(allContents.length) {
-    game.writeln(
-      "Inside ",
+    console.log(
+      "Inside",
       room.ref({article:"the"}),
-      " there's ",
+      "there's",
       utility.quantify(allContents.length, "object")+":"
     )
     for(var i in allContents)
-      game.writeln("\t- ", allContents[i].ref({article:"a", detail:2}))
+      console.log("\t-", allContents[i].ref({article:"a", detail:2}))
   } else
-    game.writeln(room.ref({article:"The"}), " is empty.")
+    console.log(room.ref({article:"The"}), "is empty.")
   // report doors
   var accessibleRooms = person.room.accessibleRooms
-  game.writeln(
-    "There's ",
+  console.log(
+    "There's",
     utility.quantify(accessibleRooms.length, "door"),
-    " leading to ",
+    "leading to",
     utility.printList(accessibleRooms.map(r => r.ref({detail: 0, article:"a"}))) + "."
   )
 }
@@ -50,7 +45,7 @@ function moveCharacter(room) {
   var oldLocation = person.location
   person.location = room
 
-  game.writeln(person.ref() + " leaves " + oldLocation.ref({article:"the"}) + " and goes into " + room.ref()+".")
+  console.log(person.ref() + " leaves " + oldLocation.ref({article:"the"}) + " and goes into " + room.ref()+".")
 
   // report items
   describeSurroundings()
@@ -69,7 +64,7 @@ function goThroughDoor(door) {
     " tried to walk through a door which was not connected to the room they were in."
 }
 
-
+var game = new Explorer(enviroment)
 
 game.addCommand(
   ["look at _", "_"],
@@ -140,21 +135,10 @@ game.addCommand("look under _", o =>
 )
 
 // intro
-game.start = function() {
-  game.writeln("\n\n")
-  game.writeln(person.ref(), " is in ", person.location.ref({article:"the"}) + ".")
-  describeSurroundings()
+console.log("\n\n")
+console.log(person.ref(), "is in", person.location.ref({article:"the"}) + ".")
+describeSurroundings()
 
-  game.writeln("\n")
+console.log("\n")
 
-  //game.listen()
-}
-
-
-window.onload = function() {
-  const tt = new TickyText(document.getElementById("output"))
-  game.write = (...strs) => tt.write(...strs)
-  game.writeln = (...str) => tt.writeln(...str)
-  game.start()
-}
-window.userInput = str => game.input(str)
+game.listen()

@@ -4,7 +4,7 @@ class TickyText {
     this.placeInCurrent = 0 // Index of next character to print from
     this.intervalTimer = null
     this.str = ""
-    this.speed = 25 // ms
+    this.speed = 20 // ms
 
     this.targetElement = targetElement
   }
@@ -20,8 +20,10 @@ class TickyText {
       this.startTicking()
   }
 
-  writeln(str) {
-    this.write(str+"\n")
+  writeln(...str) {
+    for(var i in str)
+      this.write(str[i])
+    this.write("\n")
   }
 
   startTicking() {
@@ -56,3 +58,4 @@ class TickyText {
     }
   }
 }
+module.exports = TickyText
