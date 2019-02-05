@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>imaginary-city</title>
+
+    <link rel="stylesheet" type="text/css" href="basic.css" />
+    <link rel="stylesheet" type="text/css" href="style1.css" />
+
+    <script src="game1.js"></script>
+
+
+  </head>
+  <body>
+    <div id="terminal">
+      <pre id="output"></pre>
+      <div id="input">
+      > <input autofocus onkeypress="if(event.keyCode == 13) {userInput(this.value); this.value = ''}" id="userInput" onblur="this.focus()"/>
+      </div>
+    </div>
+  </body>
+</html>

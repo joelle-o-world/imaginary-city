@@ -4,11 +4,16 @@ const Enviroment = require("./Enviroment")
 const confusionLog = require("./confusionLog.js")
 
 class Explorer {
-  constructor(enviroment) {
+  constructor(
+    enviroment, // the enviroment object
+    write=console.log, // the function to pass output to
+  ) {
     if(!enviroment)
       throw "Explorer requires an enviroment"
     this.commandTemplates = []
     this.enviroment = enviroment
+
+    this.write = write // from now on call this.write to output strings
   }
 
   addCommand(templateString, action) {
@@ -16,6 +21,7 @@ class Explorer {
   }
 
   input(str) {
+    this.write("\n\n> "+str+"\n\n")
     let commandsMatched = 0
     for(var i in this.commandTemplates) {
       let command = this.commandTemplates[i]
@@ -28,14 +34,14 @@ class Explorer {
           if(command.action) {
             let result = command.action.apply(this, noumena)
             if(result && result.constructor == String)
-              console.log(result)
+              this.writeln(result)
           }
           return;
         }
       }
     }
-    console.log("Not understood.")
-    confusionLog(str, commandsMatched)
+    this.writeln("Not understood.")
+  //  confusionLog(str, commandsMatched)
   }
 
   listen() {
@@ -47,14 +53,14 @@ class Explorer {
     rl.prompt()
     rl.on("line", str => {
       if(str.length) {
-        console.log("")
+        this.write("\n")
         this.input(str)
       } else {
         let command = this.randomCommand()
-        console.log("(chosen random command) > "+command, "\n")
+        this.writeln("(chosen random command) > "+command, "\n")
         this.input(command)
       }
-      console.log("")
+      this.write('\n')
       rl.prompt()
     })
   }
