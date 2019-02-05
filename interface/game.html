@@ -15,7 +15,13 @@
     <div id="terminal">
       <pre id="output"></pre>
       <div id="input">
-      > <input autofocus onkeypress="if(event.keyCode == 13) {userInput(this.value); this.value = ''}" id="userInput" onblur="this.focus()"/>
+      >
+      <input
+        autofocus
+        onkeypress="if(event.keyCode == 13) {userInput(this.value); this.value = ''}" id="userInput"
+        onblur="this.focus()"
+        placeholder="please enter an instruction."
+      />
       </div>
     </div>
   </body>
