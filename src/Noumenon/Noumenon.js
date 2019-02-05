@@ -37,8 +37,9 @@ class Noumenon {
     return new RegExp("^"+this.refRegex().source+"$", "i").test(str)
   }
 
-  getDescriptiveReference(ctx) {
+  getDescriptiveReference(ctx={}) {
     // return a noun phrase which refers to this noumenon
+    ctx.mode = "generate"
     let reg = this.refRegex(ctx)
     let ret = randexp(reg)
     return ret
@@ -96,8 +97,6 @@ class Noumenon {
   }
 
   refRegex(ctx={}) {
-
-
     // article
     let reg = ctx.article || /the|a/
 
@@ -132,6 +131,11 @@ class Noumenon {
     }
 
     return reg
+  }
+
+  parseRegex(ctx={}) {
+    ctx.mode == "parse"
+    return this.refRegex(ctx)
   }
 }
 Noumenon.prototype.isNoumenon = true
