@@ -6,3 +6,6 @@ input#userInput::placeholder {
   color: #daa;
   opacity:0.35;
 }
+input#userInput {
+  color: #054;
+}
