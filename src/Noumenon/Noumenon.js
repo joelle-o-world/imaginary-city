@@ -4,7 +4,7 @@
 
 const random = require("../random")
 const utility = require("../utility")
-const regOp = utility.regex
+const regOp = utility.regex // regular expression operations
 const {randexp} = require("randexp")
 const interpretSpecialArray = require("./interpretSpecialArray")
 
@@ -36,20 +36,20 @@ class Noumenon {
   }
 
   // Natural Language Descriptions
-  getDescriptiveReference() {
+  getDescriptiveReference(ctx) {
     // return a noun phrase which refers to this noumenon
-    let reg = this.refRegex()
+    let reg = this.refRegex(ctx)
     let ret = randexp(reg)
     return ret
   }
-  ref(options) {
+  ref(ctx) {
     // quick alias for get getDescriptiveReference
-    return this.getDescriptiveReference(options)
+    return this.getDescriptiveReference(ctx)
   }
 
   // Regular expression functions
-  nounRegex() { // noun RegExp
-    return regOp.or(...interpretSpecialArray(this, this.nouns))
+  nounRegex(ctx) { // noun RegExp
+    return regOp.or(...interpretSpecialArray(this, this.nouns, ctx))
   }
   get noun() {
     return randexp(this.nounRegex())
@@ -58,12 +58,12 @@ class Noumenon {
     this.nouns = [noun]
   }
 
-  prepositionClauseRegex() {
+  prepositionClauseRegex(ctx) {
     let list = []
     for(var i in this.descriptorFunctions) {
       if(i == "adj")
         continue
-      let descriptors = interpretSpecialArray(this, this.descriptorFunctions[i])
+      let descriptors = interpretSpecialArray(this, this.descriptorFunctions[i], ctx)
       if(descriptors.length) {
         let clauseRegex = regOp.concatSpaced(
           i,
@@ -78,45 +78,40 @@ class Noumenon {
     else return null
   }
 
-  adjRegex() {
-    if(!this.descriptorFunctions.adj)
-      return null
-    return regOp.or(...this.adjs)
-  }
-  get adjs() {
+  adjs(ctx) {
     if(!this.descriptorFunctions.adj)
       return null
 
-    return interpretSpecialArray(this, this.descriptorFunctions.adj)
+    return interpretSpecialArray(this, this.descriptorFunctions.adj, ctx)
   }
 
-  properNounRegex() {
+  properNounRegex(ctx) {
     if(!this.properNouns || this.properNouns.length == 0)
       return null
     return regOp.or(
-      ...interpretSpecialArray(this, this.properNouns)
+      ...interpretSpecialArray(this, this.properNouns, ctx)
     )
   }
 
-  refRegex() {
+  refRegex(ctx) {
     // article
     let reg = /the|a/
 
     // adjectives
-    let adjRegex = this.adjRegex()
-    if(adjRegex)
+    let adjs = this.adjs(ctx)
+    if(adjs && adjs.length)
       reg = regOp.optionalConcatSpaced(
         reg,
-        ...this.adjs,
+        ...adjs,
       )
     // noun
     reg = regOp.concatSpaced(
       reg,
-      this.nounRegex(),
+      this.nounRegex(ctx),
     )
 
     // preposition clauses
-    let prepRegex = this.prepositionClauseRegex()
+    let prepRegex = this.prepositionClauseRegex(ctx)
     if(prepRegex)
       reg = regOp.optionalConcatSpaced(
         reg,
@@ -124,10 +119,11 @@ class Noumenon {
       )
 
     // or just use a proper noun
-    if(this.properNounRegex()) {
+    let properNounRegex = this.properNounRegex(ctx)
+    if(properNounRegex) {
       reg = regOp.or(
         reg,
-        this.properNounRegex()
+        properNounRegex
       )
     }
 

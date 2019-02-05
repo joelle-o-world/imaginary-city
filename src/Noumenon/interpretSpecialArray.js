@@ -5,7 +5,7 @@
   expression or an array of strings and regular expressions.
 */
 
-function interpretSpecialArray(target, specialArr) {
+function interpretSpecialArray(target, specialArr, ctx) {
   if(!target || !target.isNoumenon)
     throw "expects target to be a Noumenon"
   if(!specialArr || specialArr.constructor != Array)
@@ -25,7 +25,7 @@ function interpretSpecialArray(target, specialArr) {
       out.push(item)
 
     else if(item.isNoumenon)
-      out.push(item.refRegex())
+      out.push(item.refRegex(ctx))
 
     else if(item.constructor == Function) {
       // call function on the target
