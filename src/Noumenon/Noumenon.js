@@ -90,7 +90,7 @@ class Noumenon {
     return interpretSpecialArray(this, this.descriptorFunctions.adj)
   }
 
-  get properNounRegex() {
+  properNounRegex() {
     if(!this.properNouns || this.properNouns.length == 0)
       return null
     return regOp.or(
@@ -124,10 +124,10 @@ class Noumenon {
       )
 
     // or just use a proper noun
-    if(this.properNounRegex) {
+    if(this.properNounRegex()) {
       reg = regOp.or(
         reg,
-        this.properNounRegex
+        this.properNounRegex()
       )
     }
 
