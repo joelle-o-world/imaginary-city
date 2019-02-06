@@ -22,14 +22,18 @@ class Explorer {
   }
 
   input(str) {
-    this.write("\n")
+    this.newline()
     if(str.length == 0) {
       let command = this.randomCommand()
-      this.write("\n(chosen random command)")
+      this.newline()
+      this.write("(chosen random command)")
       str = command
     }
 
-    this.write("\n> "+str+"\n\n")
+    this.newline()
+    this.write(">")
+    this.writeSentence(str)
+    this.newline(2)
     let strNoPunc = str.replace(/[.,?!]/g, "") // string without punctuation
     let commandsMatched = 0
 
@@ -46,7 +50,7 @@ class Explorer {
             // execute the first command which matches both template and objects
             let result = command.action.apply(this, noumena)
             if(result && result.constructor == String)
-              this.writeln(result)
+              this.writeParagraph(result)
           }
           return;
         }
@@ -81,14 +85,22 @@ class Explorer {
     return command
   }
 
+  // printing
   writeln(...str) {
     this.write(...str)
-    this.write('\n')
+    this.newline()
   }
-
   writeSentence(...str) {
     let fullStr = str.join(" ")
-    this.write(sentencify(fullStr))
+    this.write(sentencify(fullStr) + ' ')
+  }
+  writeParagraph(...str) {
+    this.writeSentence(...str)
+    this.newline()
+  }
+  newline(n=1) {
+    for(var i=0; i<n; i++)
+      this.write("\n")
   }
 }
 module.exports = Explorer

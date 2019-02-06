@@ -169,14 +169,18 @@ class Explorer {
   }
 
   input(str) {
-    this.write("\n")
+    this.newline()
     if(str.length == 0) {
       let command = this.randomCommand()
-      this.write("\n(chosen random command)")
+      this.newline()
+      this.write("(chosen random command)")
       str = command
     }
 
-    this.write("\n> "+str+"\n\n")
+    this.newline()
+    this.write(">")
+    this.writeSentence(str)
+    this.newline(2)
     let strNoPunc = str.replace(/[.,?!]/g, "") // string without punctuation
     let commandsMatched = 0
 
@@ -193,7 +197,7 @@ class Explorer {
             // execute the first command which matches both template and objects
             let result = command.action.apply(this, noumena)
             if(result && result.constructor == String)
-              this.writeln(result)
+              this.writeParagraph(result)
           }
           return;
         }
@@ -228,14 +232,22 @@ class Explorer {
     return command
   }
 
+  // printing
   writeln(...str) {
     this.write(...str)
-    this.write('\n')
+    this.newline()
   }
-
   writeSentence(...str) {
     let fullStr = str.join(" ")
-    this.write(sentencify(fullStr))
+    this.write(sentencify(fullStr) + ' ')
+  }
+  writeParagraph(...str) {
+    this.writeSentence(...str)
+    this.newline()
+  }
+  newline(n=1) {
+    for(var i=0; i<n; i++)
+      this.write("\n")
   }
 }
 module.exports = Explorer
@@ -313,7 +325,7 @@ function moveCharacter(room) {
   var oldLocation = person.location
   person.location = room
 
-  game.writeln(person.ref() + " leaves " + oldLocation.ref({article:"the"}) + " and goes into " + room.ref()+".")
+  game.writeParagraph(person.ref() + " leaves " + oldLocation.ref({article:"the"}) + " and goes into " + room.ref()+".")
 
   // report items
   describeSurroundings()
@@ -413,7 +425,8 @@ game.addCommand("what is _ made of", item =>
 // intro
 game.start = function() {
   game.writeln("\n\n")
-  game.writeln(person.ref(), " is in ", person.location.ref({article:"the"}) + ".")
+  game.writeSentence(person.ref(), "is in", person.location.ref({article:"the"}))
+  game.newline()
   describeSurroundings()
 
   game.writeln("\n")
@@ -428,8 +441,6 @@ function iterativeDescribe() {
   if(str) {
     if(Math.random() < 0.2)
       game.write("\n")
-    else
-      game.write(" ")
     game.writeSentence(str)
   }
 
@@ -645,18 +656,25 @@ module.exports.recombine = recombine
 const parseText = require("./parseText")
 
 function sentencify(str) {
-  console.log("sentencify in:", str)
   let split = parseText(str)
-  console.log("split:", split)
 
+  // auto capitalise first letter of first word
   if(split[0] != '^')
     split.unshift('^')
+  // add full-stop if does not exist
   if(!(/[.!?]/).test(split[split.length-1]))
     split.push('.')
 
-  console.log("modified:", split)
+  // check and correct spelling of indefinite articles
+  for(var i=1; i<split.length; i++)
+    if((/^(a|an)$/).test(split[i-1])) {
+      if((/^[aeiouh].*/).test(split[i]))
+        split[i-1] = 'an'
+      else
+        split[i-1] = 'a'
+    }
+
   let recombined = parseText.recombine(split)
-  console.log("recombined:", recombined)
   return recombined
 }
 module.exports = sentencify

@@ -50,7 +50,7 @@ function moveCharacter(room) {
   var oldLocation = person.location
   person.location = room
 
-  game.writeln(person.ref() + " leaves " + oldLocation.ref({article:"the"}) + " and goes into " + room.ref()+".")
+  game.writeParagraph(person.ref() + " leaves " + oldLocation.ref({article:"the"}) + " and goes into " + room.ref()+".")
 
   // report items
   describeSurroundings()
@@ -150,7 +150,8 @@ game.addCommand("what is _ made of", item =>
 // intro
 game.start = function() {
   game.writeln("\n\n")
-  game.writeln(person.ref(), " is in ", person.location.ref({article:"the"}) + ".")
+  game.writeSentence(person.ref(), "is in", person.location.ref({article:"the"}))
+  game.newline()
   describeSurroundings()
 
   game.writeln("\n")
@@ -165,8 +166,6 @@ function iterativeDescribe() {
   if(str) {
     if(Math.random() < 0.2)
       game.write("\n")
-    else
-      game.write(" ")
     game.writeSentence(str)
   }
 
