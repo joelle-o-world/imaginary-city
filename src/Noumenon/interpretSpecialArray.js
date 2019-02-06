@@ -6,6 +6,7 @@
 */
 
 function interpretSpecialArray(target, specialArr, ctx) {
+  // convert a 'special array' into an array of strings and regular expressions
   if(!target || !target.isNoumenon)
     throw "expects target to be a Noumenon"
   if(!specialArr || specialArr.constructor != Array)
