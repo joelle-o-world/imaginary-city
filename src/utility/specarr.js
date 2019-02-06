@@ -25,6 +25,12 @@ function specarr_regexs(target, specialArr, ctx) {
     else if(item.isNoumenon)
       out.push(item.refRegex(ctx))
 
+    // if substitution, interpret the substitution as a regex and add
+    else if(item.isSubstitution) {
+      console.warn("Very odd, a substitution that is not returned by a function")
+      out.push(item.getRegex(ctx))
+    }
+
     else if(item.constructor == Function) {
       // call function on the target
       let result = item(target, ctx)
@@ -38,13 +44,22 @@ function specarr_regexs(target, specialArr, ctx) {
       // if string cast as RegExp and accept
       else if(result.constructor == String)
         out.push(new RegExp(result))
+      // if substitution, interpret the substitution as a regex and add
+      else if(result.isSubstitution) {
+        let subbed = result.getRegex(ctx)
+        if(subbed)
+          out.push(subbed)
+      }
       // if array, recursively interpret and concatenate the result
       else if(result.constructor == Array)
-        out = out.concat(specarr_regexs(target, result))
+        out = out.concat(specarr_regexs(target, result, ctx))
+      // if noumenon, return its regex
+      else if(result.isNoumenon)
+        out.push(result.refRegex(ctx))
       else
-        console.warn("Uninterpretted value:", result)
+        console.warn("Uninterpretted value from function:", result)
     } else
-      console.warn("Uninterpretted value:", item)
+      console.warn("Uninterpretted value from list:", item)
   }
 
   // perhaps remove duplicates?

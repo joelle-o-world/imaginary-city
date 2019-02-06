@@ -2,6 +2,8 @@
   Language utility. A set of tools for quickly formatting english.
 */
 
+const Substitution = require("./Substitution")
+
 module.exports = {
   printList: function printList(list) {
     if(list.length == 1)
@@ -26,5 +28,6 @@ module.exports = {
 
   regex: require("./regex"),
 
-  Substitution: require("./Substitution"),
+  Substitution: Substitution,
+  Sub: Substitution, // quick alias
 }

@@ -30,6 +30,7 @@ Bed.prototype.addDescriptorFunctions({
   adj: [
     bed => bed.bedsize,
     bed => bed.fourPoster ? "four-poster" : null,
+    // ^NOTE: these do not rely on any external noumena so a Sub is not needed.
   ]
 })
 

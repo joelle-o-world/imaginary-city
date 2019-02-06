@@ -16,5 +16,7 @@ Item.prototype.addDescriptorFunctions({
   "made of": [
     item => item.madeOf,
   ],
+
+  // ^NOTE: if these do not rely on any external noumena so a Sub is not needed.
 })
 module.exports = Item

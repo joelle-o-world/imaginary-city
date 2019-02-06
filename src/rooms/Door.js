@@ -6,6 +6,7 @@
 
 const Noumenon = require("../Noumenon")
 const regOp = require("../utility/regex")
+const Sub = require("../utility/Substitution")
 
 class Door extends Noumenon {
   constructor(room1, room2) {
@@ -42,12 +43,14 @@ Door.prototype.addDescriptorFunctions({
     door => door.material,
   ],
   connecting: [
-    (door,ctx) => door.A.refRegex(ctx).source + " to " + door.B.refRegex(ctx).source,
-    (door,ctx) => door.B.refRegex(ctx).source + " to " + door.A.refRegex(ctx).source,
+  //  (door,ctx) => door.A.refRegex(ctx).source + " to " + door.B.refRegex(ctx).source,
+  //  (door,ctx) => door.B.refRegex(ctx).source + " to " + door.A.refRegex(ctx).source,
+    door => new Sub("_ to _", door.A, door.B),
+    door => new Sub("_ to _", door.B, door.A),
   ],
   "leading to": [
-    (door, ctx) => door.A.refRegex(ctx),
-    (door, ctx) => door.B.refRegex(ctx),
+    door => door.A,
+    door => door.B,
   ]
 })
 

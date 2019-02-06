@@ -37,7 +37,7 @@ Bedroom.prototype.addNouns("bedroom")
 
 Bedroom.prototype.addDescriptorFunctions({
   "belonging to": [
-    (room, ctx) => room.occupant ? room.occupant.refRegex(ctx) : null
+    room => room.occupant,
   ]
 })
 

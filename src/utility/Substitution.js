@@ -16,32 +16,49 @@ class Substitution { // sometimes abbreviated Sub
 
   getString(descriptionCtx) {
     let toSubIn = this.noumena.map(o => {
-      if(o.isNoumenon)
+      if(o == null || o == undefined)
+        return null
+      else if(o.isNoumenon)
         return o.ref(descriptionCtx)
       else if(o.constructor == String)
         return o
       else if(o.construtor == RegExp)
         return randexp(o)
+      else if(o.constructor == Number)
+        return o.toString()
       else {
         console.warn("Couldn't interpret substitution value:", o)
         return "???"
       }
     })
 
+    if(toSubIn.includes(null))
+      return null
+
     return this.subIn(...toSubIn)
   }
   getRegex() {
     let toSubIn = this.noumena.map(o => {
-      if(o.isNoumenon)
-        return o.refRegex()
-      else if(o.constructor == String || o.constructor == RegExp)
+      if(o == null || o == undefined)
         return o
+      else if(o.isNoumenon)
+        return o.refRegex().source
+      else if(o.constructor == String)
+        return o
+      else if(o.constructor == RegExp)
+        return o.source
+      else if(o.constructor == Number)
+        return o.toString()
       else {
         console.warn("Couldn't interpret substitution value:", o)
         return "???"
       }
     })
-    return this.subIn(...toSubIn)
+
+    if(toSubIn.includes(null))
+      return null
+
+    return new RegExp(this.subIn(...toSubIn))
   }
 
   subIn(...subs) {

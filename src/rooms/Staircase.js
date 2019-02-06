@@ -17,7 +17,7 @@ Staircase.prototype.nouns = ["staircase", "stairwell"]
 
 Staircase.prototype.addDescriptorFunctions({
   with: [
-    staircase => staircase.numberOfSteps + "( " + staircase.flooring + ")? steps",
+    staircase => new RegExp(staircase.numberOfSteps + "( " + staircase.flooring + ")? steps"),
   ]
 })
 

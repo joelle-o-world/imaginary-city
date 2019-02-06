@@ -166,6 +166,7 @@ TownHouse.prototype.addDescriptorFunctions({
   ],
   with: [
     house => house.numberOfRooms + " rooms",
+    // ^NOTE: this does not rely on any external noumena so a Sub is not needed.
   ],
   "made of": [
     house => house.buildingMaterial,

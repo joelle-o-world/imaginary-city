@@ -84047,6 +84047,8 @@ module.exports = Noumenon => Object.assign(Noumenon.prototype, assignments)
 
 */
 
+const {Sub} = require("./utility")
+
 const Noumenon = require("./Noumenon")
 
 class PhysicalObject extends Noumenon {
@@ -84210,10 +84212,12 @@ PhysicalObject.prototype.isContainer = false
 
 PhysicalObject.prototype.addDescriptorFunctions({
   on: [
-    (o, ctx) => o.surface ? o.surface.refRegex(ctx) : null
+    //(o, ctx) => o.surface ? o.surface.refRegex(ctx) : null,
+    o => o.surface,
   ],
   in: [
-    (o, ctx) => o.container ? o.container.refRegex(ctx) : null,
+    //(o, ctx) => o.container ? o.container.refRegex(ctx) : null,
+    o => o.container,
     //(o, ctx) => o.room ? o.room.refRegex(ctx) : null, // this line causes a stack overflow
   ]
 })
@@ -84228,7 +84232,7 @@ PhysicalObject.prototype.addDescription(
 
 module.exports = PhysicalObject
 
-},{"./Noumenon":24}],28:[function(require,module,exports){
+},{"./Noumenon":24,"./utility":60}],28:[function(require,module,exports){
 /*
   TownHouse is a generative class which builds a structure of various domestic
   subclasses of Rooms.
@@ -84397,6 +84401,7 @@ TownHouse.prototype.addDescriptorFunctions({
   ],
   with: [
     house => house.numberOfRooms + " rooms",
+    // ^NOTE: this does not rely on any external noumena so a Sub is not needed.
   ],
   "made of": [
     house => house.buildingMaterial,
@@ -84462,6 +84467,7 @@ Bed.prototype.addDescriptorFunctions({
   adj: [
     bed => bed.bedsize,
     bed => bed.fourPoster ? "four-poster" : null,
+    // ^NOTE: these do not rely on any external noumena so a Sub is not needed.
   ]
 })
 
@@ -84564,6 +84570,8 @@ Item.prototype.addDescriptorFunctions({
   "made of": [
     item => item.madeOf,
   ],
+
+  // ^NOTE: if these do not rely on any external noumena so a Sub is not needed.
 })
 module.exports = Item
 
@@ -84635,6 +84643,7 @@ module.exports = {
 const PhysicalObject = require("../PhysicalObject")
 const random = require("../random")
 const utility = require("../utility")
+const Sub = utility.Sub
 
 class Person extends PhysicalObject {
   constructor() {
@@ -84667,7 +84676,7 @@ Person.prototype.properNouns = [
 
 Person.prototype.addDescriptorFunctions({
   "adj": [
-    person => person.hairColor + " haired",
+    person => person.hairColor + " haired", // this is actually fine
   ]
 })
 
@@ -84824,7 +84833,7 @@ Bedroom.prototype.addNouns("bedroom")
 
 Bedroom.prototype.addDescriptorFunctions({
   "belonging to": [
-    (room, ctx) => room.occupant ? room.occupant.refRegex(ctx) : null
+    room => room.occupant,
   ]
 })
 
@@ -84856,6 +84865,7 @@ module.exports = Corridor
 
 const Noumenon = require("../Noumenon")
 const regOp = require("../utility/regex")
+const Sub = require("../utility/Substitution")
 
 class Door extends Noumenon {
   constructor(room1, room2) {
@@ -84892,18 +84902,20 @@ Door.prototype.addDescriptorFunctions({
     door => door.material,
   ],
   connecting: [
-    (door,ctx) => door.A.refRegex(ctx).source + " to " + door.B.refRegex(ctx).source,
-    (door,ctx) => door.B.refRegex(ctx).source + " to " + door.A.refRegex(ctx).source,
+  //  (door,ctx) => door.A.refRegex(ctx).source + " to " + door.B.refRegex(ctx).source,
+  //  (door,ctx) => door.B.refRegex(ctx).source + " to " + door.A.refRegex(ctx).source,
+    door => new Sub("_ to _", door.A, door.B),
+    door => new Sub("_ to _", door.B, door.A),
   ],
   "leading to": [
-    (door, ctx) => door.A.refRegex(ctx),
-    (door, ctx) => door.B.refRegex(ctx),
+    door => door.A,
+    door => door.B,
   ]
 })
 
 module.exports = Door
 
-},{"../Noumenon":24,"../utility/regex":61}],52:[function(require,module,exports){
+},{"../Noumenon":24,"../utility/Substitution":59,"../utility/regex":61}],52:[function(require,module,exports){
 /*
   InteriorRoom is a subclass of Room. It is used as a super class for indoor
   rooms.
@@ -84925,17 +84937,17 @@ InteriorRoom.prototype.nouns = ["room"]
 
 InteriorRoom.prototype.addDescriptorFunctions({
   adj: [
-    room => (room.contents.length == 0) ? "empty" : null,
+    room => (room.contents.length == 0) ? "empty" : null, // legal
   ],
   with: [
-    room => room.flooring+" flooring",
-    room => utility.quantify(room.doors.length, "door"),
+    room => room.flooring+" flooring", // legal
+    room => utility.quantify(room.doors.length, "door"), // legal
   ],
   in: [
-    (room, ctx) => room.house.getDescriptiveReference(ctx)
+    (room, ctx) => room.house // legal
   ],
   containing:[
-    (room,ctx) => room.contents//.map(item => item.refRegex(ctx)),
+    (room,ctx) => room.contents // legal
   ]
 })
 
@@ -85155,7 +85167,7 @@ Staircase.prototype.nouns = ["staircase", "stairwell"]
 
 Staircase.prototype.addDescriptorFunctions({
   with: [
-    staircase => staircase.numberOfSteps + "( " + staircase.flooring + ")? steps",
+    staircase => new RegExp(staircase.numberOfSteps + "( " + staircase.flooring + ")? steps"),
   ]
 })
 
@@ -85196,32 +85208,49 @@ class Substitution { // sometimes abbreviated Sub
 
   getString(descriptionCtx) {
     let toSubIn = this.noumena.map(o => {
-      if(o.isNoumenon)
+      if(o == null || o == undefined)
+        return null
+      else if(o.isNoumenon)
         return o.ref(descriptionCtx)
       else if(o.constructor == String)
         return o
       else if(o.construtor == RegExp)
         return randexp(o)
+      else if(o.constructor == Number)
+        return o.toString()
       else {
         console.warn("Couldn't interpret substitution value:", o)
         return "???"
       }
     })
 
+    if(toSubIn.includes(null))
+      return null
+
     return this.subIn(...toSubIn)
   }
   getRegex() {
     let toSubIn = this.noumena.map(o => {
-      if(o.isNoumenon)
-        return o.refRegex()
-      else if(o.constructor == String || o.constructor == RegExp)
+      if(o == null || o == undefined)
         return o
+      else if(o.isNoumenon)
+        return o.refRegex().source
+      else if(o.constructor == String)
+        return o
+      else if(o.constructor == RegExp)
+        return o.source
+      else if(o.constructor == Number)
+        return o.toString()
       else {
         console.warn("Couldn't interpret substitution value:", o)
         return "???"
       }
     })
-    return this.subIn(...toSubIn)
+
+    if(toSubIn.includes(null))
+      return null
+
+    return new RegExp(this.subIn(...toSubIn))
   }
 
   subIn(...subs) {
@@ -85251,6 +85280,8 @@ module.exports = Substitution
   Language utility. A set of tools for quickly formatting english.
 */
 
+const Substitution = require("./Substitution")
+
 module.exports = {
   printList: function printList(list) {
     if(list.length == 1)
@@ -85275,7 +85306,8 @@ module.exports = {
 
   regex: require("./regex"),
 
-  Substitution: require("./Substitution"),
+  Substitution: Substitution,
+  Sub: Substitution, // quick alias
 }
 
 },{"./Substitution":59,"./regex":61}],61:[function(require,module,exports){
@@ -85372,6 +85404,12 @@ function specarr_regexs(target, specialArr, ctx) {
     else if(item.isNoumenon)
       out.push(item.refRegex(ctx))
 
+    // if substitution, interpret the substitution as a regex and add
+    else if(item.isSubstitution) {
+      console.warn("Very odd, a substitution that is not returned by a function")
+      out.push(item.getRegex(ctx))
+    }
+
     else if(item.constructor == Function) {
       // call function on the target
       let result = item(target, ctx)
@@ -85385,13 +85423,22 @@ function specarr_regexs(target, specialArr, ctx) {
       // if string cast as RegExp and accept
       else if(result.constructor == String)
         out.push(new RegExp(result))
+      // if substitution, interpret the substitution as a regex and add
+      else if(result.isSubstitution) {
+        let subbed = result.getRegex(ctx)
+        if(subbed)
+          out.push(subbed)
+      }
       // if array, recursively interpret and concatenate the result
       else if(result.constructor == Array)
-        out = out.concat(specarr_regexs(target, result))
+        out = out.concat(specarr_regexs(target, result, ctx))
+      // if noumenon, return its regex
+      else if(result.isNoumenon)
+        out.push(result.refRegex(ctx))
       else
-        console.warn("Uninterpretted value:", result)
+        console.warn("Uninterpretted value from function:", result)
     } else
-      console.warn("Uninterpretted value:", item)
+      console.warn("Uninterpretted value from list:", item)
   }
 
   // perhaps remove duplicates?

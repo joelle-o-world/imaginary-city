@@ -5,6 +5,7 @@
 const PhysicalObject = require("../PhysicalObject")
 const random = require("../random")
 const utility = require("../utility")
+const Sub = utility.Sub
 
 class Person extends PhysicalObject {
   constructor() {
@@ -37,7 +38,7 @@ Person.prototype.properNouns = [
 
 Person.prototype.addDescriptorFunctions({
   "adj": [
-    person => person.hairColor + " haired",
+    person => person.hairColor + " haired", // this is actually fine
   ]
 })
 
