@@ -271,7 +271,7 @@ person.location = house.randomRoom()
 function describeSurroundings() {
   let room = person.location
   let allContents = room.all
-  if(allContents.length) {
+  /*if(allContents.length) {
     game.writeln(
       "Inside ",
       room.ref({article:"the"}),
@@ -281,7 +281,7 @@ function describeSurroundings() {
     for(var i in allContents)
       game.writeln("\t- ", allContents[i].ref({article:"a", detail:2}))
   } else
-    game.writeln(room.ref({article:"The"}), " is empty.")
+    game.writeln(room.ref({article:"The"}), " is empty.")*/
   // report doors
   var accessibleRooms = person.room.accessibleRooms
   game.writeln(
@@ -407,19 +407,25 @@ game.start = function() {
 
   game.writeln("\n")
 
+  setTimeout(iterativeDescribe, 4000)
   //game.listen()
 }
 
+function iterativeDescribe() {
+  if(Math.random() < 0.2)
+    game.write("\n")
+  let str = enviroment.randomNoumenon().describe()
+  if(str)
+    game.write(" "+str)
 
+  setTimeout(iterativeDescribe, 4000)
+}
 window.onload = function() {
   const tt = new TickyText(document.getElementById("output"))
   game.write = (...strs) => tt.write(...strs)
   game.writeln = (...str) => tt.writeln(...str)
   game.start()
 
-  setInterval(() => {
-    game.write(enviroment.randomNoumenon().describe())
-  }, 3000)
 }
 window.userInput = str => game.input(str)
 
@@ -83717,11 +83723,11 @@ class Noumenon {
 
   describe() {
     // compose a sentence describing this noumenon
-    let func = this.descriptions[Math.floor(Math.random())]
-    if(func.constructor == Function)
-      return ' '+func(this)
-    else if(func.constructor == String)
-      return ' '+func
+    let func = this.descriptions[Math.floor(Math.random()*this.descriptions.length)]
+    if(func.constructor == Function) {
+      return func(this)
+    } else if(func.constructor == String)
+      return func
   }
 }
 Noumenon.prototype.isNoumenon = true
@@ -83733,7 +83739,7 @@ Noumenon.prototype.addNouns = function(...nouns) {
   return this.nouns
 }
 
-Noumenon.prototype.descriptorFunctions = {} // object
+Noumenon.prototype.descriptorFunctions = {} // each value is a special array
 Noumenon.prototype.addDescriptorFunctions = function(functionArraysByPreposition={}) {
   // NOTE: call on prototype
   var newfunctions = Object.assign({}, this.descriptorFunctions)
@@ -84130,6 +84136,14 @@ PhysicalObject.prototype.addDescriptorFunctions({
     //(o, ctx) => o.room ? o.room.refRegex(ctx) : null, // this line causes a stack overflow
   ]
 })
+PhysicalObject.prototype.addDescription(
+  o => o.locationType == "room"
+    ? "Inside "+o.location.ref()+" there is "+o.ref()
+    : null,
+  o => o.locationType == "surface"
+    ? o.ref() + " is resting on "+o.location.ref()
+    : null,
+)
 
 module.exports = PhysicalObject
 
@@ -84439,9 +84453,15 @@ class GenericItem extends Item {
     this.noun = noun
     //this.nouns = [noun] handled automatically by setter
     this.__suspendInit__("color")
-     this.__suspendInit__("madeOf", random.material)
+    this.__suspendInit__("madeOf", random.material)
   }
 }
+GenericItem.prototype.isGenericItem = true
+
+GenericItem.prototype.addDescription(
+  item => item.ref() + " is "+item.color+".",
+  item => item.ref() + " is made of "+item.madeOf+'.',
+)
 module.exports = GenericItem
 
 },{"../random":44,"./Item":35}],35:[function(require,module,exports){
@@ -84533,6 +84553,7 @@ module.exports = {
 
 const PhysicalObject = require("../PhysicalObject")
 const random = require("../random")
+const utility = require("../utility")
 
 class Person extends PhysicalObject {
   constructor() {
@@ -84569,9 +84590,14 @@ Person.prototype.addDescriptorFunctions({
   ]
 })
 
+Person.prototype.addDescription(
+  person => person.ref() +" has "+person.hairColor+" hair.",
+  person => utility.possessive(person.ref())+ " name is "+person.fullName,
+)
+
 module.exports = Person
 
-},{"../PhysicalObject":26,"../random":44}],40:[function(require,module,exports){
+},{"../PhysicalObject":26,"../random":44,"../utility":58}],40:[function(require,module,exports){
 module.exports = {
   Person: require("./Person"),
 }
@@ -84831,6 +84857,12 @@ InteriorRoom.prototype.addDescriptorFunctions({
     (room,ctx) => room.contents//.map(item => item.refRegex(ctx)),
   ]
 })
+
+InteriorRoom.prototype.addDescription(
+  room => room.contents.length
+    ? "Inside "+room.ref()+" there is "+room.randomItem().ref()+"."
+    : null,
+)
 
 module.exports = InteriorRoom
 

@@ -185,5 +185,13 @@ PhysicalObject.prototype.addDescriptorFunctions({
     //(o, ctx) => o.room ? o.room.refRegex(ctx) : null, // this line causes a stack overflow
   ]
 })
+PhysicalObject.prototype.addDescription(
+  o => o.locationType == "room"
+    ? "Inside "+o.location.ref()+" there is "+o.ref()
+    : null,
+  o => o.locationType == "surface"
+    ? o.ref() + " is resting on "+o.location.ref()
+    : null,
+)
 
 module.exports = PhysicalObject

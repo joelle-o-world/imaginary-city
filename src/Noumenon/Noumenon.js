@@ -55,11 +55,11 @@ class Noumenon {
 
   describe() {
     // compose a sentence describing this noumenon
-    let func = this.descriptions[Math.floor(Math.random())]
-    if(func.constructor == Function)
-      return ' '+func(this)
-    else if(func.constructor == String)
-      return ' '+func
+    let func = this.descriptions[Math.floor(Math.random()*this.descriptions.length)]
+    if(func.constructor == Function) {
+      return func(this)
+    } else if(func.constructor == String)
+      return func
   }
 }
 Noumenon.prototype.isNoumenon = true

@@ -33,4 +33,10 @@ InteriorRoom.prototype.addDescriptorFunctions({
   ]
 })
 
+InteriorRoom.prototype.addDescription(
+  room => room.contents.length
+    ? "Inside "+room.ref()+" there is "+room.randomItem().ref()+"."
+    : null,
+)
+
 module.exports = InteriorRoom

@@ -4,6 +4,7 @@
 
 const PhysicalObject = require("../PhysicalObject")
 const random = require("../random")
+const utility = require("../utility")
 
 class Person extends PhysicalObject {
   constructor() {
@@ -39,5 +40,10 @@ Person.prototype.addDescriptorFunctions({
     person => person.hairColor + " haired",
   ]
 })
+
+Person.prototype.addDescription(
+  person => person.ref() +" has "+person.hairColor+" hair.",
+  person => utility.possessive(person.ref())+ " name is "+person.fullName+'.',
+)
 
 module.exports = Person

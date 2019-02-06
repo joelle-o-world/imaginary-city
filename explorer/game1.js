@@ -19,7 +19,7 @@ person.location = house.randomRoom()
 function describeSurroundings() {
   let room = person.location
   let allContents = room.all
-  if(allContents.length) {
+  /*if(allContents.length) {
     game.writeln(
       "Inside ",
       room.ref({article:"the"}),
@@ -29,7 +29,7 @@ function describeSurroundings() {
     for(var i in allContents)
       game.writeln("\t- ", allContents[i].ref({article:"a", detail:2}))
   } else
-    game.writeln(room.ref({article:"The"}), " is empty.")
+    game.writeln(room.ref({article:"The"}), " is empty.")*/
   // report doors
   var accessibleRooms = person.room.accessibleRooms
   game.writeln(
@@ -155,18 +155,24 @@ game.start = function() {
 
   game.writeln("\n")
 
+  setTimeout(iterativeDescribe, 4000)
   //game.listen()
 }
 
+function iterativeDescribe() {
+  if(Math.random() < 0.2)
+    game.write("\n")
+  let str = enviroment.randomNoumenon().describe()
+  if(str)
+    game.write(" "+str)
 
+  setTimeout(iterativeDescribe, 4000)
+}
 window.onload = function() {
   const tt = new TickyText(document.getElementById("output"))
   game.write = (...strs) => tt.write(...strs)
   game.writeln = (...str) => tt.writeln(...str)
   game.start()
 
-  setInterval(() => {
-    game.write(enviroment.randomNoumenon().describe())
-  }, 3000)
 }
 window.userInput = str => game.input(str)
