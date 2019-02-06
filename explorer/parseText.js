@@ -118,7 +118,7 @@ module.exports = parseText = function(str) {
     return parts;
 }
 
-module.exports.isWord = function(str) {
+function isWord(str) {
   var c
   for(var i in str) {
     c = str[i]
@@ -127,6 +127,7 @@ module.exports.isWord = function(str) {
   }
   return true
 }
+module.exports.isWord = isWord
 
 function removeFancyShit(str) {
     while(str.indexOf("’") != -1) {
@@ -135,3 +136,26 @@ function removeFancyShit(str) {
 
     return str;
 }
+
+function recombine(bits) {
+    var printedWords = []
+    var upper = false
+    for(var i in bits) {
+        let w = bits[i]
+        if(isWord(w)) {
+            if(upper) {
+                w = w[0].toUpperCase() + w.slice(1)
+                upper = false;
+            }
+            printedWords.push(w)
+        } else {
+            if(w == "^") {
+                upper = true;
+                continue;
+            }
+            printedWords[printedWords.length-1] += w;
+        }
+    }
+    return printedWords.join(" ")
+}
+module.exports.recombine = recombine

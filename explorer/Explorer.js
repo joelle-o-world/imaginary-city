@@ -2,6 +2,7 @@ const readline = require("readline")
 const CommandTemplate = require("./CommandTemplate")
 const Enviroment = require("./Enviroment")
 const confusionLog = require("./confusionLog.js")
+const sentencify = require("./sentencify")
 
 class Explorer {
   constructor(
@@ -78,6 +79,16 @@ class Explorer {
     let obStrings = objs.map(o=>o.ref())
     let command = template.subIn(...obStrings)
     return command
+  }
+
+  writeln(...str) {
+    this.write(...str)
+    this.write('\n')
+  }
+
+  writeSentence(...str) {
+    let fullStr = str.join(" ")
+    this.write(sentencify(fullStr))
   }
 }
 module.exports = Explorer

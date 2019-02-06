@@ -160,19 +160,24 @@ game.start = function() {
 }
 
 function iterativeDescribe() {
-  if(Math.random() < 0.2)
-    game.write("\n")
+
   let str = enviroment.randomNoumenon().describe()
-  if(str)
-    game.write(" "+str)
+  if(str) {
+    if(Math.random() < 0.2)
+      game.write("\n")
+    else
+      game.write(" ")
+    game.writeSentence(str)
+  }
 
   setTimeout(iterativeDescribe, 4000)
 }
 window.onload = function() {
   const tt = new TickyText(document.getElementById("output"))
   game.write = (...strs) => tt.write(...strs)
-  game.writeln = (...str) => tt.writeln(...str)
+  //game.writeln = (...str) => tt.writeln(...str)
   game.start()
 
+  document.getElementById("userInput").placeholder = "Please enter an instruction for "+person.fullName+"."
 }
 window.userInput = str => game.input(str)
