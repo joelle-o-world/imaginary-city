@@ -178,7 +178,7 @@ class Explorer {
     }
 
     this.newline()
-    this.write(">")
+    this.write("> ")
     this.writeSentence(str)
     this.newline(2)
     let strNoPunc = str.replace(/[.,?!]/g, "") // string without punctuation
@@ -253,7 +253,7 @@ class Explorer {
 module.exports = Explorer
 
 }).call(this,require('_process'))
-},{"./CommandTemplate":1,"./Enviroment":2,"./confusionLog.js":4,"./sentencify":8,"_process":63,"readline":61}],4:[function(require,module,exports){
+},{"./CommandTemplate":1,"./Enviroment":2,"./confusionLog.js":4,"./sentencify":8,"_process":64,"readline":62}],4:[function(require,module,exports){
 (function (__dirname){
 const fs = require("fs")
 const path = require("path")
@@ -272,7 +272,7 @@ function confusionLog(str, nCommandsMatched) {
 module.exports = confusionLog
 
 }).call(this,"/explorer")
-},{"fs":61,"path":62}],5:[function(require,module,exports){
+},{"fs":62,"path":63}],5:[function(require,module,exports){
 const CommandTemplate = require("../explorer/CommandTemplate.js")
 const Explorer = require("../explorer/Explorer")
 const Enviroment = require("../explorer/Enviroment")
@@ -456,7 +456,7 @@ window.onload = function() {
 }
 window.userInput = str => game.input(str)
 
-},{"../explorer/CommandTemplate.js":1,"../explorer/Enviroment":2,"../explorer/Explorer":3,"../interface/TickyText":9,"../src/buildings/TownHouse":28,"../src/utility":59}],6:[function(require,module,exports){
+},{"../explorer/CommandTemplate.js":1,"../explorer/Enviroment":2,"../explorer/Explorer":3,"../interface/TickyText":9,"../src/buildings/TownHouse":28,"../src/utility":60}],6:[function(require,module,exports){
 const parseText = require("./parseText")
 
 const articles = [
@@ -11112,7 +11112,7 @@ if(!module.parent) {
   
 
 }).call(this,require('_process'))
-},{"./first-names.json":12,"./middle-names.json":14,"./names.json":15,"./places.json":16,"_process":63}],14:[function(require,module,exports){
+},{"./first-names.json":12,"./middle-names.json":14,"./names.json":15,"./places.json":16,"_process":64}],14:[function(require,module,exports){
 module.exports=[
 "Aaron"
 ,
@@ -83838,7 +83838,7 @@ Noumenon.prototype.addDescription = function(...functions) {
 
 module.exports = Noumenon
 
-},{"../random":45,"../utility":59,"./interpretSpecialArray":25,"randexp":11}],23:[function(require,module,exports){
+},{"../random":45,"../utility":60,"./interpretSpecialArray":25,"randexp":11}],23:[function(require,module,exports){
 const {randexp} = require("randexp")
 
 let assignments = {
@@ -84026,7 +84026,7 @@ let assignments = {
 
 module.exports = Noumenon => Object.assign(Noumenon.prototype, assignments)
 
-},{"../utility/regex":60,"./interpretSpecialArray":25}],27:[function(require,module,exports){
+},{"../utility/regex":61,"./interpretSpecialArray":25}],27:[function(require,module,exports){
 /*
   Sub-class of Noumenon. Base class for anything that has a material presence
   in the world.
@@ -84402,7 +84402,7 @@ TownHouse.prototype.addDescriptorFunctions({
 
 module.exports = TownHouse
 
-},{"../Noumenon":24,"../random":45,"../rooms/Bathroom":48,"../rooms/Bedroom":49,"../rooms/Corridor":50,"../rooms/Kitchen":53,"../rooms/LiteralDoor":54,"../rooms/LivingRoom":55,"../rooms/Staircase":57,"../utility":59}],29:[function(require,module,exports){
+},{"../Noumenon":24,"../random":45,"../rooms/Bathroom":48,"../rooms/Bedroom":49,"../rooms/Corridor":50,"../rooms/Kitchen":53,"../rooms/LiteralDoor":54,"../rooms/LivingRoom":55,"../rooms/Staircase":57,"../utility":60}],29:[function(require,module,exports){
 module.exports = {
   TownHouse: require("./TownHouse"),
 }
@@ -84426,7 +84426,7 @@ module.exports = {
   random: require("./random"),
 }
 
-},{"./Noumenon":24,"./buildings":29,"./items":39,"./items/Item":36,"./people":41,"./people/Person":40,"./random":45,"./rooms":58,"./rooms/Room":56,"./utility":59}],31:[function(require,module,exports){
+},{"./Noumenon":24,"./buildings":29,"./items":39,"./items/Item":36,"./people":41,"./people/Person":40,"./random":45,"./rooms":58,"./rooms/Room":56,"./utility":60}],31:[function(require,module,exports){
 /*
   Sub-class of item for representing a bed.
 */
@@ -84675,7 +84675,7 @@ Person.prototype.addDescription(
 
 module.exports = Person
 
-},{"../PhysicalObject":27,"../random":45,"../utility":59}],41:[function(require,module,exports){
+},{"../PhysicalObject":27,"../random":45,"../utility":60}],41:[function(require,module,exports){
 module.exports = {
   Person: require("./Person"),
 }
@@ -84827,7 +84827,7 @@ Bedroom.prototype.addDescriptorFunctions({
 
 module.exports = Bedroom
 
-},{"../items/Bed":31,"../items/BedsideTable":32,"../items/Desk":34,"../items/Wardrobe":38,"../people/Person":40,"../utility":59,"./InteriorRoom.js":52}],50:[function(require,module,exports){
+},{"../items/Bed":31,"../items/BedsideTable":32,"../items/Desk":34,"../items/Wardrobe":38,"../people/Person":40,"../utility":60,"./InteriorRoom.js":52}],50:[function(require,module,exports){
 /*
   Corridor is a generative subclass of Room
 */
@@ -84900,7 +84900,7 @@ Door.prototype.addDescriptorFunctions({
 
 module.exports = Door
 
-},{"../Noumenon":24,"../utility/regex":60}],52:[function(require,module,exports){
+},{"../Noumenon":24,"../utility/regex":61}],52:[function(require,module,exports){
 /*
   InteriorRoom is a subclass of Room. It is used as a super class for indoor
   rooms.
@@ -84944,7 +84944,7 @@ InteriorRoom.prototype.addDescription(
 
 module.exports = InteriorRoom
 
-},{"../utility":59,"./Room.js":56}],53:[function(require,module,exports){
+},{"../utility":60,"./Room.js":56}],53:[function(require,module,exports){
 /*
   Kitchen is a generative subclass of Room
 */
@@ -85176,6 +85176,52 @@ module.exports = {
 
 },{"./Bathroom":48,"./Bedroom":49,"./Corridor":50,"./Door":51,"./InteriorRoom":52,"./Kitchen":53,"./LivingRoom":55,"./Room":56,"./Staircase":57}],59:[function(require,module,exports){
 /*
+  Substitution is a class for formatting sentence involving zero or more
+  noumena. It can be used to avoid generating the noun phrases until the program
+  is sure that they will be needed. A quick function Substitution.substitution
+  can be used to format a one off string.
+*/
+
+const placeholderRegex = /_/g
+
+class Substitution { // sometimes abbreviated Sub
+  constructor(templateStr, ...noumena) {
+    this.template = templateStr
+    this.noumena = noumena
+  }
+
+  getString(descriptionCtx) {
+    let toSubIn = this.noumena.map(noum => noum.ref(descriptionCtx))
+
+    return this.subIn(...toSubIn)
+  }
+  getRegex() {
+    let toSubIn = this.noumena.map(noum => noum.refRegex())
+    return this.subIn(...toSubIn)
+  }
+
+  subIn(...subs) {
+    let bits = this.template.split(placeholderRegex)
+    let out = bits[0]
+    for(var i=1; i<bits.length; i++)
+      out += subs[i-1] + bits[i]
+    return out
+  }
+
+  static substitution(templateStr, ...noumena) {
+    let ctx
+    if(!noumena[noumena.length-1].isNoumenon)
+      ctx = noumena.pop()
+    else
+      ctx = {}
+
+    new Substitution(templateStr, noumena).getString(ctx)
+  }
+}
+module.exports = Substitution
+
+},{}],60:[function(require,module,exports){
+/*
   Language utility. A set of tools for quickly formatting english.
 */
 
@@ -85202,9 +85248,11 @@ module.exports = {
   },
 
   regex: require("./regex"),
+
+  Substitution: require("./Substitution"),
 }
 
-},{"./regex":60}],60:[function(require,module,exports){
+},{"./Substitution":59,"./regex":61}],61:[function(require,module,exports){
 function sourcify(list) {
   return list
     .filter(item => item)
@@ -85270,9 +85318,9 @@ module.exports = {
   optionalConcatSpaced: optionalConcatSpaced,
 }
 
-},{}],61:[function(require,module,exports){
-
 },{}],62:[function(require,module,exports){
+
+},{}],63:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -85500,7 +85548,7 @@ var substr = 'ab'.substr(-1) === 'b'
 ;
 
 }).call(this,require('_process'))
-},{"_process":63}],63:[function(require,module,exports){
+},{"_process":64}],64:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 

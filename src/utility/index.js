@@ -25,4 +25,6 @@ module.exports = {
   },
 
   regex: require("./regex"),
+
+  Substitution: require("./Substitution"),
 }
