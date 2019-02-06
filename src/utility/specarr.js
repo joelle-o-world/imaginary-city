@@ -1,8 +1,38 @@
 /*
   A set of tools for using the so-called 'special array', or 'specarr'.
+
+  Special Arrays consist of:
+  [
+    - null values to ignore
+    - strings
+    - Regexs
+    - Noumena
+    - substitutions
+    - functions returning:
+      - null values to ignore
+      - strings
+      - regexs
+      - noumena
+      - substitutions
+      - special arrays for recursion
+  ]
+
+  Fully expanded special arrays consist of:
+  [
+    - strings,
+    - regexs,
+    - noumena,
+    - substitutions
+    - NO FUNCTIONS AND NO NULL VALUES
+  ]
+
+  Note: I in the function names in this file I am using an underscore to mean
+        'to'. Eg/ speccarr_regexs means "Special array to regular expressions"
 */
 
-function specarr_regexs(target, specialArr, ctx) {
+const {randexp} = require("randexp")
+
+function specarr_regexs(target, specialArr) { // special array to regexps
   // convert a 'special array' into an array of strings and regular expressions
   if(!target || !target.isNoumenon)
     throw "expects target to be a Noumenon."
@@ -16,24 +46,26 @@ function specarr_regexs(target, specialArr, ctx) {
     if(!item) // skip null values
       continue
 
-    else if(item.constructor == String) // accept strings
+    else if(item.constructor == String) // accept strings as regexs
       out.push(new RegExp(item))
 
     else if(item.constructor == RegExp) // accept regular expressions
       out.push(item)
 
     else if(item.isNoumenon)
-      out.push(item.refRegex(ctx))
+      out.push(item.refRegex())
 
     // if substitution, interpret the substitution as a regex and add
     else if(item.isSubstitution) {
       console.warn("Very odd, a substitution that is not returned by a function")
-      out.push(item.getRegex(ctx))
+      let subbed = item.getRegex()
+      if(subbed)
+        out.push(subbed)
     }
 
     else if(item.constructor == Function) {
       // call function on the target
-      let result = item(target, ctx)
+      let result = item(target)
 
       // if result is null, skip.
       if(!result)
@@ -46,16 +78,16 @@ function specarr_regexs(target, specialArr, ctx) {
         out.push(new RegExp(result))
       // if substitution, interpret the substitution as a regex and add
       else if(result.isSubstitution) {
-        let subbed = result.getRegex(ctx)
+        let subbed = result.getRegex()
         if(subbed)
           out.push(subbed)
       }
-      // if array, recursively interpret and concatenate the result
-      else if(result.constructor == Array)
-        out = out.concat(specarr_regexs(target, result, ctx))
       // if noumenon, return its regex
       else if(result.isNoumenon)
-        out.push(result.refRegex(ctx))
+        out.push(result.refRegex())
+      // if array, recursively interpret and concatenate the result
+      else if(result.constructor == Array)
+        out = out.concat(specarr_regexs(target, result))
       else
         console.warn("Uninterpretted value from function:", result)
     } else
@@ -71,6 +103,96 @@ function specarr_regexs(target, specialArr, ctx) {
   return out
 }
 
+function expand(target, specialArr) {
+  /* Return the list of strings, regexs, objects and substitutions implied by
+      the special array. */
+  if(!target || !target.isNoumenon)
+    throw "expects target to be a Noumenon."
+  if(!specialArr || specialArr.constructor != Array)
+    throw "expects specialArr to be an array."
+
+  let out = []
+  for(var i in specialArr) {
+    let item = specialArr[i]
+    if(!item) // skip null values
+      continue
+
+    else if(item.constructor == String) // accept strings
+      out.push(item)
+
+    else if(item.constructor == RegExp) // accept regular expressions
+      out.push(item)
+
+    else if(item.isSubstitution) // accept substitutions
+      out.push(item)
+
+    else if(item.isNoumenon) // accept noumenon
+      out.push(item)
+
+    // execute functions
+    else if(item.constructor == Function) {
+      let result = item(target)
+
+      if(!result) // skip null function returns
+        continue
+
+      else if(result.constructor == RegExp) // accept regex function returns
+        out.push(result)
+
+      else if(result.constructor == String) // accept strings
+        out.push(result)
+
+      else if(result.isSubstitution) // accept substitutions
+        out.push(result)
+
+      else if(result.isNoumenon) // accept noumena
+        out.push(result)
+
+      else if(result.constructor == Array)
+        out = out.concat(expand(target, result))
+      else
+        console.warn("Uninterpretted value from function:", result)
+    } else
+      console.warn("Uninterpretted value from list:", item)
+  }
+
+  return out
+}
+
+function cellToString(cell, descriptionCtx) { // "special array cell to string"
+  // get a finalised string for an expanded special arr cell
+
+  // if null or function, throw an error
+  if(!cell || cell.constructor == Function)
+    throw "illegal special cell."
+
+  // if string, return as is
+  if(cell.constructor == String)
+    return cell
+  // if regex, return using randexp
+  if(cell.constructor == RegExp)
+    return randexp(cell)
+  // if noumenon, get its ref
+  if(cell.isNoumenon)
+    return cell.ref(descriptionCtx)
+  // if substitution, get its string
+  if(cell.isSubstitution)
+    return cell.getString(descriptionCtx)
+}
+
+function randomString(target, arr) {
+  let expanded = expand(target, arr).sort(() => Math.random()*2-1)
+  for(var i=0; i<expanded.length; i++) {
+    let str = cellToString(expanded[i])
+    if(str)
+      return str
+  }
+  return null
+}
+
 module.exports = {
   toRegexs: specarr_regexs,
+  expand: expand,
+  cellToString: cellToString,
+  randomString: randomString,
 }
