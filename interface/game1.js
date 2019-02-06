@@ -253,7 +253,7 @@ class Explorer {
 module.exports = Explorer
 
 }).call(this,require('_process'))
-},{"./CommandTemplate":1,"./Enviroment":2,"./confusionLog.js":4,"./sentencify":8,"_process":64,"readline":62}],4:[function(require,module,exports){
+},{"./CommandTemplate":1,"./Enviroment":2,"./confusionLog.js":4,"./sentencify":8,"_process":65,"readline":63}],4:[function(require,module,exports){
 (function (__dirname){
 const fs = require("fs")
 const path = require("path")
@@ -272,7 +272,7 @@ function confusionLog(str, nCommandsMatched) {
 module.exports = confusionLog
 
 }).call(this,"/explorer")
-},{"fs":62,"path":63}],5:[function(require,module,exports){
+},{"fs":63,"path":64}],5:[function(require,module,exports){
 const CommandTemplate = require("../explorer/CommandTemplate.js")
 const Explorer = require("../explorer/Explorer")
 const Enviroment = require("../explorer/Enviroment")
@@ -11112,7 +11112,7 @@ if(!module.parent) {
   
 
 }).call(this,require('_process'))
-},{"./first-names.json":12,"./middle-names.json":14,"./names.json":15,"./places.json":16,"_process":64}],14:[function(require,module,exports){
+},{"./first-names.json":12,"./middle-names.json":14,"./names.json":15,"./places.json":16,"_process":65}],14:[function(require,module,exports){
 module.exports=[
 "Aaron"
 ,
@@ -83896,6 +83896,9 @@ module.exports = Noumenon
   expression or an array of strings and regular expressions.
 */
 
+module.exports = require("../utility/specarr").toRegexs
+
+/*
 function interpretSpecialArray(target, specialArr, ctx) {
   // convert a 'special array' into an array of strings and regular expressions
   if(!target || !target.isNoumenon)
@@ -83942,9 +83945,9 @@ function interpretSpecialArray(target, specialArr, ctx) {
 
   return out
 }
-module.exports = interpretSpecialArray
+module.exports = interpretSpecialArray*/
 
-},{}],26:[function(require,module,exports){
+},{"../utility/specarr":62}],26:[function(require,module,exports){
 const regOp = require("../utility/regex")
 const interpretSpecialArray = require("./interpretSpecialArray")
 
@@ -85182,6 +85185,7 @@ module.exports = {
   can be used to format a one off string.
 */
 
+const {randexp} = require("randexp")
 const placeholderRegex = /_/g
 
 class Substitution { // sometimes abbreviated Sub
@@ -85191,12 +85195,32 @@ class Substitution { // sometimes abbreviated Sub
   }
 
   getString(descriptionCtx) {
-    let toSubIn = this.noumena.map(noum => noum.ref(descriptionCtx))
+    let toSubIn = this.noumena.map(o => {
+      if(o.isNoumenon)
+        return o.ref(descriptionCtx)
+      else if(o.constructor == String)
+        return o
+      else if(o.construtor == RegExp)
+        return randexp(o)
+      else {
+        console.warn("Couldn't interpret substitution value:", o)
+        return "???"
+      }
+    })
 
     return this.subIn(...toSubIn)
   }
   getRegex() {
-    let toSubIn = this.noumena.map(noum => noum.refRegex())
+    let toSubIn = this.noumena.map(o => {
+      if(o.isNoumenon)
+        return o.refRegex()
+      else if(o.constructor == String || o.constructor == RegExp)
+        return o
+      else {
+        console.warn("Couldn't interpret substitution value:", o)
+        return "???"
+      }
+    })
     return this.subIn(...toSubIn)
   }
 
@@ -85215,12 +85239,14 @@ class Substitution { // sometimes abbreviated Sub
     else
       ctx = {}
 
-    new Substitution(templateStr, noumena).getString(ctx)
+    return new Substitution(templateStr, ...noumena).getString(ctx)
   }
 }
+
+Substitution.prototype.isSubstitution = true
 module.exports = Substitution
 
-},{}],60:[function(require,module,exports){
+},{"randexp":11}],60:[function(require,module,exports){
 /*
   Language utility. A set of tools for quickly formatting english.
 */
@@ -85319,8 +85345,71 @@ module.exports = {
 }
 
 },{}],62:[function(require,module,exports){
+/*
+  A set of tools for using the so-called 'special array', or 'specarr'.
+*/
+
+function specarr_regexs(target, specialArr, ctx) {
+  // convert a 'special array' into an array of strings and regular expressions
+  if(!target || !target.isNoumenon)
+    throw "expects target to be a Noumenon."
+  if(!specialArr || specialArr.constructor != Array)
+    throw "expects specialArr to be an array."
+
+  var out = [] // the output array
+  for(var i in specialArr) {
+    let item = specialArr[i]
+
+    if(!item) // skip null values
+      continue
+
+    else if(item.constructor == String) // accept strings
+      out.push(new RegExp(item))
+
+    else if(item.constructor == RegExp) // accept regular expressions
+      out.push(item)
+
+    else if(item.isNoumenon)
+      out.push(item.refRegex(ctx))
+
+    else if(item.constructor == Function) {
+      // call function on the target
+      let result = item(target, ctx)
+
+      // if result is null, skip.
+      if(!result)
+        continue;
+      // accept result if RegExp
+      else if(result.constructor == RegExp)
+        out.push(result)
+      // if string cast as RegExp and accept
+      else if(result.constructor == String)
+        out.push(new RegExp(result))
+      // if array, recursively interpret and concatenate the result
+      else if(result.constructor == Array)
+        out = out.concat(specarr_regexs(target, result))
+      else
+        console.warn("Uninterpretted value:", result)
+    } else
+      console.warn("Uninterpretted value:", item)
+  }
+
+  // perhaps remove duplicates?
+  for(var i in out) {
+    if(out[i].constructor != RegExp)
+      console.warn("specarr_regexs returned item which is not a regex:", out[i])
+  }
+
+  return out
+}
+
+module.exports = {
+  toRegexs: specarr_regexs,
+}
 
 },{}],63:[function(require,module,exports){
+
+},{}],64:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -85548,7 +85637,7 @@ var substr = 'ab'.substr(-1) === 'b'
 ;
 
 }).call(this,require('_process'))
-},{"_process":64}],64:[function(require,module,exports){
+},{"_process":65}],65:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
