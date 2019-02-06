@@ -82,5 +82,8 @@ class Enviroment {
       list.push(noumena[Math.floor(Math.random()*noumena.length)])
     return list
   }
+  randomNoumenon() {
+    return this.randomNoumena(1)[0]
+  }
 }
 module.exports = Enviroment

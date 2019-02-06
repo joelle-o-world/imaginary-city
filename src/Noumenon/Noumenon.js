@@ -52,17 +52,26 @@ class Noumenon {
 
     return interpretSpecialArray(this, this.descriptorFunctions.adj, ctx)
   }
+
+  describe() {
+    // compose a sentence describing this noumenon
+    let func = this.descriptions[Math.floor(Math.random())]
+    if(func.constructor == Function)
+      return ' '+func(this)
+    else if(func.constructor == String)
+      return ' '+func
+  }
 }
 Noumenon.prototype.isNoumenon = true
 
-Noumenon.prototype.nouns = ["thing"]
+Noumenon.prototype.nouns = ["thing"] // special array
 Noumenon.prototype.addNouns = function(...nouns) {
   // NOTE: functional nouns must be deterministic
   this.nouns = this.nouns.concat(nouns)
   return this.nouns
 }
 
-Noumenon.prototype.descriptorFunctions = {}
+Noumenon.prototype.descriptorFunctions = {} // each value is a special array
 Noumenon.prototype.addDescriptorFunctions = function(functionArraysByPreposition={}) {
   // NOTE: call on prototype
   var newfunctions = Object.assign({}, this.descriptorFunctions)
@@ -72,6 +81,13 @@ Noumenon.prototype.addDescriptorFunctions = function(functionArraysByPreposition
     newfunctions[preposition] = newfunctions[preposition].concat(functionArraysByPreposition[preposition])
   }
   this.descriptorFunctions = newfunctions
+}
+
+Noumenon.prototype.descriptions = [
+  noumenon => "There is "+noumenon.ref({article:'a'})+".",
+] // special array
+Noumenon.prototype.addDescription = function(...functions) {
+  this.descriptions = this.descriptions.concat(functions)
 }
 
 module.exports = Noumenon

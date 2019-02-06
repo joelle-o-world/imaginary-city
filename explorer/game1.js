@@ -164,5 +164,9 @@ window.onload = function() {
   game.write = (...strs) => tt.write(...strs)
   game.writeln = (...str) => tt.writeln(...str)
   game.start()
+
+  setInterval(() => {
+    game.write(enviroment.randomNoumenon().describe())
+  }, 3000)
 }
 window.userInput = str => game.input(str)

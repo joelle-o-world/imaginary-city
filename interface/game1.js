@@ -137,6 +137,9 @@ class Enviroment {
       list.push(noumena[Math.floor(Math.random()*noumena.length)])
     return list
   }
+  randomNoumenon() {
+    return this.randomNoumena(1)[0]
+  }
 }
 module.exports = Enviroment
 
@@ -413,6 +416,10 @@ window.onload = function() {
   game.write = (...strs) => tt.write(...strs)
   game.writeln = (...str) => tt.writeln(...str)
   game.start()
+
+  setInterval(() => {
+    game.write(enviroment.randomNoumenon().describe())
+  }, 3000)
 }
 window.userInput = str => game.input(str)
 
@@ -83707,17 +83714,26 @@ class Noumenon {
 
     return interpretSpecialArray(this, this.descriptorFunctions.adj, ctx)
   }
+
+  describe() {
+    // compose a sentence describing this noumenon
+    let func = this.descriptions[Math.floor(Math.random())]
+    if(func.constructor == Function)
+      return ' '+func(this)
+    else if(func.constructor == String)
+      return ' '+func
+  }
 }
 Noumenon.prototype.isNoumenon = true
 
-Noumenon.prototype.nouns = ["thing"]
+Noumenon.prototype.nouns = ["thing"] // special array
 Noumenon.prototype.addNouns = function(...nouns) {
   // NOTE: functional nouns must be deterministic
   this.nouns = this.nouns.concat(nouns)
   return this.nouns
 }
 
-Noumenon.prototype.descriptorFunctions = {}
+Noumenon.prototype.descriptorFunctions = {} // object
 Noumenon.prototype.addDescriptorFunctions = function(functionArraysByPreposition={}) {
   // NOTE: call on prototype
   var newfunctions = Object.assign({}, this.descriptorFunctions)
@@ -83727,6 +83743,13 @@ Noumenon.prototype.addDescriptorFunctions = function(functionArraysByPreposition
     newfunctions[preposition] = newfunctions[preposition].concat(functionArraysByPreposition[preposition])
   }
   this.descriptorFunctions = newfunctions
+}
+
+Noumenon.prototype.descriptions = [
+  noumenon => "There is "+noumenon.ref({article:'a'})+".",
+] // special array
+Noumenon.prototype.addDescription = function(...functions) {
+  this.descriptions = this.descriptions.concat(functions)
 }
 
 module.exports = Noumenon
@@ -83742,6 +83765,28 @@ let assignments = {
     let reg = this.refRegex(ctx)
     let ret = randexp(reg)
     return ret
+
+/*    // NEW VERSION::
+    let numberOfAdjectives = 2
+
+    // use noun phrase:
+    let properNounRegex = this.properNounRegex()
+    if(!properNounRegex) {
+      // choose article
+      let article = randexp(/a|the/)
+      // choose adjectives
+      let adjs = this.adjs().sort((a,b) => Math.random()*2-1)
+        .slice(0, numberOfAdjectives)
+      console.log("adjs:", adjs)
+      // choose noun
+      let noun = this.noun
+      // choose preposition phrases
+
+
+      return [].concat(article, ...adjs, noun).join(" ")
+    } else
+      return randexp(properNounRegex)
+    // otherwise use proper noun*/
   },
 
   ref(ctx) {
@@ -83768,6 +83813,7 @@ module.exports = Noumenon
 */
 
 function interpretSpecialArray(target, specialArr, ctx) {
+  // convert a 'special array' into an array of strings and regular expressions
   if(!target || !target.isNoumenon)
     throw "expects target to be a Noumenon"
   if(!specialArr || specialArr.constructor != Array)
@@ -84734,10 +84780,6 @@ Door.prototype.nouns = ["door"]
 Door.prototype.addDescriptorFunctions({
   adj: [
     door => door.color,
-    door => regOp.or(
-      door.A.nounRegex(),
-      door.B.nounRegex(),
-    ),
   ],
   "made of": [
     door => door.material,
@@ -84786,7 +84828,7 @@ InteriorRoom.prototype.addDescriptorFunctions({
     (room, ctx) => room.house.getDescriptiveReference(ctx)
   ],
   containing:[
-    (room,ctx) => room.contents.map(item => item.refRegex(ctx)),
+    (room,ctx) => room.contents//.map(item => item.refRegex(ctx)),
   ]
 })
 
