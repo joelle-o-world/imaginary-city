@@ -29,7 +29,7 @@ InteriorRoom.prototype.addDescriptorFunctions({
     (room, ctx) => room.house.getDescriptiveReference(ctx)
   ],
   containing:[
-    (room,ctx) => room.contents.map(item => item.refRegex(ctx)),
+    (room,ctx) => room.contents//.map(item => item.refRegex(ctx)),
   ]
 })
 

@@ -37,10 +37,6 @@ Door.prototype.nouns = ["door"]
 Door.prototype.addDescriptorFunctions({
   adj: [
     door => door.color,
-    door => regOp.or(
-      door.A.nounRegex(),
-      door.B.nounRegex(),
-    ),
   ],
   "made of": [
     door => door.material,
