@@ -95,6 +95,7 @@ class Explorer {
     this.write(sentencify(fullStr) + ' ')
   }
   writeParagraph(...str) {
+    this.newline()
     this.writeSentence(...str)
     this.newline()
   }

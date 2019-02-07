@@ -4,6 +4,7 @@ const Enviroment = require("../explorer/Enviroment")
 const TownHouse = require("../src/buildings/TownHouse")
 const utility = require("../src/utility")
 const TickyText = require("../interface/TickyText")
+const TTSQueue = require("../interface/TTSQueue")
 
 
 
@@ -138,7 +139,7 @@ game.addCommand(["what is in _", "look in _"], container => {
 game.addCommand("look under _", o =>
   o.surface ?
     "Under "+o.ref()+" there is "+o.surface.ref()+"." :
-    "There is nothing is under "+o.ref()+"."
+    "There is nothing under "+o.ref()+"."
 )
 game.addCommand("who am i", o => "You are "+person.ref()+".")
 game.addCommand("what is _ made of", item =>
@@ -171,9 +172,17 @@ function iterativeDescribe() {
     }
   }, 4000)
 }
-window.onload = function() {
+
+function begin() {
   const tt = new TickyText(document.getElementById("output"))
-  game.write = (...strs) => tt.write(...strs)
+  const tts = new TTSQueue(responsiveVoice)
+
+
+  game.write = (...strs) => {
+    if(tts)
+      tts.speak(strs.join(""), "UK English Male", {rate: 0.85, pitch:2})
+    tt.write(...strs)
+  }
   //game.writeln = (...str) => tt.writeln(...str)
   game.start()
 
@@ -181,6 +190,14 @@ window.onload = function() {
     iterativeDescribe()
   }
 
+  if(responsiveVoice)
+    responsiveVoice.voiceSupport()
+
   document.getElementById("userInput").placeholder = "Please enter an instruction for "+person.fullName+"."
+
+  document.removeEventListener('click', begin)
 }
+
+
+document.addEventListener('click', begin)
 window.userInput = str => game.input(str)

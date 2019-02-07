@@ -4,7 +4,7 @@ class TickyText {
     this.placeInCurrent = 0 // Index of next character to print from
     this.intervalTimer = null
     this.str = ""
-    this.speed = 20 // ms
+    this.speed = 50 // ms
 
     this.targetElement = targetElement
   }
