@@ -53,6 +53,10 @@ class Noumenon {
     return interpretSpecialArray(this, this.descriptorFunctions.adj, ctx)
   }
 
+  get hasProperNouns() {
+    return this.properNouns && this.properNouns.length
+  }
+
   describe() {
     // compose a sentence describing this noumenon
     let func = this.descriptions[Math.floor(Math.random()*this.descriptions.length)]

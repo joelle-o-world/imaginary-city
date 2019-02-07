@@ -27,7 +27,7 @@
   ]
 
   Note: I in the function names in this file I am using an underscore to mean
-        'to'. Eg/ speccarr_regexs means "Special array to regular expressions"
+        'to'. Eg/ specarr_regexs means "Special array to regular expressions"
 */
 
 const {randexp} = require("randexp")
@@ -180,19 +180,34 @@ function cellToString(cell, descriptionCtx) { // "special array cell to string"
     return cell.getString(descriptionCtx)
 }
 
-function randomString(target, arr) {
+// TODO: cellToRegex
+
+function randomString(target, arr, ctx) {
   let expanded = expand(target, arr).sort(() => Math.random()*2-1)
   for(var i=0; i<expanded.length; i++) {
-    let str = cellToString(expanded[i])
+    let str = cellToString(expanded[i], ctx)
     if(str)
       return str
   }
   return null
 }
 
+function randomStrings(target, arr, ctx, n=1) {
+  let expanded = expand(target, arr).sort(() => Math.random()*2-1)
+  let list = []
+  for(var i=0; i<expanded.length && list.length < n; i++) {
+    let str = cellToString(expanded[i], ctx)
+    if(str)
+      list.push(str)
+  }
+  return list
+}
+
+
 module.exports = {
   toRegexs: specarr_regexs,
   expand: expand,
   cellToString: cellToString,
   randomString: randomString,
+  randomStrings: randomStrings,
 }
