@@ -37,6 +37,9 @@ class TickyText {
     if(this.intervalTimer)
       clearInterval(this.intervalTimer)
     this.intervalTimer = null
+
+    if(this.onStopTicking)
+      this.onStopTicking()
   }
 
   tick() {

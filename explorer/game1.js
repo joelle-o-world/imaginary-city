@@ -156,26 +156,30 @@ game.start = function() {
 
   game.writeln("\n")
 
-  setTimeout(iterativeDescribe, 4000)
   //game.listen()
+
+
 }
 
 function iterativeDescribe() {
-
-  let str = enviroment.randomNoumenon().describe()
-  if(str) {
-    if(Math.random() < 0.2)
-      game.write("\n")
-    game.writeSentence(str)
-  }
-
-  setTimeout(iterativeDescribe, 4000)
+  setTimeout(() => {
+    let str = enviroment.randomNoumenon().describe()
+    if(str) {
+      if(Math.random() < 0.2)
+        game.write("\n")
+      game.writeSentence(str)
+    }
+  }, 4000)
 }
 window.onload = function() {
   const tt = new TickyText(document.getElementById("output"))
   game.write = (...strs) => tt.write(...strs)
   //game.writeln = (...str) => tt.writeln(...str)
   game.start()
+
+  tt.onStopTicking = () => {
+    iterativeDescribe()
+  }
 
   document.getElementById("userInput").placeholder = "Please enter an instruction for "+person.fullName+"."
 }
