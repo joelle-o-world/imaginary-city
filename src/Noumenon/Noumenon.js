@@ -7,6 +7,7 @@ const utility = require("../utility")
 const regOp = utility.regex // regular expression operations
 const {randexp} = require("randexp")
 const interpretSpecialArray = require("./interpretSpecialArray")
+const specarr = require("../utility/specarr")
 
 class Noumenon {
 
@@ -57,13 +58,9 @@ class Noumenon {
     return this.properNouns && this.properNouns.length
   }
 
-  describe() {
+  describe(ctx) {
     // compose a sentence describing this noumenon
-    let func = this.descriptions[Math.floor(Math.random()*this.descriptions.length)]
-    if(func.constructor == Function) {
-      return func(this)
-    } else if(func.constructor == String)
-      return func
+    return specarr.randomString(this, this.descriptions, ctx)
   }
 }
 Noumenon.prototype.isNoumenon = true

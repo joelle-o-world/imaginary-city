@@ -43,8 +43,9 @@ Person.prototype.addDescriptorFunctions({
 })
 
 Person.prototype.addDescription(
-  person => person.ref() +" has "+person.hairColor+" hair.",
-  person => utility.possessive(person.ref({article:'the'}))+ " name is "+person.fullName+'.',
+  person => new Sub("_ has _ hair.", person, person.hairColor),
+  //person => utility.possessive(person.ref({article:'the'}))+ " name is "+person.fullName+'.',
+  person => new Sub("_'s name is _", person, person.fullName),
 )
 
 module.exports = Person

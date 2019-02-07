@@ -83753,6 +83753,7 @@ const utility = require("../utility")
 const regOp = utility.regex // regular expression operations
 const {randexp} = require("randexp")
 const interpretSpecialArray = require("./interpretSpecialArray")
+const specarr = require("../utility/specarr")
 
 class Noumenon {
 
@@ -83803,13 +83804,9 @@ class Noumenon {
     return this.properNouns && this.properNouns.length
   }
 
-  describe() {
+  describe(ctx) {
     // compose a sentence describing this noumenon
-    let func = this.descriptions[Math.floor(Math.random()*this.descriptions.length)]
-    if(func.constructor == Function) {
-      return func(this)
-    } else if(func.constructor == String)
-      return func
+    return specarr.randomString(this, this.descriptions, ctx)
   }
 }
 Noumenon.prototype.isNoumenon = true
@@ -83842,7 +83839,7 @@ Noumenon.prototype.addDescription = function(...functions) {
 
 module.exports = Noumenon
 
-},{"../random":45,"../utility":60,"./interpretSpecialArray":25,"randexp":11}],23:[function(require,module,exports){
+},{"../random":45,"../utility":60,"../utility/specarr":62,"./interpretSpecialArray":25,"randexp":11}],23:[function(require,module,exports){
 const {randexp} = require("randexp")
 const specarr = require("../utility/specarr.js") // special array functions
 
@@ -84242,12 +84239,14 @@ PhysicalObject.prototype.addDescriptorFunctions({
   ]
 })
 PhysicalObject.prototype.addDescription(
-  o => o.locationType == "room"
-    ? "Inside "+o.location.ref()+" there is "+o.ref()
-    : null,
-  o => o.locationType == "surface"
-    ? o.ref() + " is resting on "+o.location.ref()
-    : null,
+  o => {
+    if(o.locationType == 'room' || o.locationType == 'container')
+      return new Sub("Inside _ there is _.", o.location, o)
+  },
+  o => {
+    if(o.locationType == 'surface')
+      return new Sub("_ is resting on _.", o, o.location)
+  },
 )
 
 module.exports = PhysicalObject
@@ -84553,6 +84552,7 @@ module.exports = Desk
 
 const Item = require("./Item")
 const random = require("../random")
+const Sub = require("../utility/Substitution")
 
 class GenericItem extends Item {
   constructor(noun) {
@@ -84566,12 +84566,12 @@ class GenericItem extends Item {
 GenericItem.prototype.isGenericItem = true
 
 GenericItem.prototype.addDescription(
-  item => item.ref() + " is "+item.color+".",
-  item => item.ref() + " is made of "+item.madeOf+'.',
+  item => new Sub("_ is _", item, item.color),
+  item => new Sub("_ is made of _", item, item.madeOf),
 )
 module.exports = GenericItem
 
-},{"../random":45,"./Item":36}],36:[function(require,module,exports){
+},{"../random":45,"../utility/Substitution":59,"./Item":36}],36:[function(require,module,exports){
 /*
   A subclass of Noumenon, used to represent a smallish object such as a bed, a
   desk or a lamp.
@@ -84701,8 +84701,9 @@ Person.prototype.addDescriptorFunctions({
 })
 
 Person.prototype.addDescription(
-  person => person.ref() +" has "+person.hairColor+" hair.",
-  person => utility.possessive(person.ref({article:'the'}))+ " name is "+person.fullName+'.',
+  person => new Sub("_ has _ hair.", person, person.hairColor),
+  //person => utility.possessive(person.ref({article:'the'}))+ " name is "+person.fullName+'.',
+  person => new Sub("_'s name is _", person, person.fullName),
 )
 
 module.exports = Person
@@ -84943,6 +84944,7 @@ module.exports = Door
 
 const Room = require("./Room.js")
 const utility = require("../utility")
+const Sub = utility.Sub
 
 class InteriorRoom extends Room {
   // TODO
@@ -84975,6 +84977,9 @@ InteriorRoom.prototype.addDescription(
   room => room.contents.length
     ? "Inside "+room.ref()+" there is "+room.randomItem().ref()+"."
     : null,
+  room => room.contents.map(
+    item => new Sub("Inside _ there is _.", room, item)
+  )
 )
 
 module.exports = InteriorRoom

@@ -4,6 +4,7 @@
 
 const Item = require("./Item")
 const random = require("../random")
+const Sub = require("../utility/Substitution")
 
 class GenericItem extends Item {
   constructor(noun) {
@@ -17,7 +18,7 @@ class GenericItem extends Item {
 GenericItem.prototype.isGenericItem = true
 
 GenericItem.prototype.addDescription(
-  item => item.ref() + " is "+item.color+".",
-  item => item.ref() + " is made of "+item.madeOf+'.',
+  item => new Sub("_ is _", item, item.color),
+  item => new Sub("_ is made of _", item, item.madeOf),
 )
 module.exports = GenericItem

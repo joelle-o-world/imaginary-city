@@ -190,12 +190,14 @@ PhysicalObject.prototype.addDescriptorFunctions({
   ]
 })
 PhysicalObject.prototype.addDescription(
-  o => o.locationType == "room"
-    ? "Inside "+o.location.ref()+" there is "+o.ref()
-    : null,
-  o => o.locationType == "surface"
-    ? o.ref() + " is resting on "+o.location.ref()
-    : null,
+  o => {
+    if(o.locationType == 'room' || o.locationType == 'container')
+      return new Sub("Inside _ there is _.", o.location, o)
+  },
+  o => {
+    if(o.locationType == 'surface')
+      return new Sub("_ is resting on _.", o, o.location)
+  },
 )
 
 module.exports = PhysicalObject
