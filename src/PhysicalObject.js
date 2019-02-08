@@ -158,7 +158,7 @@ class PhysicalObject extends Noumenon {
     return [...this.containing, ...this.supporting]
   }
   get all() {
-    // recursive generate a list of all sub-objects and include this
+    // recursively generate a list of all sub-objects and include this
     let list = [this]
     for(var i in this.containing)
       list.push(...this.containing[i].all)
@@ -166,6 +166,24 @@ class PhysicalObject extends Noumenon {
       list.push(...this.supporting[i].all)
     return list
   }
+
+  get neighbours() {
+    // return a list of items which share the same location, exclude this
+
+    // if location is surface, return all objects on the surface except this
+    if(this.locationType == 'surface')
+      return this._location.supporting.filter(o => o != this)
+
+    //if location is container, return all the containers contents expept this
+    else if(this.locationTYpe == 'container')
+      return this._location.containing.filter(o => o != this)
+
+    // if location is room, return all the rooms contents except this
+    else if(this.locationType == 'room')
+      return this._location.contents.filter(o => o != this)
+  }
+
+  // TODO: get related() {}
 }
 PhysicalObject.prototype.isPhysicalObject = true
 
@@ -192,12 +210,19 @@ PhysicalObject.prototype.addDescriptorFunctions({
 PhysicalObject.prototype.addDescription(
   o => {
     if(o.locationType == 'room' || o.locationType == 'container')
-      return new Sub("Inside _ there is _.", o.location, o)
+      return [
+        new Sub("Inside _ there is _.", o.location, o),
+        new Sub("Inside of _ there is _.", o.location, o),
+      ]
   },
   o => {
     if(o.locationType == 'surface')
-      return new Sub("_ is resting on _.", o, o.location)
+      return [
+        new Sub("_ is resting on _.", o, o.location),
+        new Sub("On top of _ there is _.", o.location, o),
+      ]
   },
+  o => o.neighbours.map(n => new Sub("Next to _ is _", o, n))
 )
 
 module.exports = PhysicalObject
