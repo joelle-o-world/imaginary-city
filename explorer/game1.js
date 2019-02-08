@@ -1,6 +1,6 @@
 const CommandTemplate = require("../explorer/CommandTemplate.js")
 const Explorer = require("../explorer/Explorer")
-const Enviroment = require("../explorer/Enviroment")
+const Environment = require("../explorer/Environment")
 const TownHouse = require("../src/buildings/TownHouse")
 const utility = require("../src/utility")
 const TickyText = require("../interface/TickyText")
@@ -8,10 +8,10 @@ const TTSQueue = require("../interface/TTSQueue")
 
 
 
-const enviroment = new Enviroment
-const game = new Explorer(enviroment)
+const environment = new Environment
+const game = new Explorer(environment)
 
-const person = enviroment.protagonist
+const person = environment.protagonist
 
 // createWorld
 let house = new TownHouse
@@ -33,11 +33,11 @@ function describeSurroundings() {
     game.writeln(room.ref({article:"The"}), " is empty.")*/
   // report doors
   var accessibleRooms = person.room.accessibleRooms
-  game.writeln(
-    "There's ",
+  game.writeParagraph(
+    "There's",
     utility.quantify(accessibleRooms.length, "door"),
-    " leading to ",
-    utility.printList(accessibleRooms.map(r => r.ref({detail: 0, article:"a"}))) + "."
+    "leading to",
+    utility.printList(accessibleRooms.map(r => r.ref({detail: 0, article:"a"})))
   )
 }
 
@@ -164,7 +164,7 @@ game.start = function() {
 
 function iterativeDescribe() {
   setTimeout(() => {
-    let str = enviroment.randomNoumenon().describe()
+    let str = environment.randomNoumenon().describe()
     if(str) {
       if(Math.random() < 0.2)
         game.write("\n")
@@ -180,7 +180,7 @@ function begin() {
 
   game.write = (...strs) => {
     if(tts)
-      tts.speak(strs.join(""), "UK English Female", {rate: 0.85, pitch:1/3})
+      tts.speak(strs.join(""), "UK English Male", {rate: 0.85, pitch:2})
     tt.write(...strs)
   }
   //game.writeln = (...str) => tt.writeln(...str)

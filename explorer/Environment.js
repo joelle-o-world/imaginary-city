@@ -1,5 +1,5 @@
 /*
-  The Enviroment object's prime responsibility it interpretting object strings.
+  The Environment object's prime responsibility it interpretting object strings.
   That is, natural language references to objects made by the user to objects
   in the game. These will usually take the form of noun-phrases.
 
@@ -20,7 +20,7 @@
 const parseNounPhrase = require("./parseNounPhrase")
 const {Person} = require("../src")
 
-class Enviroment {
+class Environment {
   constructor() {
     this.protagonist = new Person
   }
@@ -86,4 +86,4 @@ class Enviroment {
     return this.randomNoumena(1)[0]
   }
 }
-module.exports = Enviroment
+module.exports = Environment

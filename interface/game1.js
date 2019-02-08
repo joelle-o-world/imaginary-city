@@ -54,7 +54,7 @@ module.exports = CommandTemplate
 
 },{}],2:[function(require,module,exports){
 /*
-  The Enviroment object's prime responsibility it interpretting object strings.
+  The Environment object's prime responsibility it interpretting object strings.
   That is, natural language references to objects made by the user to objects
   in the game. These will usually take the form of noun-phrases.
 
@@ -75,7 +75,7 @@ module.exports = CommandTemplate
 const parseNounPhrase = require("./parseNounPhrase")
 const {Person} = require("../src")
 
-class Enviroment {
+class Environment {
   constructor() {
     this.protagonist = new Person
   }
@@ -141,25 +141,25 @@ class Enviroment {
     return this.randomNoumena(1)[0]
   }
 }
-module.exports = Enviroment
+module.exports = Environment
 
 },{"../src":31,"./parseNounPhrase":6}],3:[function(require,module,exports){
 (function (process){
 const readline = require("readline")
 const CommandTemplate = require("./CommandTemplate")
-const Enviroment = require("./Enviroment")
+const Environment = require("./Environment")
 const confusionLog = require("./confusionLog.js")
 const sentencify = require("./sentencify")
 
 class Explorer {
   constructor(
-    enviroment, // the enviroment object
+    environment, // the environment object
     write=console.log, // the function to pass output to
   ) {
-    if(!enviroment)
-      throw "Explorer requires an enviroment"
+    if(!environment)
+      throw "Explorer requires an environment"
     this.commandTemplates = []
-    this.enviroment = enviroment
+    this.environment = environment
 
     this.write = write // from now on call this.write to output strings
   }
@@ -190,7 +190,7 @@ class Explorer {
       let objectStrings = command.parse(strNoPunc)
       if(objectStrings) {
         ++commandsMatched
-        let noumena = objectStrings.map(str => this.enviroment.find(str))
+        let noumena = objectStrings.map(str => this.environment.find(str))
         if(!noumena.includes(null) && !noumena.includes(undefined)) {
           // found a match
           if(command.action) {
@@ -226,7 +226,7 @@ class Explorer {
 
   randomCommand() {
     let template = this.commandTemplates[Math.floor(Math.random()*this.commandTemplates.length)]
-    let objs = this.enviroment.randomNoumena(template.nObjects)
+    let objs = this.environment.randomNoumena(template.nObjects)
     let obStrings = objs.map(o=>o.ref())
     let command = template.subIn(...obStrings)
     return command
@@ -254,7 +254,7 @@ class Explorer {
 module.exports = Explorer
 
 }).call(this,require('_process'))
-},{"./CommandTemplate":1,"./Enviroment":2,"./confusionLog.js":4,"./sentencify":8,"_process":66,"readline":64}],4:[function(require,module,exports){
+},{"./CommandTemplate":1,"./Environment":2,"./confusionLog.js":4,"./sentencify":8,"_process":66,"readline":64}],4:[function(require,module,exports){
 (function (__dirname){
 const fs = require("fs")
 const path = require("path")
@@ -276,7 +276,7 @@ module.exports = confusionLog
 },{"fs":64,"path":65}],5:[function(require,module,exports){
 const CommandTemplate = require("../explorer/CommandTemplate.js")
 const Explorer = require("../explorer/Explorer")
-const Enviroment = require("../explorer/Enviroment")
+const Environment = require("../explorer/Environment")
 const TownHouse = require("../src/buildings/TownHouse")
 const utility = require("../src/utility")
 const TickyText = require("../interface/TickyText")
@@ -284,10 +284,10 @@ const TTSQueue = require("../interface/TTSQueue")
 
 
 
-const enviroment = new Enviroment
-const game = new Explorer(enviroment)
+const environment = new Environment
+const game = new Explorer(environment)
 
-const person = enviroment.protagonist
+const person = environment.protagonist
 
 // createWorld
 let house = new TownHouse
@@ -309,11 +309,11 @@ function describeSurroundings() {
     game.writeln(room.ref({article:"The"}), " is empty.")*/
   // report doors
   var accessibleRooms = person.room.accessibleRooms
-  game.writeln(
-    "There's ",
+  game.writeParagraph(
+    "There's",
     utility.quantify(accessibleRooms.length, "door"),
-    " leading to ",
-    utility.printList(accessibleRooms.map(r => r.ref({detail: 0, article:"a"}))) + "."
+    "leading to",
+    utility.printList(accessibleRooms.map(r => r.ref({detail: 0, article:"a"})))
   )
 }
 
@@ -440,7 +440,7 @@ game.start = function() {
 
 function iterativeDescribe() {
   setTimeout(() => {
-    let str = enviroment.randomNoumenon().describe()
+    let str = environment.randomNoumenon().describe()
     if(str) {
       if(Math.random() < 0.2)
         game.write("\n")
@@ -456,7 +456,7 @@ function begin() {
 
   game.write = (...strs) => {
     if(tts)
-      tts.speak(strs.join(""), "UK English Female", {rate: 0.85, pitch:1/3})
+      tts.speak(strs.join(""), "UK English Male", {rate: 0.85, pitch:2})
     tt.write(...strs)
   }
   //game.writeln = (...str) => tt.writeln(...str)
@@ -478,7 +478,7 @@ function begin() {
 document.addEventListener('click', begin)
 window.userInput = str => game.input(str)
 
-},{"../explorer/CommandTemplate.js":1,"../explorer/Enviroment":2,"../explorer/Explorer":3,"../interface/TTSQueue":9,"../interface/TickyText":10,"../src/buildings/TownHouse":29,"../src/utility":61}],6:[function(require,module,exports){
+},{"../explorer/CommandTemplate.js":1,"../explorer/Environment":2,"../explorer/Explorer":3,"../interface/TTSQueue":9,"../interface/TickyText":10,"../src/buildings/TownHouse":29,"../src/utility":61}],6:[function(require,module,exports){
 const parseText = require("./parseText")
 
 const articles = [
@@ -84281,7 +84281,7 @@ class PhysicalObject extends Noumenon {
     return [...this.containing, ...this.supporting]
   }
   get all() {
-    // recursive generate a list of all sub-objects and include this
+    // recursively generate a list of all sub-objects and include this
     let list = [this]
     for(var i in this.containing)
       list.push(...this.containing[i].all)
@@ -84289,6 +84289,24 @@ class PhysicalObject extends Noumenon {
       list.push(...this.supporting[i].all)
     return list
   }
+
+  get neighbours() {
+    // return a list of items which share the same location, exclude this
+
+    // if location is surface, return all objects on the surface except this
+    if(this.locationType == 'surface')
+      return this._location.supporting.filter(o => o != this)
+
+    //if location is container, return all the containers contents expept this
+    else if(this.locationTYpe == 'container')
+      return this._location.containing.filter(o => o != this)
+
+    // if location is room, return all the rooms contents except this
+    else if(this.locationType == 'room')
+      return this._location.contents.filter(o => o != this)
+  }
+
+  // TODO: get related() {}
 }
 PhysicalObject.prototype.isPhysicalObject = true
 
@@ -84315,12 +84333,19 @@ PhysicalObject.prototype.addDescriptorFunctions({
 PhysicalObject.prototype.addDescription(
   o => {
     if(o.locationType == 'room' || o.locationType == 'container')
-      return new Sub("Inside _ there is _.", o.location, o)
+      return [
+        new Sub("Inside _ there is _.", o.location, o),
+        new Sub("Inside of _ there is _.", o.location, o),
+      ]
   },
   o => {
     if(o.locationType == 'surface')
-      return new Sub("_ is resting on _.", o, o.location)
+      return [
+        new Sub("_ is resting on _.", o, o.location),
+        new Sub("On top of _ there is _.", o.location, o),
+      ]
   },
+  o => o.neighbours.map(n => new Sub("Next to _ is _", o, n))
 )
 
 module.exports = PhysicalObject

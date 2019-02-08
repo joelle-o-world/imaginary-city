@@ -1,18 +1,18 @@
 const readline = require("readline")
 const CommandTemplate = require("./CommandTemplate")
-const Enviroment = require("./Enviroment")
+const Environment = require("./Environment")
 const confusionLog = require("./confusionLog.js")
 const sentencify = require("./sentencify")
 
 class Explorer {
   constructor(
-    enviroment, // the enviroment object
+    environment, // the environment object
     write=console.log, // the function to pass output to
   ) {
-    if(!enviroment)
-      throw "Explorer requires an enviroment"
+    if(!environment)
+      throw "Explorer requires an environment"
     this.commandTemplates = []
-    this.enviroment = enviroment
+    this.environment = environment
 
     this.write = write // from now on call this.write to output strings
   }
@@ -43,7 +43,7 @@ class Explorer {
       let objectStrings = command.parse(strNoPunc)
       if(objectStrings) {
         ++commandsMatched
-        let noumena = objectStrings.map(str => this.enviroment.find(str))
+        let noumena = objectStrings.map(str => this.environment.find(str))
         if(!noumena.includes(null) && !noumena.includes(undefined)) {
           // found a match
           if(command.action) {
@@ -79,7 +79,7 @@ class Explorer {
 
   randomCommand() {
     let template = this.commandTemplates[Math.floor(Math.random()*this.commandTemplates.length)]
-    let objs = this.enviroment.randomNoumena(template.nObjects)
+    let objs = this.environment.randomNoumena(template.nObjects)
     let obStrings = objs.map(o=>o.ref())
     let command = template.subIn(...obStrings)
     return command

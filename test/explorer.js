@@ -1,15 +1,15 @@
 const CommandTemplate = require("../explorer/CommandTemplate.js")
 const Explorer = require("../explorer/Explorer")
-const Enviroment = require("../explorer/Enviroment")
+const Environment = require("../explorer/Environment")
 const TownHouse = require("../src/buildings/TownHouse")
 const utility = require("../src/utility")
 
-let enviroment = new Enviroment
-let person = enviroment.protagonist
+let environment = new Environment
+let person = environment.protagonist
 let house = new TownHouse
 person.location = house.randomRoom()
 
-let allNoumena = enviroment.allNoumena
+let allNoumena = environment.allNoumena
 
 function describeSurroundings() {
   let room = person.location
@@ -64,7 +64,7 @@ function goThroughDoor(door) {
     " tried to walk through a door which was not connected to the room they were in."
 }
 
-var game = new Explorer(enviroment)
+var game = new Explorer(environment)
 
 game.addCommand(
   ["look at _", "_"],
