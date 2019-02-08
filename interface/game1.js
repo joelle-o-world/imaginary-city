@@ -83951,6 +83951,8 @@ let assignments = {
       // choose preposition phrases
       let prepositionPhrases = []
       for(var prep in this.descriptorFunctions) {
+        if(prepositionPhrases.length >= numberOfPrepositionPhrases)
+          break
         if(prep == 'adj')
           continue
         let str = specarr.randomString(this, this.descriptorFunctions[prep], ctx)
@@ -84321,11 +84323,9 @@ PhysicalObject.prototype.isContainer = false
 
 PhysicalObject.prototype.addDescriptorFunctions({
   on: [
-    //(o, ctx) => o.surface ? o.surface.refRegex(ctx) : null,
     o => o.surface,
   ],
   in: [
-    //(o, ctx) => o.container ? o.container.refRegex(ctx) : null,
     o => o.container,
     //(o, ctx) => o.room ? o.room.refRegex(ctx) : null, // this line causes a stack overflow
   ]

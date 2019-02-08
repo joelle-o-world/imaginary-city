@@ -5,6 +5,8 @@
 const PhysicalObject = require("../PhysicalObject")
 
 class Garment extends PhysicalObject {
+  constructor() {
+  }
 }
 Garment.prototype.isGarment = true
 Garment.prototype.nouns = ["garment", "item of clothing"]

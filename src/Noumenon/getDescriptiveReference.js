@@ -35,6 +35,8 @@ let assignments = {
       // choose preposition phrases
       let prepositionPhrases = []
       for(var prep in this.descriptorFunctions) {
+        if(prepositionPhrases.length >= numberOfPrepositionPhrases)
+          break
         if(prep == 'adj')
           continue
         let str = specarr.randomString(this, this.descriptorFunctions[prep], ctx)
