@@ -49,3 +49,34 @@ function conjugateRegular(infinitive) {
     pastParticiple: infinitive+'ed',
   }
 }
+
+
+
+function verbPhrase(action, {tense}) {
+  // determine person
+  getPerson(action.subject)
+}
+
+function getPerson(subject) {
+  // determine the numeric person by subject (pronoun)
+
+  // is it 'i'
+  if((/^I$/i).test(subject))
+    return 1
+
+  // is it 'you', if so second person
+  if((/^you$/i).test(subject))
+    return 2
+
+  // is it plural (Simplistic test, does it end in S)
+  if((/s$/i).test(subject))
+    return 4
+
+  // otherwise, assume third person
+  return 3
+}
+
+module.exports = {
+  conjugateRegular: conjugateRegular,
+  verbPhrase: verbPhrase,
+}
