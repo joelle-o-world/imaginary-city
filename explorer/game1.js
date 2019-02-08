@@ -118,7 +118,7 @@ game.addCommand(["what is on _", "look on _"], surface => {
   if(surface.isSurface && surface.supporting.length) {
     let str = "There are "+surface.supporting.length+" things on "+surface.ref()+".\n"
     for(var i in surface.supporting)
-      str += "\t- "+surface.supporting[i].ref() + '\n'
+      str += "\t"+surface.supporting[i].ref() + '\n'
 
     return str
   } else
@@ -128,7 +128,7 @@ game.addCommand(["what is in _", "look in _"], container => {
   if(container.isContainer && container.containing.length) {
     let str = "There are "+container.containing.length+" things in "+container.ref()+".\n"
     for(var i in container.containing)
-      str += "\t- "+container.containing[i].ref() + '\n'
+      str += "\t"+container.containing[i].ref() + '\n'
 
     return str
   } else if(container.isRoom)
@@ -180,7 +180,7 @@ function begin() {
 
   game.write = (...strs) => {
     if(tts)
-      tts.speak(strs.join(""), "UK English Male", {rate: 0.85, pitch:2})
+      tts.speak(strs.join(""), "UK English Female", {rate: 0.85, pitch:1/3})
     tt.write(...strs)
   }
   //game.writeln = (...str) => tt.writeln(...str)

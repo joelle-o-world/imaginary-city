@@ -31,7 +31,7 @@ class Explorer {
     }
 
     this.newline()
-    this.write("> ")
+    //this.write("> ")
     this.writeSentence(str)
     this.newline(2)
     let strNoPunc = str.replace(/[.,?!]/g, "") // string without punctuation
