@@ -26,6 +26,8 @@ class Substitution { // sometimes abbreviated Sub
         return randexp(o)
       else if(o.constructor == Number)
         return o.toString()
+      else if(o.isSubstitution)
+        return o.getString(descriptionCtx)
       else {
         console.warn("Couldn't interpret substitution value:", o)
         return "???"
@@ -49,6 +51,8 @@ class Substitution { // sometimes abbreviated Sub
         return o.source
       else if(o.constructor == Number)
         return o.toString()
+      else if(o.isSubstitution)
+        return o.getRegex()
       else {
         console.warn("Couldn't interpret substitution value:", o)
         return "???"

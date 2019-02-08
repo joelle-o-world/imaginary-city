@@ -30,4 +30,5 @@ module.exports = {
 
   Substitution: Substitution,
   Sub: Substitution, // quick alias
+  sub: (...args) => new Substitution(...args),
 }
