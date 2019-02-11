@@ -15,6 +15,17 @@ VERB FORMS DENOTED AS NUMBERS:
   (9. past tense form)
 */
 
+const FIRST_PERSON_SINGULAR = 1   // I
+const SECOND_PERSON_SINGULAR = 2  // you
+const THIRD_PERSON_SINGULAR = 3   // he/she/it
+const FIRST_PERSON_PLURAL = 4     // we
+const SECOND_PERSON_PLURAL = 5    // you
+const THIRD_PERSON_PLURAL = 6     // they
+const GERUND = 7
+const PAST_PARTICIPLE = 8
+const PAST_TENSE = 9
+const ALL_PERSON_REGEX = 10
+
 module.exports = {
   // be IS THIS EVEN A VERB?
   be: {
@@ -33,7 +44,9 @@ module.exports = {
   get: {8:'got', 9:'got'},
   run: {8:'run', 9:'ran'},
   were: {1:'was', 3:'was'}, // this is a cludge and i know it
-  have: {3:'has', 8:'had', 9:"had"}
+  have: {3:'has', 8:'had', 9:"had"},
+  eat: {7:'eating', 8:'eaten', 9:'ate'},
+
   // give
   // find
   // think
