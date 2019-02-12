@@ -32,7 +32,6 @@ class PhysicalObject extends Noumenon {
     // extract
     if(this._location) {
       let loc = this._location
-      console.log(this.locationType, this.noun)
       switch(this.locationType) {
 
         case "room":
