@@ -14,6 +14,9 @@ VERB FORMS DENOTED AS NUMBERS:
   (9. past tense form)
 */
 
+const {placeholderRegex} = require("../Substitution")
+const placeholderTest = new RegExp('^'+placeholderRegex.source+'$', '')
+
 function getPerson(subject) {
   // if subject is not a string, assume third person for now
   if(subject && subject.constructor != String)
@@ -35,6 +38,9 @@ function getPerson(subject) {
 
   else if(lowerCaseSubject == 'they')
     return 6 // third person plural
+
+  else if(subject.constructor == RegExp || placeholderTest.test(subject))
+    return 10 // placeholder, get regex
 
   else // otherwise assume third person
     return 3
