@@ -175,12 +175,12 @@ function iterativeDescribe() {
 
 function begin() {
   const tt = new TickyText(document.getElementById("output"))
-  const tts = new TTSQueue(responsiveVoice)
+  const tts = null//new TTSQueue(responsiveVoice)
 
 
   game.write = (...strs) => {
     if(tts)
-      tts.speak(strs.join(""), "UK English Male", {rate: 0.85, pitch:2})
+      tts.speak(strs.join(""), "UK English Female", {rate: 0.85, pitch:1/2})
     tt.write(...strs)
   }
   //game.writeln = (...str) => tt.writeln(...str)
@@ -190,8 +190,8 @@ function begin() {
     iterativeDescribe()
   }
 
-  if(responsiveVoice)
-    responsiveVoice.voiceSupport()
+  if(window.responsiveVoice)
+    window.responsiveVoice.voiceSupport()
 
   document.getElementById("userInput").placeholder = "Please enter an instruction for "+person.fullName+"."
 
