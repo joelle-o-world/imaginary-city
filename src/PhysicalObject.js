@@ -180,6 +180,10 @@ class PhysicalObject extends Noumenon {
     // if location is room, return all the rooms contents except this
     else if(this.locationType == 'room')
       return this._location.contents.filter(o => o != this)
+
+    // otherwise return empty array
+    else
+      return []
   }
 
   // TODO: get related() {}
