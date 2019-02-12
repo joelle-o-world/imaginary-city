@@ -6,7 +6,8 @@
 */
 
 const {randexp} = require("randexp")
-const placeholderRegex = /_/g
+const placeholderRegex = /_\w*/g
+const {autoBracket} = require("./regex")
 
 class Substitution { // sometimes abbreviated Sub
   constructor(templateStr, ...noumena) {
@@ -39,6 +40,10 @@ class Substitution { // sometimes abbreviated Sub
 
     return this.subIn(...toSubIn)
   }
+  str(ctx) {
+    // alias for getString
+    return this.getString(ctx)
+  }
   getRegex() {
     let toSubIn = this.noumena.map(o => {
       if(o == null || o == undefined)
@@ -48,12 +53,15 @@ class Substitution { // sometimes abbreviated Sub
       else if(o.constructor == String)
         return o
       else if(o.constructor == RegExp)
-        return o.source
+        return autoBracket(o.source)
       else if(o.constructor == Number)
         return o.toString()
-      else if(o.isSubstitution)
-        return o.getRegex()
-      else {
+      else if(o.isSubstitution) {
+        let regex = o.getRegex()
+        if(regex && regex.constructor == RegExp)
+          return autoBracket(regex.source)
+        else return null
+      } else {
         console.warn("Couldn't interpret substitution value:", o)
         return "???"
       }
@@ -85,4 +93,5 @@ class Substitution { // sometimes abbreviated Sub
 }
 
 Substitution.prototype.isSubstitution = true
+Substitution.placeholderRegex = placeholderRegex
 module.exports = Substitution
