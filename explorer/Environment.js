@@ -43,6 +43,21 @@ class Environment {
       return null
   }
 
+  interpretAction(action) {
+    action = Object.assign({}, action)
+    for(var i in action) {
+      if(i == '_verb') // don't interpret the verb!
+        continue
+      let noumenon = this.find(action[i])
+      if(noumenon)
+        action[i] = noumenon
+      else
+        return null // fail if just one cluase is not matched
+    }
+    // if we've survived the loop, the action is valid
+    return action
+  }
+
   get location() {
     if(this.protagonist)
       return this.protagonist.location
@@ -84,6 +99,30 @@ class Environment {
   }
   randomNoumenon() {
     return this.randomNoumena(1)[0]
+  }
+
+  parseImperative(str) {
+    if(this.protagonist.possibilities) {
+      let list = []
+      let possibleActions = this.protagonist.possibilities.parseImperative(str)
+      //console.log('2. user input could match:', possibleActions)
+      for(var i in possibleActions) {
+        let possibility = possibleActions[i].possibility
+        let action = this.interpretAction(possibleActions[i].action)
+        if(action) {
+          action._subject = this.protagonist
+          console.log(
+            'enviroment interpretation of',
+            possibleActions[i],
+            'is', action
+          )
+
+          list.push({action:action, possibility:possibility})
+        }
+      }
+      return list
+    } else
+      return null
   }
 }
 module.exports = Environment

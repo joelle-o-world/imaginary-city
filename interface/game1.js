@@ -98,6 +98,21 @@ class Environment {
       return null
   }
 
+  interpretAction(action) {
+    action = Object.assign({}, action)
+    for(var i in action) {
+      if(i == '_verb') // don't interpret the verb!
+        continue
+      let noumenon = this.find(action[i])
+      if(noumenon)
+        action[i] = noumenon
+      else
+        return null // fail if just one cluase is not matched
+    }
+    // if we've survived the loop, the action is valid
+    return action
+  }
+
   get location() {
     if(this.protagonist)
       return this.protagonist.location
@@ -140,16 +155,41 @@ class Environment {
   randomNoumenon() {
     return this.randomNoumena(1)[0]
   }
+
+  parseImperative(str) {
+    if(this.protagonist.possibilities) {
+      let list = []
+      let possibleActions = this.protagonist.possibilities.parseImperative(str)
+      //console.log('2. user input could match:', possibleActions)
+      for(var i in possibleActions) {
+        let possibility = possibleActions[i].possibility
+        let action = this.interpretAction(possibleActions[i].action)
+        if(action) {
+          action._subject = this.protagonist
+          console.log(
+            'enviroment interpretation of',
+            possibleActions[i],
+            'is', action
+          )
+
+          list.push({action:action, possibility:possibility})
+        }
+      }
+      return list
+    } else
+      return null
+  }
 }
 module.exports = Environment
 
-},{"../src":31,"./parseNounPhrase":6}],3:[function(require,module,exports){
+},{"../src":39,"./parseNounPhrase":6}],3:[function(require,module,exports){
 (function (process){
 const readline = require("readline")
 const CommandTemplate = require("./CommandTemplate")
 const Environment = require("./Environment")
 const confusionLog = require("./confusionLog.js")
 const sentencify = require("./sentencify")
+const verbPhrase = require("../src/utility/conjugate/verbPhrase")
 
 class Explorer {
   constructor(
@@ -183,6 +223,17 @@ class Explorer {
     this.newline(2)
     let strNoPunc = str.replace(/[.,?!]/g, "") // string without punctuation
     let commandsMatched = 0
+
+    // use PossibilitySet of protagonist
+    let possibleActions = this.environment.parseImperative(strNoPunc)
+    console.log('possibleActions for \"'+str+'\":', possibleActions)
+    if(possibleActions.length) {
+      let {action, possibility} = possibleActions[0]
+      possibility.execute(action)
+      let output = verbPhrase(action).str()
+      this.writeParagraph(output)
+      return ;
+    }
 
     // test each command template for a match
     for(var i in this.commandTemplates) {
@@ -254,7 +305,7 @@ class Explorer {
 module.exports = Explorer
 
 }).call(this,require('_process'))
-},{"./CommandTemplate":1,"./Environment":2,"./confusionLog.js":4,"./sentencify":8,"_process":66,"readline":64}],4:[function(require,module,exports){
+},{"../src/utility/conjugate/verbPhrase":72,"./CommandTemplate":1,"./Environment":2,"./confusionLog.js":4,"./sentencify":8,"_process":78,"readline":76}],4:[function(require,module,exports){
 (function (__dirname){
 const fs = require("fs")
 const path = require("path")
@@ -273,7 +324,7 @@ function confusionLog(str, nCommandsMatched) {
 module.exports = confusionLog
 
 }).call(this,"/explorer")
-},{"fs":64,"path":65}],5:[function(require,module,exports){
+},{"fs":76,"path":77}],5:[function(require,module,exports){
 const CommandTemplate = require("../explorer/CommandTemplate.js")
 const Explorer = require("../explorer/Explorer")
 const Environment = require("../explorer/Environment")
@@ -451,12 +502,12 @@ function iterativeDescribe() {
 
 function begin() {
   const tt = new TickyText(document.getElementById("output"))
-  const tts = new TTSQueue(responsiveVoice)
+  const tts = null//new TTSQueue(responsiveVoice)
 
 
   game.write = (...strs) => {
     if(tts)
-      tts.speak(strs.join(""), "UK English Male", {rate: 0.85, pitch:2})
+      tts.speak(strs.join(""), "UK English Female", {rate: 0.85, pitch:1/2})
     tt.write(...strs)
   }
   //game.writeln = (...str) => tt.writeln(...str)
@@ -466,8 +517,8 @@ function begin() {
     iterativeDescribe()
   }
 
-  if(responsiveVoice)
-    responsiveVoice.voiceSupport()
+  if(window.responsiveVoice)
+    window.responsiveVoice.voiceSupport()
 
   document.getElementById("userInput").placeholder = "Please enter an instruction for "+person.fullName+"."
 
@@ -478,7 +529,7 @@ function begin() {
 document.addEventListener('click', begin)
 window.userInput = str => game.input(str)
 
-},{"../explorer/CommandTemplate.js":1,"../explorer/Environment":2,"../explorer/Explorer":3,"../interface/TTSQueue":9,"../interface/TickyText":10,"../src/buildings/TownHouse":29,"../src/utility":61}],6:[function(require,module,exports){
+},{"../explorer/CommandTemplate.js":1,"../explorer/Environment":2,"../explorer/Explorer":3,"../interface/TTSQueue":9,"../interface/TickyText":10,"../src/buildings/TownHouse":37,"../src/utility":73}],6:[function(require,module,exports){
 const parseText = require("./parseText")
 
 const articles = [
@@ -714,7 +765,6 @@ class TTSQueue {
   }
 
   speak(text, voice, parameters) {
-    console.log("speak")
     if(!(/\w/).test(text))
       return "nah"
 
@@ -725,7 +775,6 @@ class TTSQueue {
   }
 
   playNow(text, voice, parameters) {
-    console.log("playNow")
     parameters = Object.assign({}, parameters)
     parameters.onend = () => this.next()
     this.rv.speak(text, voice, parameters)
@@ -733,7 +782,6 @@ class TTSQueue {
   }
 
   next() {
-    console.log("next")
     this.nowPlaying = null
     if(this.queue.length)
       this.playNow(...this.queue.shift())
@@ -742,7 +790,6 @@ class TTSQueue {
   }
 
   done() {
-    console.log("done")
     this.nowPlaying = null
     if(this.onDone)
       this.onDone()
@@ -757,7 +804,7 @@ class TickyText {
     this.placeInCurrent = 0 // Index of next character to print from
     this.intervalTimer = null
     this.str = ""
-    this.speed = 50 // ms
+    this.speed = 25 // ms
 
     this.targetElement = targetElement
   }
@@ -817,6 +864,744 @@ class TickyText {
 module.exports = TickyText
 
 },{}],11:[function(require,module,exports){
+'use strict';
+
+module.exports = require('./parser').default;
+},{"./parser":12}],12:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = parse;
+
+require('regenerator-runtime/runtime');
+
+var _debug = require('debug');
+
+var _debug2 = _interopRequireDefault(_debug);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var _marked = [matchNexter].map(regeneratorRuntime.mark);
+
+var debug = (0, _debug2.default)('getParameterNames');
+
+var COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
+var SPACES = /\s/mg;
+var NEW_LINES = /\r?\n|\r/mg;
+var ASYNC = /^\s*async(\s*|\()(?!\s*\=)/;
+var ES6_STATIC = /static.*$/mg;
+
+var nonVarChars = ['=', '(', ')', ','];
+
+function matchNexter(string) {
+  var updateIndex, minIndex, indexes, index, nextIndex, subString, ret, _subString, _ret;
+
+  return regeneratorRuntime.wrap(function matchNexter$(_context) {
+    while (1) {
+      switch (_context.prev = _context.next) {
+        case 0:
+          minIndex = function minIndex() {
+            return Math.min.apply(Math, indexes.filter(function (i) {
+              return i > -1;
+            }));
+          };
+
+          updateIndex = function updateIndex(stringIndex) {
+            debug('Updating index starting at: ' + stringIndex);
+            return indexes.map(function (foundAt, i) {
+              if (foundAt === stringIndex) {
+                return string.indexOf(nonVarChars[i], foundAt + 1);
+              }
+              return foundAt;
+            });
+          };
+
+          debug('Chopping ' + string);
+          indexes = nonVarChars.map(function (c) {
+            return string.indexOf(c);
+          });
+          index = 0;
+
+        case 5:
+          if (!(index !== Infinity)) {
+            _context.next = 26;
+            break;
+          }
+
+          nextIndex = minIndex();
+
+          debug('String: ' + string + '\nIndexes: ' + indexes + '\nIndex: ' + index + '\nNextIndex: ' + nextIndex);
+
+          if (!(nextIndex !== Infinity)) {
+            _context.next = 16;
+            break;
+          }
+
+          subString = string.slice(index, nextIndex);
+          ret = {
+            subString: subString,
+            start: index,
+            end: nextIndex
+          };
+
+          debug(ret);
+          _context.next = 14;
+          return ret;
+
+        case 14:
+          _context.next = 22;
+          break;
+
+        case 16:
+          if (!string.length) {
+            _context.next = 22;
+            break;
+          }
+
+          _subString = string.slice(index);
+          _ret = {
+            subString: _subString,
+            start: index,
+            end: string.length
+          };
+
+          debug(_ret);
+          _context.next = 22;
+          return _ret;
+
+        case 22:
+          index = nextIndex;
+          indexes = updateIndex(index);
+          _context.next = 5;
+          break;
+
+        case 26:
+        case 'end':
+          return _context.stop();
+      }
+    }
+  }, _marked[0], this);
+}
+
+function parse(string) {
+  var gen = matchNexter(string.toString().replace(ES6_STATIC, '').replace(NEW_LINES, '').replace(COMMENTS, '').replace(ASYNC, '').replace(SPACES, ''));
+
+  var next = gen.next();
+  var value = next.value;
+  var argsEnded = false;
+  var firstVar = true;
+  var depth = {
+    defaultParams: 0,
+    parenthesis: 0
+  };
+
+  var vars = [];
+  if (value && value.subString && value.subString.length) {
+    debug('Pushing ' + value.subString + ' to vars to start');
+    vars.push(value.subString);
+  }
+  debug('Starting var: ' + vars);
+  next = gen.next();
+  value = next.value;
+  while (value !== undefined && !argsEnded) {
+    debug('Continuing with ' + value.subString);
+    var firstChar = value.subString[0];
+    debug('firstChar: ' + firstChar);
+    debug('firstVar: ' + firstVar);
+    debug('argsEnded: ' + argsEnded);
+    debug('depth: ' + JSON.stringify(depth));
+    debug('Current vars: ' + vars);
+    if (firstChar === '=') {
+      if (value.subString[1] === '>' && depth.defaultParams === 0) {
+        debug('Found =>');
+        argsEnded = true;
+      } else {
+        debug('Found =');
+        depth.defaultParams++;
+      }
+    } else if (firstChar === '(' && !firstVar && vars.length) {
+      firstVar = true;
+      debug('Found (');
+      depth.parenthesis++;
+    } else if (firstChar === '(' && firstVar) {
+      debug('Removing function name from vars');
+      vars.pop();
+      var newVar = value.subString.slice(1);
+      if (newVar.length) {
+        debug('Pushing to vars: ' + newVar);
+        vars.push(newVar);
+      }
+      firstVar = false;
+    } else if (firstChar === ')' && depth.parenthesis > 0) {
+      debug('Found )');
+      depth.parenthesis--;
+    } else if (firstChar === ')' && depth.parenthesis === 0) {
+      debug('Found ) and we are done');
+      argsEnded = true;
+    } else if (firstChar === ',' || firstChar === '(' && vars.length === 0) {
+      var _newVar = value.subString.slice(1);
+      debug('Found \'' + _newVar + '\'');
+      if (depth.parenthesis === 0) {
+        depth.defaultParams = 0;
+        debug('Pushing to vars: ' + _newVar);
+        vars.push(_newVar);
+      }
+    }
+    next = gen.next();
+    value = next.value;
+  }
+  return vars;
+}
+},{"debug":13,"regenerator-runtime/runtime":23}],13:[function(require,module,exports){
+(function (process){
+/**
+ * This is the web browser implementation of `debug()`.
+ *
+ * Expose `debug()` as the module.
+ */
+
+exports = module.exports = require('./debug');
+exports.log = log;
+exports.formatArgs = formatArgs;
+exports.save = save;
+exports.load = load;
+exports.useColors = useColors;
+exports.storage = 'undefined' != typeof chrome
+               && 'undefined' != typeof chrome.storage
+                  ? chrome.storage.local
+                  : localstorage();
+
+/**
+ * Colors.
+ */
+
+exports.colors = [
+  'lightseagreen',
+  'forestgreen',
+  'goldenrod',
+  'dodgerblue',
+  'darkorchid',
+  'crimson'
+];
+
+/**
+ * Currently only WebKit-based Web Inspectors, Firefox >= v31,
+ * and the Firebug extension (any Firefox version) are known
+ * to support "%c" CSS customizations.
+ *
+ * TODO: add a `localStorage` variable to explicitly enable/disable colors
+ */
+
+function useColors() {
+  // NB: In an Electron preload script, document will be defined but not fully
+  // initialized. Since we know we're in Chrome, we'll just detect this case
+  // explicitly
+  if (typeof window !== 'undefined' && window.process && window.process.type === 'renderer') {
+    return true;
+  }
+
+  // is webkit? http://stackoverflow.com/a/16459606/376773
+  // document is undefined in react-native: https://github.com/facebook/react-native/pull/1632
+  return (typeof document !== 'undefined' && document.documentElement && document.documentElement.style && document.documentElement.style.WebkitAppearance) ||
+    // is firebug? http://stackoverflow.com/a/398120/376773
+    (typeof window !== 'undefined' && window.console && (window.console.firebug || (window.console.exception && window.console.table))) ||
+    // is firefox >= v31?
+    // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
+    (typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31) ||
+    // double check webkit in userAgent just in case we are in a worker
+    (typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/));
+}
+
+/**
+ * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
+ */
+
+exports.formatters.j = function(v) {
+  try {
+    return JSON.stringify(v);
+  } catch (err) {
+    return '[UnexpectedJSONParseError]: ' + err.message;
+  }
+};
+
+
+/**
+ * Colorize log arguments if enabled.
+ *
+ * @api public
+ */
+
+function formatArgs(args) {
+  var useColors = this.useColors;
+
+  args[0] = (useColors ? '%c' : '')
+    + this.namespace
+    + (useColors ? ' %c' : ' ')
+    + args[0]
+    + (useColors ? '%c ' : ' ')
+    + '+' + exports.humanize(this.diff);
+
+  if (!useColors) return;
+
+  var c = 'color: ' + this.color;
+  args.splice(1, 0, c, 'color: inherit')
+
+  // the final "%c" is somewhat tricky, because there could be other
+  // arguments passed either before or after the %c, so we need to
+  // figure out the correct index to insert the CSS into
+  var index = 0;
+  var lastC = 0;
+  args[0].replace(/%[a-zA-Z%]/g, function(match) {
+    if ('%%' === match) return;
+    index++;
+    if ('%c' === match) {
+      // we only are interested in the *last* %c
+      // (the user may have provided their own)
+      lastC = index;
+    }
+  });
+
+  args.splice(lastC, 0, c);
+}
+
+/**
+ * Invokes `console.log()` when available.
+ * No-op when `console.log` is not a "function".
+ *
+ * @api public
+ */
+
+function log() {
+  // this hackery is required for IE8/9, where
+  // the `console.log` function doesn't have 'apply'
+  return 'object' === typeof console
+    && console.log
+    && Function.prototype.apply.call(console.log, console, arguments);
+}
+
+/**
+ * Save `namespaces`.
+ *
+ * @param {String} namespaces
+ * @api private
+ */
+
+function save(namespaces) {
+  try {
+    if (null == namespaces) {
+      exports.storage.removeItem('debug');
+    } else {
+      exports.storage.debug = namespaces;
+    }
+  } catch(e) {}
+}
+
+/**
+ * Load `namespaces`.
+ *
+ * @return {String} returns the previously persisted debug modes
+ * @api private
+ */
+
+function load() {
+  var r;
+  try {
+    r = exports.storage.debug;
+  } catch(e) {}
+
+  // If debug isn't set in LS, and we're in Electron, try to load $DEBUG
+  if (!r && typeof process !== 'undefined' && 'env' in process) {
+    r = process.env.DEBUG;
+  }
+
+  return r;
+}
+
+/**
+ * Enable namespaces listed in `localStorage.debug` initially.
+ */
+
+exports.enable(load());
+
+/**
+ * Localstorage attempts to return the localstorage.
+ *
+ * This is necessary because safari throws
+ * when a user disables cookies/localstorage
+ * and you attempt to access it.
+ *
+ * @return {LocalStorage}
+ * @api private
+ */
+
+function localstorage() {
+  try {
+    return window.localStorage;
+  } catch (e) {}
+}
+
+}).call(this,require('_process'))
+},{"./debug":14,"_process":78}],14:[function(require,module,exports){
+
+/**
+ * This is the common logic for both the Node.js and web browser
+ * implementations of `debug()`.
+ *
+ * Expose `debug()` as the module.
+ */
+
+exports = module.exports = createDebug.debug = createDebug['default'] = createDebug;
+exports.coerce = coerce;
+exports.disable = disable;
+exports.enable = enable;
+exports.enabled = enabled;
+exports.humanize = require('ms');
+
+/**
+ * The currently active debug mode names, and names to skip.
+ */
+
+exports.names = [];
+exports.skips = [];
+
+/**
+ * Map of special "%n" handling functions, for the debug "format" argument.
+ *
+ * Valid key names are a single, lower or upper-case letter, i.e. "n" and "N".
+ */
+
+exports.formatters = {};
+
+/**
+ * Previous log timestamp.
+ */
+
+var prevTime;
+
+/**
+ * Select a color.
+ * @param {String} namespace
+ * @return {Number}
+ * @api private
+ */
+
+function selectColor(namespace) {
+  var hash = 0, i;
+
+  for (i in namespace) {
+    hash  = ((hash << 5) - hash) + namespace.charCodeAt(i);
+    hash |= 0; // Convert to 32bit integer
+  }
+
+  return exports.colors[Math.abs(hash) % exports.colors.length];
+}
+
+/**
+ * Create a debugger with the given `namespace`.
+ *
+ * @param {String} namespace
+ * @return {Function}
+ * @api public
+ */
+
+function createDebug(namespace) {
+
+  function debug() {
+    // disabled?
+    if (!debug.enabled) return;
+
+    var self = debug;
+
+    // set `diff` timestamp
+    var curr = +new Date();
+    var ms = curr - (prevTime || curr);
+    self.diff = ms;
+    self.prev = prevTime;
+    self.curr = curr;
+    prevTime = curr;
+
+    // turn the `arguments` into a proper Array
+    var args = new Array(arguments.length);
+    for (var i = 0; i < args.length; i++) {
+      args[i] = arguments[i];
+    }
+
+    args[0] = exports.coerce(args[0]);
+
+    if ('string' !== typeof args[0]) {
+      // anything else let's inspect with %O
+      args.unshift('%O');
+    }
+
+    // apply any `formatters` transformations
+    var index = 0;
+    args[0] = args[0].replace(/%([a-zA-Z%])/g, function(match, format) {
+      // if we encounter an escaped % then don't increase the array index
+      if (match === '%%') return match;
+      index++;
+      var formatter = exports.formatters[format];
+      if ('function' === typeof formatter) {
+        var val = args[index];
+        match = formatter.call(self, val);
+
+        // now we need to remove `args[index]` since it's inlined in the `format`
+        args.splice(index, 1);
+        index--;
+      }
+      return match;
+    });
+
+    // apply env-specific formatting (colors, etc.)
+    exports.formatArgs.call(self, args);
+
+    var logFn = debug.log || exports.log || console.log.bind(console);
+    logFn.apply(self, args);
+  }
+
+  debug.namespace = namespace;
+  debug.enabled = exports.enabled(namespace);
+  debug.useColors = exports.useColors();
+  debug.color = selectColor(namespace);
+
+  // env-specific initialization logic for debug instances
+  if ('function' === typeof exports.init) {
+    exports.init(debug);
+  }
+
+  return debug;
+}
+
+/**
+ * Enables a debug mode by namespaces. This can include modes
+ * separated by a colon and wildcards.
+ *
+ * @param {String} namespaces
+ * @api public
+ */
+
+function enable(namespaces) {
+  exports.save(namespaces);
+
+  exports.names = [];
+  exports.skips = [];
+
+  var split = (typeof namespaces === 'string' ? namespaces : '').split(/[\s,]+/);
+  var len = split.length;
+
+  for (var i = 0; i < len; i++) {
+    if (!split[i]) continue; // ignore empty strings
+    namespaces = split[i].replace(/\*/g, '.*?');
+    if (namespaces[0] === '-') {
+      exports.skips.push(new RegExp('^' + namespaces.substr(1) + '$'));
+    } else {
+      exports.names.push(new RegExp('^' + namespaces + '$'));
+    }
+  }
+}
+
+/**
+ * Disable debug output.
+ *
+ * @api public
+ */
+
+function disable() {
+  exports.enable('');
+}
+
+/**
+ * Returns true if the given mode name is enabled, false otherwise.
+ *
+ * @param {String} name
+ * @return {Boolean}
+ * @api public
+ */
+
+function enabled(name) {
+  var i, len;
+  for (i = 0, len = exports.skips.length; i < len; i++) {
+    if (exports.skips[i].test(name)) {
+      return false;
+    }
+  }
+  for (i = 0, len = exports.names.length; i < len; i++) {
+    if (exports.names[i].test(name)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Coerce `val`.
+ *
+ * @param {Mixed} val
+ * @return {Mixed}
+ * @api private
+ */
+
+function coerce(val) {
+  if (val instanceof Error) return val.stack || val.message;
+  return val;
+}
+
+},{"ms":15}],15:[function(require,module,exports){
+/**
+ * Helpers.
+ */
+
+var s = 1000;
+var m = s * 60;
+var h = m * 60;
+var d = h * 24;
+var y = d * 365.25;
+
+/**
+ * Parse or format the given `val`.
+ *
+ * Options:
+ *
+ *  - `long` verbose formatting [false]
+ *
+ * @param {String|Number} val
+ * @param {Object} [options]
+ * @throws {Error} throw an error if val is not a non-empty string or a number
+ * @return {String|Number}
+ * @api public
+ */
+
+module.exports = function(val, options) {
+  options = options || {};
+  var type = typeof val;
+  if (type === 'string' && val.length > 0) {
+    return parse(val);
+  } else if (type === 'number' && isNaN(val) === false) {
+    return options.long ? fmtLong(val) : fmtShort(val);
+  }
+  throw new Error(
+    'val is not a non-empty string or a valid number. val=' +
+      JSON.stringify(val)
+  );
+};
+
+/**
+ * Parse the given `str` and return milliseconds.
+ *
+ * @param {String} str
+ * @return {Number}
+ * @api private
+ */
+
+function parse(str) {
+  str = String(str);
+  if (str.length > 100) {
+    return;
+  }
+  var match = /^((?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|years?|yrs?|y)?$/i.exec(
+    str
+  );
+  if (!match) {
+    return;
+  }
+  var n = parseFloat(match[1]);
+  var type = (match[2] || 'ms').toLowerCase();
+  switch (type) {
+    case 'years':
+    case 'year':
+    case 'yrs':
+    case 'yr':
+    case 'y':
+      return n * y;
+    case 'days':
+    case 'day':
+    case 'd':
+      return n * d;
+    case 'hours':
+    case 'hour':
+    case 'hrs':
+    case 'hr':
+    case 'h':
+      return n * h;
+    case 'minutes':
+    case 'minute':
+    case 'mins':
+    case 'min':
+    case 'm':
+      return n * m;
+    case 'seconds':
+    case 'second':
+    case 'secs':
+    case 'sec':
+    case 's':
+      return n * s;
+    case 'milliseconds':
+    case 'millisecond':
+    case 'msecs':
+    case 'msec':
+    case 'ms':
+      return n;
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * Short format for `ms`.
+ *
+ * @param {Number} ms
+ * @return {String}
+ * @api private
+ */
+
+function fmtShort(ms) {
+  if (ms >= d) {
+    return Math.round(ms / d) + 'd';
+  }
+  if (ms >= h) {
+    return Math.round(ms / h) + 'h';
+  }
+  if (ms >= m) {
+    return Math.round(ms / m) + 'm';
+  }
+  if (ms >= s) {
+    return Math.round(ms / s) + 's';
+  }
+  return ms + 'ms';
+}
+
+/**
+ * Long format for `ms`.
+ *
+ * @param {Number} ms
+ * @return {String}
+ * @api private
+ */
+
+function fmtLong(ms) {
+  return plural(ms, d, 'day') ||
+    plural(ms, h, 'hour') ||
+    plural(ms, m, 'minute') ||
+    plural(ms, s, 'second') ||
+    ms + ' ms';
+}
+
+/**
+ * Pluralization helper.
+ */
+
+function plural(ms, n, name) {
+  if (ms < n) {
+    return;
+  }
+  if (ms < n * 1.5) {
+    return Math.floor(ms / n) + ' ' + name;
+  }
+  return Math.ceil(ms / n) + ' ' + name + 's';
+}
+
+},{}],16:[function(require,module,exports){
 'use strict';
 /* eslint indent: 4 */
 
@@ -996,7 +1781,7 @@ class DRange {
 
 module.exports = DRange;
 
-},{}],12:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 const ret    = require('ret');
 const DRange = require('drange');
 const types  = ret.types;
@@ -1259,7 +2044,7 @@ module.exports = class RandExp {
   }
 };
 
-},{"drange":11,"ret":18}],13:[function(require,module,exports){
+},{"drange":16,"ret":24}],18:[function(require,module,exports){
 module.exports=[
 "Aaren"
 ,
@@ -11154,7 +11939,7 @@ module.exports=[
 "Zuzana"
 ]
 
-},{}],14:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 (function (process){
 
 var names = require('./names.json')
@@ -11186,7 +11971,7 @@ if(!module.parent) {
   
 
 }).call(this,require('_process'))
-},{"./first-names.json":13,"./middle-names.json":15,"./names.json":16,"./places.json":17,"_process":66}],15:[function(require,module,exports){
+},{"./first-names.json":18,"./middle-names.json":20,"./names.json":21,"./places.json":22,"_process":78}],20:[function(require,module,exports){
 module.exports=[
 "Aaron"
 ,
@@ -18983,7 +19768,7 @@ module.exports=[
 "Zolly"
 ]
 
-},{}],16:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 module.exports=[
 "Aaberg"
 ,
@@ -62958,7 +63743,7 @@ module.exports=[
 "Zysk"
 ]
 
-},{}],17:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 module.exports=[
 "Aaronsburg"
 ,
@@ -83353,7 +84138,747 @@ module.exports=[
 "Zwolle"
 ]
 
-},{}],18:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
+(function (global){
+/**
+ * Copyright (c) 2014, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * https://raw.github.com/facebook/regenerator/master/LICENSE file. An
+ * additional grant of patent rights can be found in the PATENTS file in
+ * the same directory.
+ */
+
+!(function(global) {
+  "use strict";
+
+  var Op = Object.prototype;
+  var hasOwn = Op.hasOwnProperty;
+  var undefined; // More compressible than void 0.
+  var $Symbol = typeof Symbol === "function" ? Symbol : {};
+  var iteratorSymbol = $Symbol.iterator || "@@iterator";
+  var asyncIteratorSymbol = $Symbol.asyncIterator || "@@asyncIterator";
+  var toStringTagSymbol = $Symbol.toStringTag || "@@toStringTag";
+
+  var inModule = typeof module === "object";
+  var runtime = global.regeneratorRuntime;
+  if (runtime) {
+    if (inModule) {
+      // If regeneratorRuntime is defined globally and we're in a module,
+      // make the exports object identical to regeneratorRuntime.
+      module.exports = runtime;
+    }
+    // Don't bother evaluating the rest of this file if the runtime was
+    // already defined globally.
+    return;
+  }
+
+  // Define the runtime globally (as expected by generated code) as either
+  // module.exports (if we're in a module) or a new, empty object.
+  runtime = global.regeneratorRuntime = inModule ? module.exports : {};
+
+  function wrap(innerFn, outerFn, self, tryLocsList) {
+    // If outerFn provided and outerFn.prototype is a Generator, then outerFn.prototype instanceof Generator.
+    var protoGenerator = outerFn && outerFn.prototype instanceof Generator ? outerFn : Generator;
+    var generator = Object.create(protoGenerator.prototype);
+    var context = new Context(tryLocsList || []);
+
+    // The ._invoke method unifies the implementations of the .next,
+    // .throw, and .return methods.
+    generator._invoke = makeInvokeMethod(innerFn, self, context);
+
+    return generator;
+  }
+  runtime.wrap = wrap;
+
+  // Try/catch helper to minimize deoptimizations. Returns a completion
+  // record like context.tryEntries[i].completion. This interface could
+  // have been (and was previously) designed to take a closure to be
+  // invoked without arguments, but in all the cases we care about we
+  // already have an existing method we want to call, so there's no need
+  // to create a new function object. We can even get away with assuming
+  // the method takes exactly one argument, since that happens to be true
+  // in every case, so we don't have to touch the arguments object. The
+  // only additional allocation required is the completion record, which
+  // has a stable shape and so hopefully should be cheap to allocate.
+  function tryCatch(fn, obj, arg) {
+    try {
+      return { type: "normal", arg: fn.call(obj, arg) };
+    } catch (err) {
+      return { type: "throw", arg: err };
+    }
+  }
+
+  var GenStateSuspendedStart = "suspendedStart";
+  var GenStateSuspendedYield = "suspendedYield";
+  var GenStateExecuting = "executing";
+  var GenStateCompleted = "completed";
+
+  // Returning this object from the innerFn has the same effect as
+  // breaking out of the dispatch switch statement.
+  var ContinueSentinel = {};
+
+  // Dummy constructor functions that we use as the .constructor and
+  // .constructor.prototype properties for functions that return Generator
+  // objects. For full spec compliance, you may wish to configure your
+  // minifier not to mangle the names of these two functions.
+  function Generator() {}
+  function GeneratorFunction() {}
+  function GeneratorFunctionPrototype() {}
+
+  // This is a polyfill for %IteratorPrototype% for environments that
+  // don't natively support it.
+  var IteratorPrototype = {};
+  IteratorPrototype[iteratorSymbol] = function () {
+    return this;
+  };
+
+  var getProto = Object.getPrototypeOf;
+  var NativeIteratorPrototype = getProto && getProto(getProto(values([])));
+  if (NativeIteratorPrototype &&
+      NativeIteratorPrototype !== Op &&
+      hasOwn.call(NativeIteratorPrototype, iteratorSymbol)) {
+    // This environment has a native %IteratorPrototype%; use it instead
+    // of the polyfill.
+    IteratorPrototype = NativeIteratorPrototype;
+  }
+
+  var Gp = GeneratorFunctionPrototype.prototype =
+    Generator.prototype = Object.create(IteratorPrototype);
+  GeneratorFunction.prototype = Gp.constructor = GeneratorFunctionPrototype;
+  GeneratorFunctionPrototype.constructor = GeneratorFunction;
+  GeneratorFunctionPrototype[toStringTagSymbol] =
+    GeneratorFunction.displayName = "GeneratorFunction";
+
+  // Helper for defining the .next, .throw, and .return methods of the
+  // Iterator interface in terms of a single ._invoke method.
+  function defineIteratorMethods(prototype) {
+    ["next", "throw", "return"].forEach(function(method) {
+      prototype[method] = function(arg) {
+        return this._invoke(method, arg);
+      };
+    });
+  }
+
+  runtime.isGeneratorFunction = function(genFun) {
+    var ctor = typeof genFun === "function" && genFun.constructor;
+    return ctor
+      ? ctor === GeneratorFunction ||
+        // For the native GeneratorFunction constructor, the best we can
+        // do is to check its .name property.
+        (ctor.displayName || ctor.name) === "GeneratorFunction"
+      : false;
+  };
+
+  runtime.mark = function(genFun) {
+    if (Object.setPrototypeOf) {
+      Object.setPrototypeOf(genFun, GeneratorFunctionPrototype);
+    } else {
+      genFun.__proto__ = GeneratorFunctionPrototype;
+      if (!(toStringTagSymbol in genFun)) {
+        genFun[toStringTagSymbol] = "GeneratorFunction";
+      }
+    }
+    genFun.prototype = Object.create(Gp);
+    return genFun;
+  };
+
+  // Within the body of any async function, `await x` is transformed to
+  // `yield regeneratorRuntime.awrap(x)`, so that the runtime can test
+  // `hasOwn.call(value, "__await")` to determine if the yielded value is
+  // meant to be awaited.
+  runtime.awrap = function(arg) {
+    return { __await: arg };
+  };
+
+  function AsyncIterator(generator) {
+    function invoke(method, arg, resolve, reject) {
+      var record = tryCatch(generator[method], generator, arg);
+      if (record.type === "throw") {
+        reject(record.arg);
+      } else {
+        var result = record.arg;
+        var value = result.value;
+        if (value &&
+            typeof value === "object" &&
+            hasOwn.call(value, "__await")) {
+          return Promise.resolve(value.__await).then(function(value) {
+            invoke("next", value, resolve, reject);
+          }, function(err) {
+            invoke("throw", err, resolve, reject);
+          });
+        }
+
+        return Promise.resolve(value).then(function(unwrapped) {
+          // When a yielded Promise is resolved, its final value becomes
+          // the .value of the Promise<{value,done}> result for the
+          // current iteration. If the Promise is rejected, however, the
+          // result for this iteration will be rejected with the same
+          // reason. Note that rejections of yielded Promises are not
+          // thrown back into the generator function, as is the case
+          // when an awaited Promise is rejected. This difference in
+          // behavior between yield and await is important, because it
+          // allows the consumer to decide what to do with the yielded
+          // rejection (swallow it and continue, manually .throw it back
+          // into the generator, abandon iteration, whatever). With
+          // await, by contrast, there is no opportunity to examine the
+          // rejection reason outside the generator function, so the
+          // only option is to throw it from the await expression, and
+          // let the generator function handle the exception.
+          result.value = unwrapped;
+          resolve(result);
+        }, reject);
+      }
+    }
+
+    if (typeof global.process === "object" && global.process.domain) {
+      invoke = global.process.domain.bind(invoke);
+    }
+
+    var previousPromise;
+
+    function enqueue(method, arg) {
+      function callInvokeWithMethodAndArg() {
+        return new Promise(function(resolve, reject) {
+          invoke(method, arg, resolve, reject);
+        });
+      }
+
+      return previousPromise =
+        // If enqueue has been called before, then we want to wait until
+        // all previous Promises have been resolved before calling invoke,
+        // so that results are always delivered in the correct order. If
+        // enqueue has not been called before, then it is important to
+        // call invoke immediately, without waiting on a callback to fire,
+        // so that the async generator function has the opportunity to do
+        // any necessary setup in a predictable way. This predictability
+        // is why the Promise constructor synchronously invokes its
+        // executor callback, and why async functions synchronously
+        // execute code before the first await. Since we implement simple
+        // async functions in terms of async generators, it is especially
+        // important to get this right, even though it requires care.
+        previousPromise ? previousPromise.then(
+          callInvokeWithMethodAndArg,
+          // Avoid propagating failures to Promises returned by later
+          // invocations of the iterator.
+          callInvokeWithMethodAndArg
+        ) : callInvokeWithMethodAndArg();
+    }
+
+    // Define the unified helper method that is used to implement .next,
+    // .throw, and .return (see defineIteratorMethods).
+    this._invoke = enqueue;
+  }
+
+  defineIteratorMethods(AsyncIterator.prototype);
+  AsyncIterator.prototype[asyncIteratorSymbol] = function () {
+    return this;
+  };
+  runtime.AsyncIterator = AsyncIterator;
+
+  // Note that simple async functions are implemented on top of
+  // AsyncIterator objects; they just return a Promise for the value of
+  // the final result produced by the iterator.
+  runtime.async = function(innerFn, outerFn, self, tryLocsList) {
+    var iter = new AsyncIterator(
+      wrap(innerFn, outerFn, self, tryLocsList)
+    );
+
+    return runtime.isGeneratorFunction(outerFn)
+      ? iter // If outerFn is a generator, return the full iterator.
+      : iter.next().then(function(result) {
+          return result.done ? result.value : iter.next();
+        });
+  };
+
+  function makeInvokeMethod(innerFn, self, context) {
+    var state = GenStateSuspendedStart;
+
+    return function invoke(method, arg) {
+      if (state === GenStateExecuting) {
+        throw new Error("Generator is already running");
+      }
+
+      if (state === GenStateCompleted) {
+        if (method === "throw") {
+          throw arg;
+        }
+
+        // Be forgiving, per 25.3.3.3.3 of the spec:
+        // https://people.mozilla.org/~jorendorff/es6-draft.html#sec-generatorresume
+        return doneResult();
+      }
+
+      context.method = method;
+      context.arg = arg;
+
+      while (true) {
+        var delegate = context.delegate;
+        if (delegate) {
+          var delegateResult = maybeInvokeDelegate(delegate, context);
+          if (delegateResult) {
+            if (delegateResult === ContinueSentinel) continue;
+            return delegateResult;
+          }
+        }
+
+        if (context.method === "next") {
+          // Setting context._sent for legacy support of Babel's
+          // function.sent implementation.
+          context.sent = context._sent = context.arg;
+
+        } else if (context.method === "throw") {
+          if (state === GenStateSuspendedStart) {
+            state = GenStateCompleted;
+            throw context.arg;
+          }
+
+          context.dispatchException(context.arg);
+
+        } else if (context.method === "return") {
+          context.abrupt("return", context.arg);
+        }
+
+        state = GenStateExecuting;
+
+        var record = tryCatch(innerFn, self, context);
+        if (record.type === "normal") {
+          // If an exception is thrown from innerFn, we leave state ===
+          // GenStateExecuting and loop back for another invocation.
+          state = context.done
+            ? GenStateCompleted
+            : GenStateSuspendedYield;
+
+          if (record.arg === ContinueSentinel) {
+            continue;
+          }
+
+          return {
+            value: record.arg,
+            done: context.done
+          };
+
+        } else if (record.type === "throw") {
+          state = GenStateCompleted;
+          // Dispatch the exception by looping back around to the
+          // context.dispatchException(context.arg) call above.
+          context.method = "throw";
+          context.arg = record.arg;
+        }
+      }
+    };
+  }
+
+  // Call delegate.iterator[context.method](context.arg) and handle the
+  // result, either by returning a { value, done } result from the
+  // delegate iterator, or by modifying context.method and context.arg,
+  // setting context.delegate to null, and returning the ContinueSentinel.
+  function maybeInvokeDelegate(delegate, context) {
+    var method = delegate.iterator[context.method];
+    if (method === undefined) {
+      // A .throw or .return when the delegate iterator has no .throw
+      // method always terminates the yield* loop.
+      context.delegate = null;
+
+      if (context.method === "throw") {
+        if (delegate.iterator.return) {
+          // If the delegate iterator has a return method, give it a
+          // chance to clean up.
+          context.method = "return";
+          context.arg = undefined;
+          maybeInvokeDelegate(delegate, context);
+
+          if (context.method === "throw") {
+            // If maybeInvokeDelegate(context) changed context.method from
+            // "return" to "throw", let that override the TypeError below.
+            return ContinueSentinel;
+          }
+        }
+
+        context.method = "throw";
+        context.arg = new TypeError(
+          "The iterator does not provide a 'throw' method");
+      }
+
+      return ContinueSentinel;
+    }
+
+    var record = tryCatch(method, delegate.iterator, context.arg);
+
+    if (record.type === "throw") {
+      context.method = "throw";
+      context.arg = record.arg;
+      context.delegate = null;
+      return ContinueSentinel;
+    }
+
+    var info = record.arg;
+
+    if (! info) {
+      context.method = "throw";
+      context.arg = new TypeError("iterator result is not an object");
+      context.delegate = null;
+      return ContinueSentinel;
+    }
+
+    if (info.done) {
+      // Assign the result of the finished delegate to the temporary
+      // variable specified by delegate.resultName (see delegateYield).
+      context[delegate.resultName] = info.value;
+
+      // Resume execution at the desired location (see delegateYield).
+      context.next = delegate.nextLoc;
+
+      // If context.method was "throw" but the delegate handled the
+      // exception, let the outer generator proceed normally. If
+      // context.method was "next", forget context.arg since it has been
+      // "consumed" by the delegate iterator. If context.method was
+      // "return", allow the original .return call to continue in the
+      // outer generator.
+      if (context.method !== "return") {
+        context.method = "next";
+        context.arg = undefined;
+      }
+
+    } else {
+      // Re-yield the result returned by the delegate method.
+      return info;
+    }
+
+    // The delegate iterator is finished, so forget it and continue with
+    // the outer generator.
+    context.delegate = null;
+    return ContinueSentinel;
+  }
+
+  // Define Generator.prototype.{next,throw,return} in terms of the
+  // unified ._invoke helper method.
+  defineIteratorMethods(Gp);
+
+  Gp[toStringTagSymbol] = "Generator";
+
+  // A Generator should always return itself as the iterator object when the
+  // @@iterator function is called on it. Some browsers' implementations of the
+  // iterator prototype chain incorrectly implement this, causing the Generator
+  // object to not be returned from this call. This ensures that doesn't happen.
+  // See https://github.com/facebook/regenerator/issues/274 for more details.
+  Gp[iteratorSymbol] = function() {
+    return this;
+  };
+
+  Gp.toString = function() {
+    return "[object Generator]";
+  };
+
+  function pushTryEntry(locs) {
+    var entry = { tryLoc: locs[0] };
+
+    if (1 in locs) {
+      entry.catchLoc = locs[1];
+    }
+
+    if (2 in locs) {
+      entry.finallyLoc = locs[2];
+      entry.afterLoc = locs[3];
+    }
+
+    this.tryEntries.push(entry);
+  }
+
+  function resetTryEntry(entry) {
+    var record = entry.completion || {};
+    record.type = "normal";
+    delete record.arg;
+    entry.completion = record;
+  }
+
+  function Context(tryLocsList) {
+    // The root entry object (effectively a try statement without a catch
+    // or a finally block) gives us a place to store values thrown from
+    // locations where there is no enclosing try statement.
+    this.tryEntries = [{ tryLoc: "root" }];
+    tryLocsList.forEach(pushTryEntry, this);
+    this.reset(true);
+  }
+
+  runtime.keys = function(object) {
+    var keys = [];
+    for (var key in object) {
+      keys.push(key);
+    }
+    keys.reverse();
+
+    // Rather than returning an object with a next method, we keep
+    // things simple and return the next function itself.
+    return function next() {
+      while (keys.length) {
+        var key = keys.pop();
+        if (key in object) {
+          next.value = key;
+          next.done = false;
+          return next;
+        }
+      }
+
+      // To avoid creating an additional object, we just hang the .value
+      // and .done properties off the next function object itself. This
+      // also ensures that the minifier will not anonymize the function.
+      next.done = true;
+      return next;
+    };
+  };
+
+  function values(iterable) {
+    if (iterable) {
+      var iteratorMethod = iterable[iteratorSymbol];
+      if (iteratorMethod) {
+        return iteratorMethod.call(iterable);
+      }
+
+      if (typeof iterable.next === "function") {
+        return iterable;
+      }
+
+      if (!isNaN(iterable.length)) {
+        var i = -1, next = function next() {
+          while (++i < iterable.length) {
+            if (hasOwn.call(iterable, i)) {
+              next.value = iterable[i];
+              next.done = false;
+              return next;
+            }
+          }
+
+          next.value = undefined;
+          next.done = true;
+
+          return next;
+        };
+
+        return next.next = next;
+      }
+    }
+
+    // Return an iterator with no values.
+    return { next: doneResult };
+  }
+  runtime.values = values;
+
+  function doneResult() {
+    return { value: undefined, done: true };
+  }
+
+  Context.prototype = {
+    constructor: Context,
+
+    reset: function(skipTempReset) {
+      this.prev = 0;
+      this.next = 0;
+      // Resetting context._sent for legacy support of Babel's
+      // function.sent implementation.
+      this.sent = this._sent = undefined;
+      this.done = false;
+      this.delegate = null;
+
+      this.method = "next";
+      this.arg = undefined;
+
+      this.tryEntries.forEach(resetTryEntry);
+
+      if (!skipTempReset) {
+        for (var name in this) {
+          // Not sure about the optimal order of these conditions:
+          if (name.charAt(0) === "t" &&
+              hasOwn.call(this, name) &&
+              !isNaN(+name.slice(1))) {
+            this[name] = undefined;
+          }
+        }
+      }
+    },
+
+    stop: function() {
+      this.done = true;
+
+      var rootEntry = this.tryEntries[0];
+      var rootRecord = rootEntry.completion;
+      if (rootRecord.type === "throw") {
+        throw rootRecord.arg;
+      }
+
+      return this.rval;
+    },
+
+    dispatchException: function(exception) {
+      if (this.done) {
+        throw exception;
+      }
+
+      var context = this;
+      function handle(loc, caught) {
+        record.type = "throw";
+        record.arg = exception;
+        context.next = loc;
+
+        if (caught) {
+          // If the dispatched exception was caught by a catch block,
+          // then let that catch block handle the exception normally.
+          context.method = "next";
+          context.arg = undefined;
+        }
+
+        return !! caught;
+      }
+
+      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+        var entry = this.tryEntries[i];
+        var record = entry.completion;
+
+        if (entry.tryLoc === "root") {
+          // Exception thrown outside of any try block that could handle
+          // it, so set the completion value of the entire function to
+          // throw the exception.
+          return handle("end");
+        }
+
+        if (entry.tryLoc <= this.prev) {
+          var hasCatch = hasOwn.call(entry, "catchLoc");
+          var hasFinally = hasOwn.call(entry, "finallyLoc");
+
+          if (hasCatch && hasFinally) {
+            if (this.prev < entry.catchLoc) {
+              return handle(entry.catchLoc, true);
+            } else if (this.prev < entry.finallyLoc) {
+              return handle(entry.finallyLoc);
+            }
+
+          } else if (hasCatch) {
+            if (this.prev < entry.catchLoc) {
+              return handle(entry.catchLoc, true);
+            }
+
+          } else if (hasFinally) {
+            if (this.prev < entry.finallyLoc) {
+              return handle(entry.finallyLoc);
+            }
+
+          } else {
+            throw new Error("try statement without catch or finally");
+          }
+        }
+      }
+    },
+
+    abrupt: function(type, arg) {
+      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+        var entry = this.tryEntries[i];
+        if (entry.tryLoc <= this.prev &&
+            hasOwn.call(entry, "finallyLoc") &&
+            this.prev < entry.finallyLoc) {
+          var finallyEntry = entry;
+          break;
+        }
+      }
+
+      if (finallyEntry &&
+          (type === "break" ||
+           type === "continue") &&
+          finallyEntry.tryLoc <= arg &&
+          arg <= finallyEntry.finallyLoc) {
+        // Ignore the finally entry if control is not jumping to a
+        // location outside the try/catch block.
+        finallyEntry = null;
+      }
+
+      var record = finallyEntry ? finallyEntry.completion : {};
+      record.type = type;
+      record.arg = arg;
+
+      if (finallyEntry) {
+        this.method = "next";
+        this.next = finallyEntry.finallyLoc;
+        return ContinueSentinel;
+      }
+
+      return this.complete(record);
+    },
+
+    complete: function(record, afterLoc) {
+      if (record.type === "throw") {
+        throw record.arg;
+      }
+
+      if (record.type === "break" ||
+          record.type === "continue") {
+        this.next = record.arg;
+      } else if (record.type === "return") {
+        this.rval = this.arg = record.arg;
+        this.method = "return";
+        this.next = "end";
+      } else if (record.type === "normal" && afterLoc) {
+        this.next = afterLoc;
+      }
+
+      return ContinueSentinel;
+    },
+
+    finish: function(finallyLoc) {
+      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+        var entry = this.tryEntries[i];
+        if (entry.finallyLoc === finallyLoc) {
+          this.complete(entry.completion, entry.afterLoc);
+          resetTryEntry(entry);
+          return ContinueSentinel;
+        }
+      }
+    },
+
+    "catch": function(tryLoc) {
+      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+        var entry = this.tryEntries[i];
+        if (entry.tryLoc === tryLoc) {
+          var record = entry.completion;
+          if (record.type === "throw") {
+            var thrown = record.arg;
+            resetTryEntry(entry);
+          }
+          return thrown;
+        }
+      }
+
+      // The context.catch method must only be called with a location
+      // argument that corresponds to a known catch block.
+      throw new Error("illegal catch attempt");
+    },
+
+    delegateYield: function(iterable, resultName, nextLoc) {
+      this.delegate = {
+        iterator: values(iterable),
+        resultName: resultName,
+        nextLoc: nextLoc
+      };
+
+      if (this.method === "next") {
+        // Deliberately forget the last sent value so that we don't
+        // accidentally pass it on to the delegate.
+        this.arg = undefined;
+      }
+
+      return ContinueSentinel;
+    }
+  };
+})(
+  // Among the various tricks for obtaining a reference to the global
+  // object, this seems to be the most reliable technique that does not
+  // use indirect eval (which violates Content Security Policy).
+  typeof global === "object" ? global :
+  typeof window === "object" ? window :
+  typeof self === "object" ? self : this
+);
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],24:[function(require,module,exports){
 const util      = require('./util');
 const types     = require('./types');
 const sets      = require('./sets');
@@ -83637,14 +85162,14 @@ module.exports = (regexpStr) => {
 
 module.exports.types = types;
 
-},{"./positions":19,"./sets":20,"./types":21,"./util":22}],19:[function(require,module,exports){
+},{"./positions":25,"./sets":26,"./types":27,"./util":28}],25:[function(require,module,exports){
 const types = require('./types');
 exports.wordBoundary = () => ({ type: types.POSITION, value: 'b' });
 exports.nonWordBoundary = () => ({ type: types.POSITION, value: 'B' });
 exports.begin = () => ({ type: types.POSITION, value: '^' });
 exports.end = () => ({ type: types.POSITION, value: '$' });
 
-},{"./types":21}],20:[function(require,module,exports){
+},{"./types":27}],26:[function(require,module,exports){
 const types = require('./types');
 
 const INTS = () => [{ type: types.RANGE , from: 48, to: 57 }];
@@ -83695,7 +85220,7 @@ exports.whitespace = () => ({ type: types.SET, set: WHITESPACE(), not: false });
 exports.notWhitespace = () => ({ type: types.SET, set: WHITESPACE(), not: true });
 exports.anyChar = () => ({ type: types.SET, set: NOTANYCHAR(), not: true });
 
-},{"./types":21}],21:[function(require,module,exports){
+},{"./types":27}],27:[function(require,module,exports){
 module.exports = {
   ROOT       : 0,
   GROUP      : 1,
@@ -83707,7 +85232,7 @@ module.exports = {
   CHAR       : 7,
 };
 
-},{}],22:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 const types = require('./types');
 const sets  = require('./sets');
 
@@ -83817,7 +85342,7 @@ exports.error = (regexp, msg) => {
   throw new SyntaxError('Invalid regular expression: /' + regexp + '/: ' + msg);
 };
 
-},{"./sets":20,"./types":21}],23:[function(require,module,exports){
+},{"./sets":26,"./types":27}],29:[function(require,module,exports){
 /*
   Noumenon is the super class for everything which exists in the world.
 */
@@ -83828,6 +85353,7 @@ const regOp = utility.regex // regular expression operations
 const {randexp} = require("randexp")
 const interpretSpecialArray = require("./interpretSpecialArray")
 const specarr = require("../utility/specarr")
+const PossibilitySet = require("../PossibilitySet")
 
 class Noumenon {
 
@@ -83911,9 +85437,15 @@ Noumenon.prototype.addDescription = function(...functions) {
   this.descriptions = this.descriptions.concat(functions)
 }
 
+Noumenon.prototype.possibilities = new PossibilitySet()
+Noumenon.prototype.addPossibilty = function(...possibilities) {
+  this.possibilities = this.possibilities.duplicate()
+  this.possibilities.add(...possibilities)
+}
+
 module.exports = Noumenon
 
-},{"../random":46,"../utility":61,"../utility/specarr":63,"./interpretSpecialArray":26,"randexp":12}],24:[function(require,module,exports){
+},{"../PossibilitySet":36,"../random":54,"../utility":73,"../utility/specarr":75,"./interpretSpecialArray":32,"randexp":17}],30:[function(require,module,exports){
 const {randexp} = require("randexp")
 const specarr = require("../utility/specarr.js") // special array functions
 
@@ -83975,13 +85507,13 @@ let assignments = {
 
 module.exports = Noumenon => Object.assign(Noumenon.prototype, assignments)
 
-},{"../utility/specarr.js":63,"randexp":12}],25:[function(require,module,exports){
+},{"../utility/specarr.js":75,"randexp":17}],31:[function(require,module,exports){
 let Noumenon = require("./Noumenon.js")
 require("./regex")(Noumenon)
 require("./getDescriptiveReference")(Noumenon)
 module.exports = Noumenon
 
-},{"./Noumenon.js":23,"./getDescriptiveReference":24,"./regex":27}],26:[function(require,module,exports){
+},{"./Noumenon.js":29,"./getDescriptiveReference":30,"./regex":33}],32:[function(require,module,exports){
 /*
   A function for interpretting a type of structure which exists often in
   noumenon descriptors. An array of strings, regular expressions, and functions.
@@ -84040,7 +85572,7 @@ function interpretSpecialArray(target, specialArr, ctx) {
 }
 module.exports = interpretSpecialArray*/
 
-},{"../utility/specarr":63}],27:[function(require,module,exports){
+},{"../utility/specarr":75}],33:[function(require,module,exports){
 const regOp = require("../utility/regex")
 const interpretSpecialArray = require("./interpretSpecialArray")
 
@@ -84122,7 +85654,7 @@ let assignments = {
 
 module.exports = Noumenon => Object.assign(Noumenon.prototype, assignments)
 
-},{"../utility/regex":62,"./interpretSpecialArray":26}],28:[function(require,module,exports){
+},{"../utility/regex":74,"./interpretSpecialArray":32}],34:[function(require,module,exports){
 /*
   Sub-class of Noumenon. Base class for anything that has a material presence
   in the world.
@@ -84157,7 +85689,6 @@ class PhysicalObject extends Noumenon {
     // extract
     if(this._location) {
       let loc = this._location
-      console.log(this.locationType, this.noun)
       switch(this.locationType) {
 
         case "room":
@@ -84350,7 +85881,143 @@ PhysicalObject.prototype.addDescription(
 
 module.exports = PhysicalObject
 
-},{"./Noumenon":25,"./utility":61}],29:[function(require,module,exports){
+},{"./Noumenon":31,"./utility":73}],35:[function(require,module,exports){
+ /*
+  This class is so abstract I'm having a hard time working out how to explain
+  it. In short, represents a template for a sentence (abstracted from tense, and
+  from the objects involved), along with the consequence function and the
+  condition function. The consequence function takes an action which fits this
+  template/possibility and makes it true (if it is unable to, return null.)
+  The condition function takes a given action and finds out whether it is true.
+*/
+
+const getParams = require("@captemulation/get-parameter-names")
+const verbPhrase = require("./utility/conjugate/verbPhrase")
+
+class Possibility {
+  constructor({verb, consequence, condition}) {
+    this.verb = verb // string
+    this.consequence = consequence // function
+    this.condition = condition // function, returns bool
+
+    this.params = getParams(this.consequence).map(param => param.toLowerCase())
+
+    this.imperativeRegex = this.getImperateRegex()
+  }
+
+  actionToParams(action) {
+    // convert an action into an ordered list of params
+
+    // return failure if the verbs don't match
+    if(action._verb != this.verb)
+      return null
+
+    let list = new Array(this.params.length).fill(null)
+    for(var param in action) {
+      // NOTE: if a param is null, thats fine, it is up to the consequence/
+      //       condition functions to handle this case. The real problem is if
+      //       the action includes parameters which the possibility hasn't heard
+      //       of.
+
+      if(param == '_verb') // skip '_verb'
+        continue
+
+      let i = this.params.indexOf(param)
+
+      // return failure if the param is not in the possibilities list.
+      if(i == -1)
+        return null
+
+      list[i] = action[param]
+    }
+
+    return list
+  }
+
+  checkTruth(action) {
+    let params = this.actionToParams(action)
+
+    if(params)
+      return this.condition(...params)
+    else return false
+  }
+
+  execute(action) {
+    let params = this.actionToParams(action)
+    if(params)
+      return this.consequence(...params)
+  }
+
+  imperativeCommandString() {
+    let action = {_verb: this.verb}
+    for(var i in this.params) {
+      action[this.params[i]] = '_'
+    }
+    return verbPhrase(action, 'imperative').str()
+  }
+
+  getImperateRegex() {
+    let action = {_verb: this.verb}
+    for(var i in this.params) {
+      action[this.params[i]] = '(?<'+this.params[i]+'>.+)'
+    }
+    return new RegExp('^'+verbPhrase(action, 'imperative').str()+'$')
+  }
+
+  parseImperative(str) {
+    let result = this.imperativeRegex.exec(str)
+
+    if(result) {
+      let action = result.groups
+      action._verb = this.verb
+      return action
+    }
+  }
+}
+module.exports = Possibility
+
+},{"./utility/conjugate/verbPhrase":72,"@captemulation/get-parameter-names":11}],36:[function(require,module,exports){
+/*
+  A list of Possibilities
+*/
+const Possibility = require("./Possibility")
+
+class PossibilitySet {
+  constructor(...possibilities) {
+    this.possibilities = []
+    this.add(...possibilities)
+  }
+
+  parseImperative(str) {
+    let possibleActions = []
+    for(var i in this.possibilities) {
+      let action = this.possibilities[i].parseImperative(str)
+      if(action)
+        possibleActions.push({action:action, possibility:this.possibilities[i]})
+    }
+    return possibleActions
+  }
+
+  add(...possibilities) {
+    for(var i in possibilities) {
+      let possibility = possibilities[i]
+      if(possibility.isPossibility)
+        this.possibilities.push(possibility)
+      else if(typeof possibility == 'object')
+        this.possibilities.push(new Possibility(possibility))
+      else
+        console.warn('strange possibility:', possibility)
+    }
+  }
+
+  duplicate() {
+    return new PossibilitySet(...this.possibilities)
+  }
+}
+PossibilitySet.prototype.isPossibilitySet = true
+module.exports = PossibilitySet
+
+},{"./Possibility":35}],37:[function(require,module,exports){
 /*
   TownHouse is a generative class which builds a structure of various domestic
   subclasses of Rooms.
@@ -84528,12 +86195,12 @@ TownHouse.prototype.addDescriptorFunctions({
 
 module.exports = TownHouse
 
-},{"../Noumenon":25,"../random":46,"../rooms/Bathroom":49,"../rooms/Bedroom":50,"../rooms/Corridor":51,"../rooms/Kitchen":54,"../rooms/LiteralDoor":55,"../rooms/LivingRoom":56,"../rooms/Staircase":58,"../utility":61}],30:[function(require,module,exports){
+},{"../Noumenon":31,"../random":54,"../rooms/Bathroom":57,"../rooms/Bedroom":58,"../rooms/Corridor":59,"../rooms/Kitchen":62,"../rooms/LiteralDoor":63,"../rooms/LivingRoom":64,"../rooms/Staircase":66,"../utility":73}],38:[function(require,module,exports){
 module.exports = {
   TownHouse: require("./TownHouse"),
 }
 
-},{"./TownHouse":29}],31:[function(require,module,exports){
+},{"./TownHouse":37}],39:[function(require,module,exports){
 module.exports = {
   // classes
   Noumenon: require("./Noumenon"),
@@ -84552,7 +86219,7 @@ module.exports = {
   random: require("./random"),
 }
 
-},{"./Noumenon":25,"./buildings":30,"./items":40,"./items/Item":37,"./people":42,"./people/Person":41,"./random":46,"./rooms":59,"./rooms/Room":57,"./utility":61}],32:[function(require,module,exports){
+},{"./Noumenon":31,"./buildings":38,"./items":48,"./items/Item":45,"./people":50,"./people/Person":49,"./random":54,"./rooms":67,"./rooms/Room":65,"./utility":73}],40:[function(require,module,exports){
 /*
   Sub-class of item for representing a bed.
 */
@@ -84591,7 +86258,7 @@ Bed.prototype.addDescriptorFunctions({
 
 module.exports = Bed
 
-},{"./GenericItem":36,"./Item.js":37}],33:[function(require,module,exports){
+},{"./GenericItem":44,"./Item.js":45}],41:[function(require,module,exports){
 /*
   Sub class of Table for representing bedside tables
 */
@@ -84614,7 +86281,7 @@ BedsideTable.prototype.addNouns("bedside table", "night stand")
 BedsideTable.prototype.isBedsideTable
 module.exports = BedsideTable
 
-},{"./GenericItem":36,"./Table":38}],34:[function(require,module,exports){
+},{"./GenericItem":44,"./Table":46}],42:[function(require,module,exports){
 /*
   A base class for all kinds of cupboards.
 */
@@ -84631,7 +86298,7 @@ Cupboard.prototype.isCupboard = true
 Cupboard.prototype.nouns = ['cupboard']
 module.exports = Cupboard
 
-},{"./Item.js":37}],35:[function(require,module,exports){
+},{"./Item.js":45}],43:[function(require,module,exports){
 /*
   Sub-class of table. For representing a desk.
 */
@@ -84644,7 +86311,7 @@ Desk.prototype.nouns = ["desk"]
 Desk.prototype.isDesk = true
 module.exports = Desk
 
-},{"./Table":38}],36:[function(require,module,exports){
+},{"./Table":46}],44:[function(require,module,exports){
 /*
   Subclass of Item. A quick way to generate items which do not do very much.
 */
@@ -84670,7 +86337,7 @@ GenericItem.prototype.addDescription(
 )
 module.exports = GenericItem
 
-},{"../random":46,"../utility/Substitution":60,"./Item":37}],37:[function(require,module,exports){
+},{"../random":54,"../utility/Substitution":68,"./Item":45}],45:[function(require,module,exports){
 /*
   A subclass of Noumenon, used to represent a smallish object such as a bed, a
   desk or a lamp.
@@ -84694,7 +86361,7 @@ Item.prototype.addDescriptorFunctions({
 })
 module.exports = Item
 
-},{"../PhysicalObject":28}],38:[function(require,module,exports){
+},{"../PhysicalObject":34}],46:[function(require,module,exports){
 /*
   Base class for all manner of tables
 */
@@ -84711,7 +86378,7 @@ Table.prototype.isTable = true
 Table.prototype.nouns = ["table"]
 module.exports = Table
 
-},{"./Item":37}],39:[function(require,module,exports){
+},{"./Item":45}],47:[function(require,module,exports){
 /*
   Generative subclass of Cupboard. Automatically populated with clothes.
 */
@@ -84748,13 +86415,13 @@ Wardrobe.prototype.isWardrobe = true
 Wardrobe.prototype.addNouns("wardrobe")
 module.exports = Wardrobe
 
-},{"./Cupboard":34,"./GenericItem":36}],40:[function(require,module,exports){
+},{"./Cupboard":42,"./GenericItem":44}],48:[function(require,module,exports){
 module.exports = {
   Item: require("./Item"),
   GenericItem: require("./GenericItem"),
 }
 
-},{"./GenericItem":36,"./Item":37}],41:[function(require,module,exports){
+},{"./GenericItem":44,"./Item":45}],49:[function(require,module,exports){
 /*
   A class representing a person.
 */
@@ -84805,14 +86472,21 @@ Person.prototype.addDescription(
   person => new Sub("_'s name is _", person, person.fullName),
 )
 
+Person.prototype.addPossibilty(
+  {
+    verb:'go',
+    consequence: (_subject, to) => _subject.location = to,
+  }
+)
+
 module.exports = Person
 
-},{"../PhysicalObject":28,"../random":46,"../utility":61}],42:[function(require,module,exports){
+},{"../PhysicalObject":34,"../random":54,"../utility":73}],50:[function(require,module,exports){
 module.exports = {
   Person: require("./Person"),
 }
 
-},{"./Person":41}],43:[function(require,module,exports){
+},{"./Person":49}],51:[function(require,module,exports){
 const buildingMaterials = [
   // adjectives for describing building materials
   "bricks",
@@ -84826,7 +86500,7 @@ function randomBuildingMaterial() {
 }
 module.exports = randomBuildingMaterial
 
-},{}],44:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 const colors = [
   "red",
   "orange",
@@ -84841,7 +86515,7 @@ function randomColor() {
 }
 module.exports = randomColor
 
-},{}],45:[function(require,module,exports){
+},{}],53:[function(require,module,exports){
 const floorings = ["carpet", "tiled", "lino", "wooden", "concrete", "leather"]
 
 function randomFlooring() {
@@ -84849,7 +86523,7 @@ function randomFlooring() {
 }
 module.exports = randomFlooring
 
-},{}],46:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 const randomName = require("random-name")
 
 module.exports = {
@@ -84862,7 +86536,7 @@ module.exports = {
   material: require("./material.js"),
 }
 
-},{"./buildingMaterial":43,"./color.js":44,"./flooring.js":45,"./material.js":47,"./title.js":48,"random-name":14}],47:[function(require,module,exports){
+},{"./buildingMaterial":51,"./color.js":52,"./flooring.js":53,"./material.js":55,"./title.js":56,"random-name":19}],55:[function(require,module,exports){
 const materials = [
   "silk",
   "denim",
@@ -84882,7 +86556,7 @@ function randomMaterial() {
 }
 module.exports = randomMaterial
 
-},{}],48:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 const titles = ["Mr", "Mrs", "Ms", "Dr", "Professor"]
 
 function randomTitle() {
@@ -84890,7 +86564,7 @@ function randomTitle() {
 }
 module.exports = randomTitle
 
-},{}],49:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 /*
   Bathroom is a generative subclass of Room
 */
@@ -84913,7 +86587,7 @@ Bathroom.prototype.addNouns("bathroom")
 
 module.exports = Bathroom
 
-},{"./InteriorRoom.js":53}],50:[function(require,module,exports){
+},{"./InteriorRoom.js":61}],58:[function(require,module,exports){
 /*
   A Bedroom is a generative subclass of Room.
 */
@@ -84959,7 +86633,7 @@ Bedroom.prototype.addDescriptorFunctions({
 
 module.exports = Bedroom
 
-},{"../items/Bed":32,"../items/BedsideTable":33,"../items/Desk":35,"../items/Wardrobe":39,"../people/Person":41,"../utility":61,"./InteriorRoom.js":53}],51:[function(require,module,exports){
+},{"../items/Bed":40,"../items/BedsideTable":41,"../items/Desk":43,"../items/Wardrobe":47,"../people/Person":49,"../utility":73,"./InteriorRoom.js":61}],59:[function(require,module,exports){
 /*
   Corridor is a generative subclass of Room
 */
@@ -84976,7 +86650,7 @@ Corridor.prototype.addNouns("corridor")
 
 module.exports = Corridor
 
-},{"./InteriorRoom.js":53}],52:[function(require,module,exports){
+},{"./InteriorRoom.js":61}],60:[function(require,module,exports){
 /*
   The Door class is a sub-class of Noumenon which connects one Room instance to
   another. It needn't represent a literal door, just as Room needn't represent
@@ -85035,7 +86709,7 @@ Door.prototype.addDescriptorFunctions({
 
 module.exports = Door
 
-},{"../Noumenon":25,"../utility/Substitution":60,"../utility/regex":62}],53:[function(require,module,exports){
+},{"../Noumenon":31,"../utility/Substitution":68,"../utility/regex":74}],61:[function(require,module,exports){
 /*
   InteriorRoom is a subclass of Room. It is used as a super class for indoor
   rooms.
@@ -85083,7 +86757,7 @@ InteriorRoom.prototype.addDescription(
 
 module.exports = InteriorRoom
 
-},{"../utility":61,"./Room.js":57}],54:[function(require,module,exports){
+},{"../utility":73,"./Room.js":65}],62:[function(require,module,exports){
 /*
   Kitchen is a generative subclass of Room
 */
@@ -85125,7 +86799,7 @@ Kitchen.prototype.addNouns("kitchen")
 
 module.exports = Kitchen
 
-},{"../items/GenericItem":36,"./InteriorRoom.js":53}],55:[function(require,module,exports){
+},{"../items/GenericItem":44,"./InteriorRoom.js":61}],63:[function(require,module,exports){
 /*
   A sub class of Door for representing actual doors, rather than the base class
   which is more abstract (representing any connection between two Rooms).
@@ -85143,7 +86817,7 @@ class LiteralDoor extends Door {
 }
 module.exports = LiteralDoor
 
-},{"../random":46,"./Door.js":52}],56:[function(require,module,exports){
+},{"../random":54,"./Door.js":60}],64:[function(require,module,exports){
 /*
   LivingRoom is a generative subclass of Room
 */
@@ -85160,7 +86834,7 @@ LivingRoom.prototype.addNouns("living room", "lounge")
 
 module.exports = LivingRoom
 
-},{"./InteriorRoom.js":53}],57:[function(require,module,exports){
+},{"./InteriorRoom.js":61}],65:[function(require,module,exports){
 /*
   Room is an atomic element for the geography. Rooms contain doorways leading
   to other rooms. The can also contain Items and stuff like that. They are not
@@ -85271,7 +86945,7 @@ Room.prototype.isRoom = true
 
 module.exports = Room
 
-},{"../Noumenon":25,"../items":40,"../items/GenericItem":36,"./Door.js":52}],58:[function(require,module,exports){
+},{"../Noumenon":31,"../items":48,"../items/GenericItem":44,"./Door.js":60}],66:[function(require,module,exports){
 /*
   Staircase is a generative subclass of Room
 */
@@ -85297,7 +86971,7 @@ Staircase.prototype.addDescriptorFunctions({
 
 module.exports = Staircase
 
-},{"./InteriorRoom.js":53}],59:[function(require,module,exports){
+},{"./InteriorRoom.js":61}],67:[function(require,module,exports){
 module.exports = {
   // base-classes
   Room: require("./Room"),
@@ -85313,7 +86987,7 @@ module.exports = {
   Staircase: require("./Staircase"),
 }
 
-},{"./Bathroom":49,"./Bedroom":50,"./Corridor":51,"./Door":52,"./InteriorRoom":53,"./Kitchen":54,"./LivingRoom":56,"./Room":57,"./Staircase":58}],60:[function(require,module,exports){
+},{"./Bathroom":57,"./Bedroom":58,"./Corridor":59,"./Door":60,"./InteriorRoom":61,"./Kitchen":62,"./LivingRoom":64,"./Room":65,"./Staircase":66}],68:[function(require,module,exports){
 /*
   Substitution is a class for formatting sentence involving zero or more
   noumena. It can be used to avoid generating the noun phrases until the program
@@ -85322,7 +86996,8 @@ module.exports = {
 */
 
 const {randexp} = require("randexp")
-const placeholderRegex = /_/g
+const placeholderRegex = /_\w*/g
+const {autoBracket} = require("./regex")
 
 class Substitution { // sometimes abbreviated Sub
   constructor(templateStr, ...noumena) {
@@ -85342,6 +87017,8 @@ class Substitution { // sometimes abbreviated Sub
         return randexp(o)
       else if(o.constructor == Number)
         return o.toString()
+      else if(o.isSubstitution)
+        return o.getString(descriptionCtx)
       else {
         console.warn("Couldn't interpret substitution value:", o)
         return "???"
@@ -85353,6 +87030,10 @@ class Substitution { // sometimes abbreviated Sub
 
     return this.subIn(...toSubIn)
   }
+  str(ctx) {
+    // alias for getString
+    return this.getString(ctx)
+  }
   getRegex() {
     let toSubIn = this.noumena.map(o => {
       if(o == null || o == undefined)
@@ -85362,10 +87043,15 @@ class Substitution { // sometimes abbreviated Sub
       else if(o.constructor == String)
         return o
       else if(o.constructor == RegExp)
-        return o.source
+        return autoBracket(o.source)
       else if(o.constructor == Number)
         return o.toString()
-      else {
+      else if(o.isSubstitution) {
+        let regex = o.getRegex()
+        if(regex && regex.constructor == RegExp)
+          return autoBracket(regex.source)
+        else return null
+      } else {
         console.warn("Couldn't interpret substitution value:", o)
         return "???"
       }
@@ -85397,9 +87083,439 @@ class Substitution { // sometimes abbreviated Sub
 }
 
 Substitution.prototype.isSubstitution = true
+Substitution.placeholderRegex = placeholderRegex
 module.exports = Substitution
 
-},{"randexp":12}],61:[function(require,module,exports){
+},{"./regex":74,"randexp":17}],69:[function(require,module,exports){
+/*
+  Given the infinitive form of a verb and a person/verbform number (0-8) return
+  the conjugated verb form.
+*/
+
+/*
+VERB FORMS DENOTED AS NUMBERS:
+  0.  infinitive
+  1.  first person singular
+  2.  second person singular
+  3.  third person singular
+  4.  first person plural
+  5.  second person plural
+  6.  third person plural
+  (7.  gerund/present-participle)
+  (8.  past-participle)
+  (9. past tense form)
+*/
+
+const regOp = require("../regex")
+const irregular = require("./irregularConjugations")
+
+const endsWithShortConsonant = /[aeiou][tpdn]$/
+const endsWithE = /e$/
+const endsWithO = /o$/
+
+const FIRST_PERSON_SINGULAR = 1   // I
+const SECOND_PERSON_SINGULAR = 2  // you
+const THIRD_PERSON_SINGULAR = 3   // he/she/it
+const FIRST_PERSON_PLURAL = 4     // we
+const SECOND_PERSON_PLURAL = 5    // you
+const THIRD_PERSON_PLURAL = 6     // they
+const GERUND = 7
+const PAST_PARTICIPLE = 8
+const PAST_TENSE = 9
+const ALL_PERSON_REGEX = 10
+
+function conjugate(infinitive, form) {
+  if(form == ALL_PERSON_REGEX)
+    return anyPersonRegex(infinitive)
+  if(irregular[infinitive] && irregular[infinitive][form])
+    return irregular[infinitive][form]
+  return conjugateRegular(infinitive, form)
+}
+
+function conjugateRegular(infinitive, form) {
+  switch(form) {
+    // third person singular
+    case THIRD_PERSON_SINGULAR:
+      if(endsWithO.test(infinitive))
+        return infinitive+'es'
+      else
+        return infinitive+'s'
+
+    // gerund
+    case GERUND:
+      if(endsWithE.test(infinitive))
+        return infinitive.slice(0, infinitive.length-1)+'ing'
+      if(endsWithShortConsonant.test(infinitive))
+        return infinitive + infinitive[infinitive.length-1]+'ing'
+      return infinitive+'ing'
+
+    // past participle
+    case PAST_TENSE:
+    case PAST_PARTICIPLE:
+      if(endsWithShortConsonant.test(infinitive))
+        return infinitive + infinitive[infinitive.length-1]+'ed'
+      if(endsWithE.test(infinitive))
+        return infinitive+'d'
+      else
+        return infinitive+'ed';
+
+    default:
+      return infinitive
+  }
+}
+
+function anyPersonRegex(infinitive) {
+  let forms = []
+  for(let person=1; person<=6; ++person) {
+    let form = conjugate(infinitive, person)
+    if(!forms.includes(form))
+      forms.push(form)
+  }
+  return regOp.or(...forms)
+}
+
+
+module.exports = conjugate
+conjugate.anyPersonRegex
+
+},{"../regex":74,"./irregularConjugations":71}],70:[function(require,module,exports){
+// Determine the numeric person of a given noun phrase
+
+/*
+VERB FORMS DENOTED AS NUMBERS:
+  0.  infinitive
+  1.  first person singular
+  2.  second person singular
+  3.  third person singular
+  4.  first person plural
+  5.  second person plural
+  6.  third person plural
+  (7. gerund/present-participle)
+  (8. past-participle)
+  (9. past tense form)
+*/
+
+const {placeholderRegex} = require("../Substitution")
+const placeholderTest = new RegExp('^'+placeholderRegex.source+'$', '')
+
+function getPerson(subject) {
+  // if subject is not a string, assume third person for now
+  if(subject && subject.constructor != String)
+    return 3
+
+  let lowerCaseSubject = subject.toLowerCase()
+
+  if(lowerCaseSubject == 'i')
+    return 1 // first person singular
+
+  else if(lowerCaseSubject == 'you')
+    return 2 // or 5 but never mind
+
+  else if((/^(he|she|it)$/i).test(subject))
+    return 3 // third person singular
+
+  else if(lowerCaseSubject == 'we')
+    return 4 // first person plural
+
+  else if(lowerCaseSubject == 'they')
+    return 6 // third person plural
+
+  else if(subject.constructor == RegExp || placeholderTest.test(subject))
+    return 10 // placeholder, get regex
+
+  else // otherwise assume third person
+    return 3
+
+  // TODO, what about third person plural non pronouns!
+}
+module.exports = getPerson
+
+},{"../Substitution":68}],71:[function(require,module,exports){
+// list of irregular verbs with their conjugations.
+// (indexed by infinitive)
+
+/*
+VERB FORMS DENOTED AS NUMBERS:
+  0.  infinitive
+  1.  first person singular
+  2.  second person singular
+  3.  third person singular
+  4.  first person plural
+  5.  second person plural
+  6.  third person plural
+  (7.  gerund/present-participle)
+  (8.  past-participle)
+  (9. past tense form)
+*/
+
+const FIRST_PERSON_SINGULAR = 1   // I
+const SECOND_PERSON_SINGULAR = 2  // you
+const THIRD_PERSON_SINGULAR = 3   // he/she/it
+const FIRST_PERSON_PLURAL = 4     // we
+const SECOND_PERSON_PLURAL = 5    // you
+const THIRD_PERSON_PLURAL = 6     // they
+const GERUND = 7
+const PAST_PARTICIPLE = 8
+const PAST_TENSE = 9
+const ALL_PERSON_REGEX = 10
+
+module.exports = {
+  // be IS THIS EVEN A VERB?
+  be: {
+    1: 'am', 2:'are', 3:'is', 4:'are', 5:'are', 6:'are', 7:'being', 8:'been',
+    9:'was',
+  },
+
+  say: {8:'said', 9:'said'},
+
+  make: {8: 'made', 9: 'made'},
+  go:   {8: 'gone', 9: 'went'},
+  take: {8: 'taken',9: 'took'},
+  come: {8: 'come', 9: 'came'},
+  see: {7: 'seeing', 8:'seen', 9:'saw'},
+  know: {8: 'known', 9:'knew'},
+  get: {8:'got', 9:'got'},
+  run: {8:'run', 9:'ran'},
+  were: {1:'was', 3:'was'}, // this is a cludge and i know it
+  have: {3:'has', 8:'had', 9:"had"},
+  eat: {7:'eating', 8:'eaten', 9:'ate'},
+
+  // give
+  // find
+  // think
+  // tell
+  // become
+  // show
+  // leave
+  // feel
+  // put
+  // bring
+  // begin
+  // keep
+  // hold
+  // write
+  // stand
+  // hear
+  // let
+  // mean
+  // set
+  // meet
+  // pay
+  // sit
+  // speak
+  // lie
+  // lead
+  // read
+  // grow
+  // lose
+  // fall
+  // send
+  // build
+  // understood
+  // draw
+  // break
+  // spend
+  // cut
+  // rise
+  // drive
+  // buy
+  // wear
+  // choose
+
+  // to shit
+
+}
+
+},{}],72:[function(require,module,exports){
+/*
+Tenses: [source ef.co.uk]
+  - Simple Present ("They walk home.")
+  - Present Continuous ("They are walking home.")
+  - Simple Past ("Peter lived in China in 1965")
+  - Past Continuous ("I was reading when she arrived.")
+  - Present Perfect ("I have lived here since 1987.")
+  - Present Perfect Continuous ("I have been living here for years.")
+  - Past Perfect ("We had been to see her several times before she visited us")
+  - Past Perfect continuous ("He had been watching her for some time when she
+    turned and smiled.")
+  - Future Perfect ("We will have arrived in the states by the time you get this
+    letter.")
+  - Future Perfect Continuous ("By the end of your course, you will have been
+    studying for five years")
+  - Simple Future ("They will go to Italy next week.")
+  - Future Continuous ("I will be travelling by train.")
+
+
+  (Maybe also include:
+  - Zero conditional ("If ice gets hot it melts.")
+  - Type 1 Conditional ("If he is late I will be angry.")
+  - Type 2 Conditional ("If he was in Australia he would be getting up now.")
+  - Type 3 Conditional ("She would have visited me if she had had time")
+  - Mixed Conditional ("I would be playing tennis if I hadn't broken my arm.")
+  - Gerund
+  - Present participle)
+*/
+
+const conjugate = require("./conjugate")
+const getPerson = require("./getPerson")
+const {sub} = require('../index')
+const regOps = require("../regex")
+
+const GERUND = 7
+const PAST_PARTICIPLE = 8
+const PAST_TENSE = 9
+
+const actionReservedWords = ['_verb', '_object', '_subject']
+
+function verbPhrase(action, tense='simple_present') {
+  let vp = tenses[tense](action)
+
+  if(action._object)
+    vp = sub("_ _", vp, action._object)
+
+  for(var prep in action) {
+    if(!actionReservedWords.includes(prep))
+      vp = sub('_ _ _', vp, prep, action[prep])
+  }
+
+  return vp
+}
+
+function anyTenseRegex(verb) {
+  let action = {_verb:verb, _subject:'_subject'}
+  let forms = []
+  for(var i in tenses) {
+    let form = tenses[i](action)
+    if(form.isSubstitution)
+      form = form.getRegex()
+    forms.push(form)
+  }
+
+  return regOps.or(...forms)
+}
+
+const tenses = {
+  simple_present(action) {
+    let person = getPerson(action._subject)
+    return sub(
+      "_ _",
+      action._subject,
+      conjugate(action._verb, person)
+    )
+  },
+
+  present_continuous(action) {
+    let person = getPerson(action._subject)
+    return sub(
+      "_ _ _",
+      action._subject,
+      conjugate('be', person),
+      conjugate(action._verb, GERUND)
+    )
+  },
+
+  simple_past(action) {
+    let person = getPerson(action._subject)
+    return sub(
+      '_ _',
+      action._subject,
+      conjugate(action._verb, PAST_TENSE)
+    )
+  },
+
+  past_continuous(action) {
+    let person = getPerson(action._subject)
+    return sub(
+      '_ _ _',
+      action._subject,
+      conjugate('were', person),
+      conjugate(action._verb, GERUND)
+    )
+  },
+
+  present_perfect(action) {
+    let person = getPerson(action._subject)
+    return sub(
+      '_ _ _',
+      action._subject,
+      conjugate('have', person),
+      conjugate(action._verb, PAST_PARTICIPLE)
+    )
+  },
+
+  present_perfect_continuous(action) {
+    let person = getPerson(action._subject)
+    return sub(
+      '_ _ been _',
+      action._subject,
+      conjugate('have', person),
+      conjugate(action._verb, GERUND)
+    )
+  },
+
+  past_perfect(action) {
+    let person = getPerson(action._subject)
+    return sub(
+      '_ _ _',
+      action._subject,
+      conjugate('have', person),
+      conjugate(action._verb, PAST_PARTICIPLE)
+    )
+  },
+
+  past_perfect_continuous(action) {
+    return sub(
+      '_ had been _',
+      action._subject,
+      conjugate(action._verb, GERUND)
+    )
+  },
+
+  future_perfect(action) { // we will have verbed
+    return sub(
+      '_ will have _',
+      action._subject,
+      conjugate(action._verb, PAST_PARTICIPLE)
+    )
+  },
+
+  // Future Perfect Continuous ("you will have been studying for five years")
+  future_perfect_continuous(action) {
+    return sub(
+      '_ will have been _',
+      action._subject,
+      conjugate(action._verb, GERUND)
+    )
+  },
+
+  // Simple Future ("They will go to Italy next week.")
+  simple_future(action) {
+    return sub(
+      '_ will _',
+      action._subject,
+      action._verb,
+    )
+  },
+
+  // Future Continuous ("I will be travelling by train.")
+  future_continuous({_subject, _verb}) {
+    return sub(
+      '_ will be _',
+      _subject,
+      conjugate(_verb, GERUND)
+    )
+  },
+
+  imperative({_verb}) {
+    return sub(_verb)
+  },
+}
+
+module.exports = verbPhrase
+verbPhrase.tenses = tenses
+verbPhrase.anyTenseRegex = anyTenseRegex
+
+},{"../index":73,"../regex":74,"./conjugate":69,"./getPerson":70}],73:[function(require,module,exports){
 /*
   Language utility. A set of tools for quickly formatting english.
 */
@@ -85432,9 +87548,10 @@ module.exports = {
 
   Substitution: Substitution,
   Sub: Substitution, // quick alias
+  sub: (...args) => new Substitution(...args),
 }
 
-},{"./Substitution":60,"./regex":62}],62:[function(require,module,exports){
+},{"./Substitution":68,"./regex":74}],74:[function(require,module,exports){
 function sourcify(list) {
   return list
     .filter(item => item)
@@ -85442,13 +87559,13 @@ function sourcify(list) {
 }
 
 function bracket(str) {
-  return "(" + str + ")"
+  return "(?:" + str + ")"
 }
 function autoBracket(str) {
   if(/^[\w ]+$/.test(str))
     return str
   else
-    return "(" + str + ")"
+    return bracket(str)
 }
 
 function concat(...operands) {
@@ -85498,9 +87615,10 @@ module.exports = {
   optional: optional,
   kleene: kleene,
   optionalConcatSpaced: optionalConcatSpaced,
+  autoBracket: autoBracket,
 }
 
-},{}],63:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 /*
   A set of tools for using the so-called 'special array', or 'specarr'.
 
@@ -85715,9 +87833,9 @@ module.exports = {
   randomStrings: randomStrings,
 }
 
-},{"randexp":12}],64:[function(require,module,exports){
+},{"randexp":17}],76:[function(require,module,exports){
 
-},{}],65:[function(require,module,exports){
+},{}],77:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -85945,7 +88063,7 @@ var substr = 'ab'.substr(-1) === 'b'
 ;
 
 }).call(this,require('_process'))
-},{"_process":66}],66:[function(require,module,exports){
+},{"_process":78}],78:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 

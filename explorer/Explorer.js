@@ -3,6 +3,7 @@ const CommandTemplate = require("./CommandTemplate")
 const Environment = require("./Environment")
 const confusionLog = require("./confusionLog.js")
 const sentencify = require("./sentencify")
+const verbPhrase = require("../src/utility/conjugate/verbPhrase")
 
 class Explorer {
   constructor(
@@ -36,6 +37,17 @@ class Explorer {
     this.newline(2)
     let strNoPunc = str.replace(/[.,?!]/g, "") // string without punctuation
     let commandsMatched = 0
+
+    // use PossibilitySet of protagonist
+    let possibleActions = this.environment.parseImperative(strNoPunc)
+    console.log('possibleActions for \"'+str+'\":', possibleActions)
+    if(possibleActions.length) {
+      let {action, possibility} = possibleActions[0]
+      possibility.execute(action)
+      let output = verbPhrase(action).str()
+      this.writeParagraph(output)
+      return ;
+    }
 
     // test each command template for a match
     for(var i in this.commandTemplates) {
