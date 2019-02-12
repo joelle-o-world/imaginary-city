@@ -5,13 +5,13 @@ function sourcify(list) {
 }
 
 function bracket(str) {
-  return "(" + str + ")"
+  return "(?:" + str + ")"
 }
 function autoBracket(str) {
   if(/^[\w ]+$/.test(str))
     return str
   else
-    return "(" + str + ")"
+    return bracket(str)
 }
 
 function concat(...operands) {
@@ -61,4 +61,5 @@ module.exports = {
   optional: optional,
   kleene: kleene,
   optionalConcatSpaced: optionalConcatSpaced,
+  autoBracket: autoBracket,
 }
