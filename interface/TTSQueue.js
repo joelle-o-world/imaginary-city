@@ -10,7 +10,6 @@ class TTSQueue {
   }
 
   speak(text, voice, parameters) {
-    console.log("speak")
     if(!(/\w/).test(text))
       return "nah"
 
@@ -21,7 +20,6 @@ class TTSQueue {
   }
 
   playNow(text, voice, parameters) {
-    console.log("playNow")
     parameters = Object.assign({}, parameters)
     parameters.onend = () => this.next()
     this.rv.speak(text, voice, parameters)
@@ -29,7 +27,6 @@ class TTSQueue {
   }
 
   next() {
-    console.log("next")
     this.nowPlaying = null
     if(this.queue.length)
       this.playNow(...this.queue.shift())
@@ -38,7 +35,6 @@ class TTSQueue {
   }
 
   done() {
-    console.log("done")
     this.nowPlaying = null
     if(this.onDone)
       this.onDone()
