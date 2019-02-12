@@ -48,4 +48,11 @@ Person.prototype.addDescription(
   person => new Sub("_'s name is _", person, person.fullName),
 )
 
+Person.prototype.addPossibilty(
+  {
+    verb:'go',
+    consequence: (_subject, to) => _subject.location = to,
+  }
+)
+
 module.exports = Person
