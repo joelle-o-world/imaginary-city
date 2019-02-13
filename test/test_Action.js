@@ -1,4 +1,4 @@
-const Possibility = require("../src/Possibility")
+const Possibility = require("../src/action/Possibility")
 const Kitchen = require("../src/rooms/Kitchen.js")
 const verbPhrase = require("../src/utility/conjugate/verbPhrase.js")
 

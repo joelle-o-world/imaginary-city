@@ -8,7 +8,7 @@ const regOp = utility.regex // regular expression operations
 const {randexp} = require("randexp")
 const interpretSpecialArray = require("./interpretSpecialArray")
 const specarr = require("../utility/specarr")
-const PossibilitySet = require("../PossibilitySet")
+const PossibilitySet = require("../action/PossibilitySet")
 
 class Noumenon {
 

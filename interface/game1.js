@@ -85353,7 +85353,7 @@ const regOp = utility.regex // regular expression operations
 const {randexp} = require("randexp")
 const interpretSpecialArray = require("./interpretSpecialArray")
 const specarr = require("../utility/specarr")
-const PossibilitySet = require("../PossibilitySet")
+const PossibilitySet = require("../action/PossibilitySet")
 
 class Noumenon {
 
@@ -85452,7 +85452,7 @@ Noumenon.prototype.addPossibilty = function(...possibilities) {
 
 module.exports = Noumenon
 
-},{"../PossibilitySet":36,"../random":54,"../utility":73,"../utility/specarr":75,"./interpretSpecialArray":32,"randexp":17}],30:[function(require,module,exports){
+},{"../action/PossibilitySet":36,"../random":54,"../utility":73,"../utility/specarr":75,"./interpretSpecialArray":32,"randexp":17}],30:[function(require,module,exports){
 const {randexp} = require("randexp")
 const specarr = require("../utility/specarr.js") // special array functions
 
@@ -85903,7 +85903,7 @@ module.exports = PhysicalObject
 */
 
 const getParams = require("@captemulation/get-parameter-names")
-const verbPhrase = require("./utility/conjugate/verbPhrase")
+const verbPhrase = require("../utility/conjugate/verbPhrase")
 
 class Possibility {
   constructor({verb, consequence, condition}) {
@@ -85993,7 +85993,7 @@ class Possibility {
 }
 module.exports = Possibility
 
-},{"./utility/conjugate/verbPhrase":72,"@captemulation/get-parameter-names":11}],36:[function(require,module,exports){
+},{"../utility/conjugate/verbPhrase":72,"@captemulation/get-parameter-names":11}],36:[function(require,module,exports){
 /*
   A list of Possibilities
 */

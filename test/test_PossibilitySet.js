@@ -1,5 +1,5 @@
-const Possibility = require("../src/Possibility.js")
-const PossibilitySet = require("../src/PossibilitySet.js")
+const Possibility = require("../src/action/Possibility.js")
+const PossibilitySet = require("../src/action/PossibilitySet.js")
 
 const argv = require('minimist')(process.argv.slice(2))
 

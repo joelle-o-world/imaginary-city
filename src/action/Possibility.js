@@ -8,7 +8,7 @@
 */
 
 const getParams = require("@captemulation/get-parameter-names")
-const verbPhrase = require("./utility/conjugate/verbPhrase")
+const verbPhrase = require("../utility/conjugate/verbPhrase")
 
 class Possibility {
   constructor({verb, consequence, condition}) {
