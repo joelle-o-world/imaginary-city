@@ -60,8 +60,14 @@ class Possibility {
 
   execute(action) {
     let params = this.actionToParams(action)
-    if(params)
-      return this.consequence(...params)
+    if(params) {
+      let consequences = this.consequence(...params)
+      for(var i in action) {
+        if(action[i].isNoumenon)
+          action[i].history.push(action)
+      }
+      return consequences
+    }
   }
 
   imperativeCommandString() {

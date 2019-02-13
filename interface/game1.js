@@ -85357,8 +85357,15 @@ const PossibilitySet = require("../PossibilitySet")
 
 class Noumenon {
 
+  constructor() {
+    this.history = [] // history of all actions involving this noumenon
+  }
+
   // Suspended Initialisation
-    /* This allows a Noumenon to delay the generation of properties until they are needed. This is done by adding temporary getter/setters for the property which self delete when called, replacing themselves with the generated value. */
+    /* This allows a Noumenon to delay the generation of properties until they
+    are needed. This is done by adding temporary getter/setters for the
+    property which self delete when called, replacing themselves with the
+    generated value. */
   __suspendInit__(propertyName, func) {
     delete this[propertyName]
     if(!func && random[propertyName])
@@ -85837,6 +85844,10 @@ class PhysicalObject extends Noumenon {
     // if location is room, return all the rooms contents except this
     else if(this.locationType == 'room')
       return this._location.contents.filter(o => o != this)
+
+    // otherwise return empty array
+    else
+      return []
   }
 
   // TODO: get related() {}
@@ -85944,8 +85955,14 @@ class Possibility {
 
   execute(action) {
     let params = this.actionToParams(action)
-    if(params)
-      return this.consequence(...params)
+    if(params) {
+      let consequences = this.consequence(...params)
+      for(var i in action) {
+        if(action[i].isNoumenon)
+          action[i].history.push(action)
+      }
+      return consequences
+    }
   }
 
   imperativeCommandString() {
