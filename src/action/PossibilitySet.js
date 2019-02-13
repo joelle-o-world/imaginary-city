@@ -41,6 +41,16 @@ class PossibilitySet {
   duplicate() {
     return new PossibilitySet(...this.possibilities)
   }
+
+  execute(action) {
+    for(var poss of this.possibilities) {
+      let params = poss.actionToParams(action)
+      if(params) {
+        console.log('about to execute', action, 'with', poss)
+        return poss.execute(action)
+      }
+    }
+  }
 }
 PossibilitySet.prototype.isPossibilitySet = true
 module.exports = PossibilitySet
