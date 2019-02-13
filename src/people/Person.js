@@ -5,7 +5,7 @@
 const PhysicalObject = require("../PhysicalObject")
 const random = require("../random")
 const utility = require("../utility")
-const Sub = utility.Sub
+const sub = utility.sub
 
 class Person extends PhysicalObject {
   constructor() {
@@ -43,9 +43,9 @@ Person.prototype.addDescriptorFunctions({
 })
 
 Person.prototype.addDescription(
-  person => new Sub("_ has _ hair.", person, person.hairColor),
+  person => sub("_ has _ hair.", person, person.hairColor),
   //person => utility.possessive(person.ref({article:'the'}))+ " name is "+person.fullName+'.',
-  person => new Sub("_'s name is _", person, person.fullName),
+  person => sub("_'s name is _", person, person.fullName),
 )
 
 Person.prototype.addPossibilty(
