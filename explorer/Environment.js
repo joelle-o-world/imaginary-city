@@ -19,6 +19,8 @@
 
 const parseNounPhrase = require("./parseNounPhrase")
 const {Person} = require("../src")
+const interpretActionQuery = require("../src/action/interpretActionQuery")
+const {firstMatch} = require('../src/searchNoumena.js')
 
 class Environment {
   constructor() {
@@ -26,7 +28,7 @@ class Environment {
   }
 
   find(str) {
-    let parsed = parseNounPhrase(str)
+    /*let parsed = parseNounPhrase(str)
     let all = this.allNoumena
     let matches = all.filter(obj => obj.matchesRef(str))
     if(matches.length == 1)
@@ -40,22 +42,14 @@ class Environment {
       )
       return matches[0]
     } else if(matches.length == 0)
-      return null
+      return null*/
+
+    return firstMatch(str, this.protagonist) || null
   }
 
-  interpretAction(action) {
-    action = Object.assign({}, action)
-    for(var i in action) {
-      if(i == '_verb') // don't interpret the verb!
-        continue
-      let noumenon = this.find(action[i])
-      if(noumenon)
-        action[i] = noumenon
-      else
-        return null // fail if just one cluase is not matched
-    }
-    // if we've survived the loop, the action is valid
-    return action
+  interpretAction(query) {
+    console.warn('deprecated function!')
+    return interpretActionQuery(query, this.protagonist)
   }
 
   get location() {
