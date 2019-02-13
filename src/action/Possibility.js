@@ -87,12 +87,13 @@ class Possibility {
   }
 
   parseImperative(str) {
+    // parse an NL string in imperative tense, return an action query
     let result = this.imperativeRegex.exec(str)
 
     if(result) {
-      let action = result.groups
-      action._verb = this.verb
-      return action
+      let actionQuery = result.groups
+      actionQuery._verb = this.verb
+      return actionQuery
     }
   }
 }

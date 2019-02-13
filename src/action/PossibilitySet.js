@@ -10,13 +10,20 @@ class PossibilitySet {
   }
 
   parseImperative(str) {
-    let possibleActions = []
+    // checks an imperative NL string against all possibilities in the set.
+    // Returning a list of action queries
+    // NOTE: an action query is an intermediary structure using NL string noun-
+    //       phrases in place of noumena
+    // This is because Possibilities and PossibiltySets are abstracted from
+    // the subject. A Noumenon is needed to begin searching for matches to the
+    // noun-phrase strings
+    let actionQueries = []
     for(var i in this.possibilities) {
-      let action = this.possibilities[i].parseImperative(str)
-      if(action)
-        possibleActions.push({action:action, possibility:this.possibilities[i]})
+      let actionQuery = this.possibilities[i].parseImperative(str)
+      if(actionQuery)
+        actionQueries.push(actionQuery)
     }
-    return possibleActions
+    return actionQueries
   }
 
   add(...possibilities) {
