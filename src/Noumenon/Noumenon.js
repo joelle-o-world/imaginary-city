@@ -8,7 +8,6 @@ const regOp = utility.regex // regular expression operations
 const {randexp} = require("randexp")
 const interpretSpecialArray = require("./interpretSpecialArray")
 const specarr = require("../utility/specarr")
-const PossibilitySet = require("../action/PossibilitySet")
 
 class Noumenon {
 
@@ -97,12 +96,6 @@ Noumenon.prototype.descriptions = [
 ] // special array
 Noumenon.prototype.addDescription = function(...functions) {
   this.descriptions = this.descriptions.concat(functions)
-}
-
-Noumenon.prototype.possibilities = new PossibilitySet()
-Noumenon.prototype.addPossibilty = function(...possibilities) {
-  this.possibilities = this.possibilities.duplicate()
-  this.possibilities.add(...possibilities)
 }
 
 module.exports = Noumenon
