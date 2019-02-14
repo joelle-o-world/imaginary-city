@@ -12,7 +12,6 @@ module.exports = [
 
   { verb:'look',
     consequence: (_subject, at) => {
-      console.log(at.describe())
       return at.describeAll()
     }
   },

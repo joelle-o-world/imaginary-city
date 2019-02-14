@@ -86834,11 +86834,19 @@ const PAST_TENSE = 9
 const ALL_PERSON_REGEX = 10
 
 function conjugate(infinitive, form) {
+  let words = infinitive.split(' ')
+  infinitive = words[0]
+
+  let conjugated
   if(form == ALL_PERSON_REGEX)
-    return anyPersonRegex(infinitive)
+    conjugated = anyPersonRegex(infinitive)
   if(irregular[infinitive] && irregular[infinitive][form])
-    return irregular[infinitive][form]
-  return conjugateRegular(infinitive, form)
+    conjugated = irregular[infinitive][form]
+  else
+    conjugated = conjugateRegular(infinitive, form)
+
+  words[0] = conjugated
+  return words.join(' ')
 }
 
 function conjugateRegular(infinitive, form) {
