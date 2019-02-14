@@ -129,6 +129,12 @@ function expand(target, specialArr) {
     else if(item.isNoumenon) // accept noumenon
       out.push(item)
 
+    else if(item.isAction) // accept actions
+      out.push(item)
+
+    else if(typeof item == 'object' && item._verb) // accept rough actions
+      out.push(item)
+
     // execute functions
     else if(item.constructor == Function) {
       let result = item(target)
@@ -147,6 +153,12 @@ function expand(target, specialArr) {
 
       else if(result.isNoumenon) // accept noumena
         out.push(result)
+
+      else if(item.isAction) // accept actions
+        out.push(item)
+
+      else if(typeof item == 'object' && item._verb) // accept rough actions
+        out.push(item)
 
       else if(result.constructor == Array)
         out = out.concat(expand(target, result))
