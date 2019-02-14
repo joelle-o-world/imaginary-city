@@ -1,4 +1,5 @@
 const {sentencify} = require('../utility')
+const Action = require('../action/Action')
 
 function format(o, ctx) {
   if(!o)
@@ -12,6 +13,9 @@ function format(o, ctx) {
 
   if(o.isSubstitution)
     return format(o.str(ctx))
+
+  if(o.constructor == Object && o._verb)
+    return format(new Action(o))
 
 }
 module.exports = format

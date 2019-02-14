@@ -2,6 +2,7 @@
   A list of Possibilities
 */
 const Possibility = require("./Possibility")
+const Action = require('./Action')
 
 class PossibilitySet {
   constructor(...possibilities) {
@@ -43,6 +44,16 @@ class PossibilitySet {
         return poss.execute(action)
       }
     }
+  }
+
+  findMatch(action) {
+    if(action.isAction)
+      // assume it a object relation
+      action = action.action
+
+    for(var poss of this.possibilities)
+      if(poss.actionsToParams(action))
+        return poss
   }
 }
 PossibilitySet.prototype.isPossibilitySet = true

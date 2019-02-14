@@ -26,10 +26,9 @@ module.exports = [
     consequence: (_subject, through) => {
       let destination = through.fromTo(_subject.location)
       _subject.location = destination
-      return [
-        new Action({
+      return [{
           _subject:_subject, _verb:'enter', _object: destination,
-        })
+        }
       ]
     }
   }

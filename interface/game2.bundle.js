@@ -85353,6 +85353,7 @@ module.exports = Possibility
   A list of Possibilities
 */
 const Possibility = require("./Possibility")
+const Action = require('./Action')
 
 class PossibilitySet {
   constructor(...possibilities) {
@@ -85395,11 +85396,21 @@ class PossibilitySet {
       }
     }
   }
+
+  findMatch(action) {
+    if(action.isAction)
+      // assume it a object relation
+      action = action.action
+
+    for(var poss of this.possibilities)
+      if(poss.actionsToParams(action))
+        return poss
+  }
 }
 PossibilitySet.prototype.isPossibilitySet = true
 module.exports = PossibilitySet
 
-},{"./Possibility":29}],31:[function(require,module,exports){
+},{"./Action":28,"./Possibility":29}],31:[function(require,module,exports){
 const {firstMatch} = require("../searchNoumena")
 
 function interpretActionQuery(action, startingPoint) {
@@ -85453,10 +85464,9 @@ module.exports = [
     consequence: (_subject, through) => {
       let destination = through.fromTo(_subject.location)
       _subject.location = destination
-      return [
-        new Action({
+      return [{
           _subject:_subject, _verb:'enter', _object: destination,
-        })
+        }
       ]
     }
   }
@@ -85695,6 +85705,7 @@ module.exports = Game
 }).call(this,require('_process'))
 },{"../action/PossibilitySet":30,"./formatAnything.js":35,"_process":74}],35:[function(require,module,exports){
 const {sentencify} = require('../utility')
+const Action = require('../action/Action')
 
 function format(o, ctx) {
   if(!o)
@@ -85709,10 +85720,13 @@ function format(o, ctx) {
   if(o.isSubstitution)
     return format(o.str(ctx))
 
+  if(o.constructor == Object && o._verb)
+    return format(new Action(o))
+
 }
 module.exports = format
 
-},{"../utility":69}],36:[function(require,module,exports){
+},{"../action/Action":28,"../utility":69}],36:[function(require,module,exports){
 const Game = require("./Game")
 const TownHouse = require("../buildings/TownHouse")
 const Person = require("../people/Person")
