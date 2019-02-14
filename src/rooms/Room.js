@@ -56,6 +56,10 @@ class Room extends Noumenon {
   get numberOfExits() {
     return this.exits.length
   }
+  randomExit() {
+    let doors = this.exits
+    return doors[Math.floor(Math.random()*doors.length)]
+  }
   get entrances() {
     // list of doors which lead to this room
     return this.doors.filter(door =>

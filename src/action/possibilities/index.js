@@ -11,6 +11,14 @@ module.exports = [
   },
 
   { verb:'look',
+    problem: (_subject, at) => {
+      if(_subject.room != at.room)
+        return [
+          sub("_ is too far away", at),
+          "NOTE: you can only interact with things in the same room.",
+          "To leave the room try 'go through the door'"
+        ]
+    },
     consequence: (_subject, at) => {
       return at.describeAll()
     }
@@ -36,7 +44,7 @@ module.exports = [
 
     },
     consequence: (_subject, through) => {
-      let destination = through.fromTo(_subject.location)
+      let destination = through.fromTo(_subject.room)
       _subject.location = destination
       return [{
           _subject:_subject, _verb:'enter', _object: destination,
@@ -60,6 +68,15 @@ module.exports = [
       _subject.location = room
       return room.describeAll()
     }
+  },
+  {
+    verb: 'go out',
+    consequence: _subject => {
+      let room = _subject.room
+      let door = room.randomExit()
+      return {_subject:_subject, _verb:'go', through:door}
+    },
+    returnSelfAsConsequence:false,
   },
 
   // POINTLESS THINGS

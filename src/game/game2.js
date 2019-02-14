@@ -1,6 +1,7 @@
 const Game = require("./Game")
 const TownHouse = require("../buildings/TownHouse")
 const Person = require("../people/Person")
+const {sub} = require("../utility")
 
 const allPossibilities = require('../action/possibilities')
 
@@ -11,6 +12,18 @@ const allPossibilities = require('../action/possibilities')
 let myGame = new Game()
 for(var poss of allPossibilities)
   myGame.possibilities.add(poss)
+myGame.possibilities.add({
+  verb: 'become',
+  consequence: (_subject, _object) => {
+    myGame.protagonist = _object
+    return {
+      _subject: sub('the spirit of _', _subject),
+      _verb:'posess',
+      _object: sub('the body of _', _object)
+    }
+  },
+  returnSelfAsConsequence: false
+})
 
 myGame.createWorld = function() {
   let house = new TownHouse

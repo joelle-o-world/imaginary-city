@@ -85465,8 +85465,15 @@ module.exports = [
   },
 
   { verb:'look',
+    problem: (_subject, at) => {
+      if(_subject.room != at.room)
+        return [
+          sub("_ is too far away", at),
+          "NOTE: you can only interact with things in the same room.",
+          "To leave the room try 'go through the door'"
+        ]
+    },
     consequence: (_subject, at) => {
-      console.log(at.describe())
       return at.describeAll()
     }
   },
@@ -85491,7 +85498,7 @@ module.exports = [
 
     },
     consequence: (_subject, through) => {
-      let destination = through.fromTo(_subject.location)
+      let destination = through.fromTo(_subject.room)
       _subject.location = destination
       return [{
           _subject:_subject, _verb:'enter', _object: destination,
@@ -85514,6 +85521,14 @@ module.exports = [
       let room = to.isRoom ? to : to.room
       _subject.location = room
       return room.describeAll()
+    }
+  },
+  {
+    verb: 'go out',
+    consequence: _subject => {
+      let room = _subject.room
+      let door = room.randomExit()
+      return {_subject:_subject, _verb:'go', through:door}
     }
   },
 
@@ -85788,6 +85803,7 @@ module.exports = format
 const Game = require("./Game")
 const TownHouse = require("../buildings/TownHouse")
 const Person = require("../people/Person")
+const {sub} = require("../utility")
 
 const allPossibilities = require('../action/possibilities')
 
@@ -85798,6 +85814,18 @@ const allPossibilities = require('../action/possibilities')
 let myGame = new Game()
 for(var poss of allPossibilities)
   myGame.possibilities.add(poss)
+myGame.possibilities.add({
+  verb: 'become',
+  consequence: (_subject, _object) => {
+    myGame.protagonist = _object
+    return {
+      _subject: sub('the spirit of _', _subject),
+      _verb:'posess',
+      _object: sub('the body of _', _object)
+    }
+  },
+  returnSelfAsConsequence: false
+})
 
 myGame.createWorld = function() {
   let house = new TownHouse
@@ -85815,7 +85843,7 @@ myGame.intro = function() {
 
 module.exports = myGame
 
-},{"../action/possibilities":32,"../buildings/TownHouse":33,"../people/Person":46,"./Game":34}],37:[function(require,module,exports){
+},{"../action/possibilities":32,"../buildings/TownHouse":33,"../people/Person":46,"../utility":70,"./Game":34}],37:[function(require,module,exports){
 /*
   Sub-class of item for representing a bed.
 */
@@ -86516,6 +86544,10 @@ class Room extends Noumenon {
   }
   get numberOfExits() {
     return this.exits.length
+  }
+  randomExit() {
+    let doors = this.exits
+    return doors[Math.floor(Math.random()*doors.length)]
   }
   get entrances() {
     // list of doors which lead to this room
