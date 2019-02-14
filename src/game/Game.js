@@ -12,7 +12,8 @@ class Game {
     let action = this.possibilities.parseImperative(str, this.protagonist)
     if(action) {
       let consequences = action.execute()
-      this.print(action)
+      if(consequences)
+        this.print(...consequences)
     } else
       this.print("I don't understand '"+str+"'")
   }
@@ -29,8 +30,9 @@ class Game {
     for(let bit of stuff) {
       let formatted = formatAnything(bit)
       if(formatted)
-        this.writeln(formatted)
+        this.write(formatted)
     }
+    this.newline(2)
   }
   write(str) {
     this._write(str)
