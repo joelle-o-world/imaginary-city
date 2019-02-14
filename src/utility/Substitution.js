@@ -5,11 +5,11 @@
   can be used to format a one off string.
 */
 
-
 const {randexp} = require("randexp")
 const placeholderRegex = /_\w*/g
-const {autoBracket} = require("./regex")
-const {politeList} = require('./index')
+const {autoBracket, kleenePoliteList} = require("./regex")
+const politeList = require('./politeList')
+
 
 class Substitution { // sometimes abbreviated Sub
   constructor(templateStr, ...noumena) {
@@ -51,29 +51,7 @@ class Substitution { // sometimes abbreviated Sub
     return this.getString(ctx)
   }
   getRegex() {
-    let toSubIn = this.noumena.map(o => {
-      if(o == null || o == undefined)
-        return o
-      else if(o.isNoumenon)
-        return o.refRegex().source
-      else if(o.constructor == String)
-        return o
-      else if(o.constructor == RegExp)
-        return autoBracket(o.source)
-      else if(o.constructor == Number)
-        return o.toString()
-      else if(o.constructor == Array) {
-        throw "cannot (yet) generate regex from substitution containing an array"
-      } else if(o.isSubstitution) {
-        let regex = o.getRegex()
-        if(regex && regex.constructor == RegExp)
-          return autoBracket(regex.source)
-        else return null)
-      } else {
-        console.warn("Couldn't interpret substitution value:", o)
-        return "???"
-      }
-    })
+    let toSubIn = this.noumena.map(formatRegex)
 
     if(toSubIn.includes(null))
       return null
@@ -109,3 +87,28 @@ class Substitution { // sometimes abbreviated Sub
 Substitution.prototype.isSubstitution = true
 Substitution.placeholderRegex = placeholderRegex
 module.exports = Substitution
+
+const formatRegex = o => {
+  if(o == null || o == undefined)
+    return o
+  else if(o.isNoumenon)
+    return o.refRegex().source
+  else if(o.constructor == String)
+    return o
+  else if(o.constructor == RegExp)
+    return autoBracket(o.source)
+  else if(o.constructor == Number)
+    return o.toString()
+  else if(o.constructor == Array) {
+    //throw "cannot (yet) generate regex from substitution containing an array"
+    return kleenePoliteList(...o.map(formatRegex)).source
+  } else if(o.isSubstitution) {
+    let regex = o.getRegex()
+    if(regex && regex.constructor == RegExp)
+      return autoBracket(regex.source)
+    else return null
+  } else {
+    console.warn("Couldn't interpret substitution value:", o)
+    return "???"
+  }
+}

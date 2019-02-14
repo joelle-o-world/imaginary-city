@@ -56,8 +56,8 @@ function kleeneJoin(operand, seperator) {
   return concat(operand, kleene(concat(seperator, operand)))
 }
 
-function kleenePoliteList(operand) {
-  operand = new RegExp(operand).source
+function kleenePoliteList(...operands) {
+  operand = or(...operands)
   return concat(
     optional(concat(kleeneJoin(operand,', '), ',? and ')),
     operand
