@@ -180,6 +180,13 @@ const tenses = {
   imperative({_verb}) {
     return sub(_verb)
   },
+
+  negative_possible_present({_subject, _verb}) {
+    return sub('_ cannot _', _subject, _verb)
+  },
+  negative_possible_past({_subject, _verb}) {
+    return sub('_ could not _', _subject, _verb)
+  }
 }
 
 module.exports = verbPhrase
