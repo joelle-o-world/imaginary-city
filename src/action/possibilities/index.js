@@ -1,5 +1,6 @@
 const {sub} = require('../../utility')
 const Action = require('../Action')
+const random = require('../../random')
 
 module.exports = [
   // looking around
@@ -9,8 +10,15 @@ module.exports = [
       sub('_ soon became shy and looked away', _object)
     ]
   },
+  {
+    verb:'look',
+    consequence: (_subject, at) => {
+      console.log(at.describe())
+      return at.describeAll()
+    }
+  },
 
-  // moving around
+  // MOVING ARROUND
   {
     // go through doors!
     verb:'go',
@@ -32,12 +40,31 @@ module.exports = [
   },
 
   { verb:'go',
-    problem: (_subject, to) => (!to.isRoom && !to.room) || !_subject.isPhysicalObject,
-    consequence: (_subject, to) => _subject.location = to.isRoom ? to : to.room
+    problem: (_subject, to) => {
+      let room = to.isRoom ? to : to.room
+      if(!_subject.isPhysicalObject)
+        return sub('_ cannot move', _subject)
+      if(!room)
+        return sub('_ is nowhere to be found', to)
+      else if(!_subject.room.accessibleRooms.includes(room))
+        return sub('_ is too far away', to)
+    },
+    consequence: (_subject, to) => {
+      let room = to.isRoom ? to : to.room
+      _subject.location = room
+      return room.describeAll()
+    }
   },
 
+  // POINTLESS THINGS
   { verb:'dance',
     params: ['_subject'],
-    problem: (_subject) => true
+    returnSelfAsConsequence:false,
+    consequence: _subject => sub('_ began to dance like _', _subject, random.nounPhraseWithAction())
+  },
+  { verb:'jump',
+    params: ['_subject'],
+    returnSelfAsConsequence:false,
+    consequence: _subject => sub('_ jumped in the air like _', _subject, random.nounPhraseWithAction())
   },
 ]
