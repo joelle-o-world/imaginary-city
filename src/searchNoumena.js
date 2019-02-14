@@ -63,6 +63,8 @@ function* allRelations(noum, yielded=[noum], limit=Infinity) {
 exports.allRelations = allRelations
 
 function* search(refString, startingPoint) {
+  if(startingPoint.matchesRef(refString))
+    yield startingPoint
   for(let noum of allRelations(startingPoint)) {
     if(noum.matchesRef(refString))
       yield noum
