@@ -9,6 +9,8 @@
 
 const getParams = require("@captemulation/get-parameter-names")
 const verbPhrase = require("../utility/conjugate/verbPhrase")
+const interpretActionQuery = require('./interpretActionQuery')
+const Action = require('./Action')
 
 class Possibility {
   constructor({verb, consequence, condition}) {
@@ -98,15 +100,27 @@ class Possibility {
     return new RegExp('^'+verbPhrase(action, 'imperative').str()+'$')
   }
 
-  parseImperative(str) {
-    // parse an NL string in imperative tense, return an action query
+  parseImperative(str, subject) {
+    // parse an NL string in imperative tense, return an action
+    if(!subject)
+      throw 'parseImperative expects a subject'
+
     let result = this.imperativeRegex.exec(str)
 
-    if(result) {
-      let actionQuery = result.groups
-      actionQuery._verb = this.verb
-      return actionQuery
-    }
+    if(!result)
+      return null
+
+    let actionQuery = result.groups
+    actionQuery._verb = this.verb
+
+    // interpret the action query using the subject as a starting point
+    let action = interpretActionQuery(actionQuery, subject)
+    if(!action)
+      return null // if that doesn't work we've failed :(
+
+    action._subject = subject
+
+    return new Action(action, this)
   }
 }
 module.exports = Possibility
