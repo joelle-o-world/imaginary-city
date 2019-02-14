@@ -85156,6 +85156,7 @@ module.exports = PhysicalObject
 */
 
 const verbPhrase = require('../utility/conjugate/verbPhrase')
+const {sub} = require('../utility')
 
 class Action {
   constructor(action, possibility) {
@@ -85168,6 +85169,8 @@ class Action {
   execute() {
     if(!this.possibility)
       throw 'cannot execute an Action that has no possibility'
+    if(this.executed)
+      console.warn('Re excuting action that has already been executed', this)
 
     // convert action into parameter list
     let params = this.possibility.actionToParams(this.action)
@@ -85176,9 +85179,17 @@ class Action {
     if(params) {
       // if 'problem' function exists call it and potentially fail the execution
       if(this.possibility.problem) {
-        let problem = this.possibility.problem(...params)
-        if(problem)
-          return [problem]
+        let problems = this.possibility.problem(...params)
+        if(problems === true)
+          return [this.phrase('negative_possible_past')]
+        else if(problems) {
+          if(problems.constructor != Array)
+            problems = [problems]
+          console.log(problems[0])
+          problems[0] = sub(
+            '_ because _', this.phrase('negative_possible_past'), problems[0])
+          return problems
+        }
       }
 
       // call the consequences function
@@ -85191,7 +85202,11 @@ class Action {
       // NOTE: if the consequence returns null, that doesn't mean it failed
       if(!consequences)
         consequences = []
-      consequences.unshift(this)
+      if(consequences.constructor != Array)
+        consequences = [consequences] // allows us to return single consequences
+
+      if(this.possibility.returnSelfAsConsequence)
+        consequences.unshift(this)
 
       // mark this action as executed
       this.executed = true
@@ -85199,7 +85214,7 @@ class Action {
       return consequences
     } else
       // it failed
-      throw 'execution of action failed because the action did not match its possibility'
+      throw 'execution of action failed because the it did not match its possibility'
   }
 
   get noumena() {
@@ -85213,14 +85228,17 @@ class Action {
     return list
   }
 
+  phrase(tense) {
+    return verbPhrase(this.action, tense)
+  }
   str(tense) {
-    return verbPhrase(this.action, tense).str()
+    return this.phrase(tense).str()
   }
 }
 Action.prototype.isAction = true
 module.exports = Action
 
-},{"../utility/conjugate/verbPhrase":68}],29:[function(require,module,exports){
+},{"../utility":69,"../utility/conjugate/verbPhrase":68}],29:[function(require,module,exports){
  /*
   This class is so abstract I'm having a hard time working out how to explain
   it. In short, represents a template for a sentence (abstracted from tense, and
@@ -85228,6 +85246,27 @@ module.exports = Action
   condition function. The consequence function takes an action which fits this
   template/possibility and makes it true (if it is unable to, return null.)
   The condition function takes a given action and finds out whether it is true.
+
+
+
+  Problem:      The problem function checks for problems before executing an
+                action. If there are none it returns null and the action
+                proceeeds. Otherwise, it returns an object or array of objects
+                destined for output, these will be interpreted in the same way
+                that the consequence function's return value would be.
+
+
+  Consequences: The consequence function implements an action. For example,
+                suppose the action is 'john goes to the kitchen', the
+                consequence function will set john's location to 'the kitchen'.
+                The second purpose of the consequence function is to return a
+                set of objects which are triggered as a result of an action.
+                Return values:
+                  - null, meaning take no furthur action.
+                  - a single object*
+                  - an array of objects*
+                *the objects may be strings, substitutions or Actions (both
+                rough and action objects)
 */
 
 const getParams = require("@captemulation/get-parameter-names")
@@ -85236,12 +85275,18 @@ const interpretActionQuery = require('./interpretActionQuery')
 const Action = require('./Action')
 
 class Possibility {
-  constructor({verb, consequence, problem}) {
+  constructor({
+    params, verb, consequence, problem, returnSelfAsConsequence=true
+  }) {
     this.verb = verb // string
     this.consequence = consequence // function
     this.problem = problem // function, returns bool
 
-    this.params = getParams(this.consequence).map(param => param.toLowerCase())
+    this.returnSelfAsConsequence = returnSelfAsConsequence
+
+    this.params = params || getParams(this.consequence).map(param => param.toLowerCase())
+    // NOTE: 'in' is a reserved word so cannot be a function argument. The
+    //        solution was to use 'IN' and convert all params to lower case.
 
     this.imperativeRegex = this.getImperateRegex()
   }
@@ -85256,7 +85301,7 @@ class Possibility {
     let list = new Array(this.params.length).fill(null)
     for(var param in action) {
       // NOTE: if a param is null, thats fine, it is up to the consequence/
-      //       condition functions to handle this case. The real problem is if
+      //       problem functions to handle this case. The real problem is if
       //       the action includes parameters which the possibility hasn't heard
       //       of.
 
@@ -85281,30 +85326,6 @@ class Possibility {
     if(params)
       return this.condition(...params)
     else return false
-  }
-
-  execute(action) {
-    // execute an action
-
-    // convert action into parameter list
-    let params = this.actionToParams(action)
-    // (will return null if action does not fit this possibility)
-
-    if(params) {
-      // if check function exists call it and potentially fail the execution
-      if(this.check && !this.check(action))
-        return null // fail iff check function exists AND it fails
-
-      // call the consequences function
-      let consequences = this.consequence(...params)
-
-      // NOTE: if the consequence returns null, thats doesn't mean it failed
-      if(!consequences)
-        consequences = []
-      consequences.unshift(action)
-
-      return consequences
-    }
   }
 
   imperativeCommandString() {
@@ -85333,7 +85354,7 @@ class Possibility {
     if(!result)
       return null
 
-    let actionQuery = result.groups
+    let actionQuery = result.groups || {}
     actionQuery._verb = this.verb
 
     // interpret the action query using the subject as a starting point
@@ -85450,16 +85471,14 @@ module.exports = [
 
   // moving around
   {
+    // go through doors!
     verb:'go',
     problem: (_subject, through) => {
       if(!through.isDoor)
-        return sub(
-          '_ cannot go through _ because it is not a door',
-          _subject, through)
+        return sub('_ is not a door', through)
       if(!through.fromTo(_subject.room))
-        return sub(
-          '_ cannot go through _ because it is nowhere to be seen',
-          _subject, through)
+        return sub('_ is nowhere to be seen', through)
+
     },
     consequence: (_subject, through) => {
       let destination = through.fromTo(_subject.location)
@@ -85469,7 +85488,17 @@ module.exports = [
         }
       ]
     }
-  }
+  },
+
+  { verb:'go',
+    problem: (_subject, to) => (!to.isRoom && !to.room) || !_subject.isPhysicalObject,
+    consequence: (_subject, to) => _subject.location = to.isRoom ? to : to.room
+  },
+
+  { verb:'dance',
+    params: ['_subject'],
+    problem: (_subject) => true,
+  },
 ]
 
 },{"../../utility":69,"../Action":28}],33:[function(require,module,exports){
@@ -87099,6 +87128,13 @@ const tenses = {
   imperative({_verb}) {
     return sub(_verb)
   },
+
+  negative_possible_present({_subject, _verb}) {
+    return sub('_ cannot _', _subject, _verb)
+  },
+  negative_possible_past({_subject, _verb}) {
+    return sub('_ could not _', _subject, _verb)
+  }
 }
 
 module.exports = verbPhrase

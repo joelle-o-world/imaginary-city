@@ -5,6 +5,27 @@
   condition function. The consequence function takes an action which fits this
   template/possibility and makes it true (if it is unable to, return null.)
   The condition function takes a given action and finds out whether it is true.
+
+
+
+  Problem:      The problem function checks for problems before executing an
+                action. If there are none it returns null and the action
+                proceeeds. Otherwise, it returns an object or array of objects
+                destined for output, these will be interpreted in the same way
+                that the consequence function's return value would be.
+
+
+  Consequences: The consequence function implements an action. For example,
+                suppose the action is 'john goes to the kitchen', the
+                consequence function will set john's location to 'the kitchen'.
+                The second purpose of the consequence function is to return a
+                set of objects which are triggered as a result of an action.
+                Return values:
+                  - null, meaning take no furthur action.
+                  - a single object*
+                  - an array of objects*
+                *the objects may be strings, substitutions or Actions (both
+                rough and action objects)
 */
 
 const getParams = require("@captemulation/get-parameter-names")
@@ -13,12 +34,18 @@ const interpretActionQuery = require('./interpretActionQuery')
 const Action = require('./Action')
 
 class Possibility {
-  constructor({verb, consequence, problem}) {
+  constructor({
+    params, verb, consequence, problem, returnSelfAsConsequence=true
+  }) {
     this.verb = verb // string
     this.consequence = consequence // function
     this.problem = problem // function, returns bool
 
-    this.params = getParams(this.consequence).map(param => param.toLowerCase())
+    this.returnSelfAsConsequence = returnSelfAsConsequence
+
+    this.params = params || getParams(this.consequence).map(param => param.toLowerCase())
+    // NOTE: 'in' is a reserved word so cannot be a function argument. The
+    //        solution was to use 'IN' and convert all params to lower case.
 
     this.imperativeRegex = this.getImperateRegex()
   }
@@ -33,7 +60,7 @@ class Possibility {
     let list = new Array(this.params.length).fill(null)
     for(var param in action) {
       // NOTE: if a param is null, thats fine, it is up to the consequence/
-      //       condition functions to handle this case. The real problem is if
+      //       problem functions to handle this case. The real problem is if
       //       the action includes parameters which the possibility hasn't heard
       //       of.
 
@@ -58,30 +85,6 @@ class Possibility {
     if(params)
       return this.condition(...params)
     else return false
-  }
-
-  execute(action) {
-    // execute an action
-
-    // convert action into parameter list
-    let params = this.actionToParams(action)
-    // (will return null if action does not fit this possibility)
-
-    if(params) {
-      // if check function exists call it and potentially fail the execution
-      if(this.check && !this.check(action))
-        return null // fail iff check function exists AND it fails
-
-      // call the consequences function
-      let consequences = this.consequence(...params)
-
-      // NOTE: if the consequence returns null, thats doesn't mean it failed
-      if(!consequences)
-        consequences = []
-      consequences.unshift(action)
-
-      return consequences
-    }
   }
 
   imperativeCommandString() {
@@ -110,7 +113,7 @@ class Possibility {
     if(!result)
       return null
 
-    let actionQuery = result.groups
+    let actionQuery = result.groups || {}
     actionQuery._verb = this.verb
 
     // interpret the action query using the subject as a starting point

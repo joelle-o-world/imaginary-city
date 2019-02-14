@@ -12,16 +12,14 @@ module.exports = [
 
   // moving around
   {
+    // go through doors!
     verb:'go',
     problem: (_subject, through) => {
       if(!through.isDoor)
-        return sub(
-          '_ cannot go through _ because it is not a door',
-          _subject, through)
+        return sub('_ is not a door', through)
       if(!through.fromTo(_subject.room))
-        return sub(
-          '_ cannot go through _ because it is nowhere to be seen',
-          _subject, through)
+        return sub('_ is nowhere to be seen', through)
+
     },
     consequence: (_subject, through) => {
       let destination = through.fromTo(_subject.location)
@@ -31,5 +29,15 @@ module.exports = [
         }
       ]
     }
-  }
+  },
+
+  { verb:'go',
+    problem: (_subject, to) => (!to.isRoom && !to.room) || !_subject.isPhysicalObject,
+    consequence: (_subject, to) => _subject.location = to.isRoom ? to : to.room
+  },
+
+  { verb:'dance',
+    params: ['_subject'],
+    problem: (_subject) => true
+  },
 ]
