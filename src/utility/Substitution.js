@@ -81,7 +81,7 @@ class Substitution { // sometimes abbreviated Sub
     return out
   }
 
-  static substitution(templateStr, ...noumena) {
+  static substitute(templateStr, ...noumena) {
     let ctx
     if(!noumena[noumena.length-1].isNoumenon)
       ctx = noumena.pop()
