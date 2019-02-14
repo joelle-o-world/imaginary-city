@@ -5,7 +5,7 @@
 const Substitution = require("./Substitution")
 
 module.exports = {
-  printList: function printList(list) {
+  politeList: function politeList(list) {
     if(list.length == 1)
       return list[0]
     else {

@@ -5,9 +5,11 @@
   can be used to format a one off string.
 */
 
+
 const {randexp} = require("randexp")
 const placeholderRegex = /_\w*/g
 const {autoBracket} = require("./regex")
+const {politeList} = require('./index')
 
 class Substitution { // sometimes abbreviated Sub
   constructor(templateStr, ...noumena) {
@@ -31,6 +33,8 @@ class Substitution { // sometimes abbreviated Sub
         return o.getString(descriptionCtx)
       else if(o.isAction)
         return o.str()
+      else if(o.constructor == Array)
+        return Substitution.politeList(o).str()
       else {
         console.warn("Couldn't interpret substitution value:", o, this)
         return "???"
@@ -58,11 +62,13 @@ class Substitution { // sometimes abbreviated Sub
         return autoBracket(o.source)
       else if(o.constructor == Number)
         return o.toString()
-      else if(o.isSubstitution) {
+      else if(o.constructor == Array) {
+        throw "cannot (yet) generate regex from substitution containing an array"
+      } else if(o.isSubstitution) {
         let regex = o.getRegex()
         if(regex && regex.constructor == RegExp)
           return autoBracket(regex.source)
-        else return null
+        else return null)
       } else {
         console.warn("Couldn't interpret substitution value:", o)
         return "???"
@@ -91,6 +97,12 @@ class Substitution { // sometimes abbreviated Sub
       ctx = {}
 
     return new Substitution(templateStr, ...noumena).getString(ctx)
+  }
+
+  static politeList(items) {
+    let placeholders = items.map(item => '_')
+    let template = politeList(placeholders)
+    return new Substitution(template, ...items)
   }
 }
 
