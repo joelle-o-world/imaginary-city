@@ -26,6 +26,8 @@ module.exports = {
       return n + " " + noun + "s"
   },
 
+  sentencify: require('./sentencify.js'),
+
   regex: require("./regex"),
 
   Substitution: Substitution,
