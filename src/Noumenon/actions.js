@@ -1,5 +1,6 @@
 const interpretActionQuery = require("../action/interpretActionQuery")
 const PossibilitySet = require("../action/PossibilitySet")
+const Action = require('../action/Action')
 
 module.exports = Noumenon => {
   Noumenon.prototype.possibilities = new PossibilitySet()
@@ -11,7 +12,7 @@ module.exports = Noumenon => {
   Noumenon.prototype.parseImperative = function parseImperative(str) {
     // send the noumena a natural language command in the imperative tense
     let actionQueries = this.possibilities.parseImperative(str)
-    for(var actionQuery of actionQueries) {
+    for(var {actionQuery, possibility} of actionQueries) {
       let interpretted = interpretActionQuery(actionQuery, this)
       if(!interpretted)
         continue
@@ -19,7 +20,7 @@ module.exports = Noumenon => {
       interpretted._subject = this
 
       console.log(this.ref(), 'interpretted', actionQuery, 'as', interpretted)
-      return interpretted
+      return new Action(interpretted, possibility)
     }
   }
 
@@ -27,12 +28,8 @@ module.exports = Noumenon => {
     console.log(this.ref(), 'recieved command:', str)
     let action = this.parseImperative(str)
     if(action)
-      return this.do(action)
+      return action.execute()
     else
       return null
-  }
-
-  Noumenon.prototype.do = function(action) {
-    return this.possibilities.execute(action)
   }
 }

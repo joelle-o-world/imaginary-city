@@ -74,6 +74,8 @@ module.exports = CommandTemplate
 
 const parseNounPhrase = require("./parseNounPhrase")
 const {Person} = require("../src")
+const interpretActionQuery = require("../src/action/interpretActionQuery")
+const {firstMatch} = require('../src/searchNoumena.js')
 
 class Environment {
   constructor() {
@@ -81,7 +83,7 @@ class Environment {
   }
 
   find(str) {
-    let parsed = parseNounPhrase(str)
+    /*let parsed = parseNounPhrase(str)
     let all = this.allNoumena
     let matches = all.filter(obj => obj.matchesRef(str))
     if(matches.length == 1)
@@ -95,22 +97,14 @@ class Environment {
       )
       return matches[0]
     } else if(matches.length == 0)
-      return null
+      return null*/
+
+    return firstMatch(str, this.protagonist) || null
   }
 
-  interpretAction(action) {
-    action = Object.assign({}, action)
-    for(var i in action) {
-      if(i == '_verb') // don't interpret the verb!
-        continue
-      let noumenon = this.find(action[i])
-      if(noumenon)
-        action[i] = noumenon
-      else
-        return null // fail if just one cluase is not matched
-    }
-    // if we've survived the loop, the action is valid
-    return action
+  interpretAction(query) {
+    console.warn('deprecated function!')
+    return interpretActionQuery(query, this.protagonist)
   }
 
   get location() {
@@ -182,7 +176,7 @@ class Environment {
 }
 module.exports = Environment
 
-},{"../src":39,"./parseNounPhrase":6}],3:[function(require,module,exports){
+},{"../src":42,"../src/action/interpretActionQuery":39,"../src/searchNoumena.js":71,"./parseNounPhrase":6}],3:[function(require,module,exports){
 (function (process){
 const readline = require("readline")
 const CommandTemplate = require("./CommandTemplate")
@@ -224,15 +218,18 @@ class Explorer {
     let strNoPunc = str.replace(/[.,?!]/g, "") // string without punctuation
     let commandsMatched = 0
 
-    // use PossibilitySet of protagonist
-    let possibleActions = this.environment.parseImperative(strNoPunc)
-    console.log('possibleActions for \"'+str+'\":', possibleActions)
-    if(possibleActions.length) {
-      let {action, possibility} = possibleActions[0]
-      possibility.execute(action)
-      let output = verbPhrase(action).str()
-      this.writeParagraph(output)
-      return ;
+    let consequences = this.environment.protagonist.command(str)
+    console.log("consequences:", consequences)
+
+    if(consequences) {
+      for(let consequence of consequences) {
+        if(consequence.isAction) {
+          console.log('writing action to game', consequence)
+          console.log(consequence.str())
+          this.writeSentence(consequence.str())
+        }
+      }
+      return
     }
 
     // test each command template for a match
@@ -305,7 +302,7 @@ class Explorer {
 module.exports = Explorer
 
 }).call(this,require('_process'))
-},{"../src/utility/conjugate/verbPhrase":72,"./CommandTemplate":1,"./Environment":2,"./confusionLog.js":4,"./sentencify":8,"_process":78,"readline":76}],4:[function(require,module,exports){
+},{"../src/utility/conjugate/verbPhrase":76,"./CommandTemplate":1,"./Environment":2,"./confusionLog.js":4,"./sentencify":8,"_process":82,"readline":80}],4:[function(require,module,exports){
 (function (__dirname){
 const fs = require("fs")
 const path = require("path")
@@ -324,7 +321,7 @@ function confusionLog(str, nCommandsMatched) {
 module.exports = confusionLog
 
 }).call(this,"/explorer")
-},{"fs":76,"path":77}],5:[function(require,module,exports){
+},{"fs":80,"path":81}],5:[function(require,module,exports){
 const CommandTemplate = require("../explorer/CommandTemplate.js")
 const Explorer = require("../explorer/Explorer")
 const Environment = require("../explorer/Environment")
@@ -529,7 +526,7 @@ function begin() {
 document.addEventListener('click', begin)
 window.userInput = str => game.input(str)
 
-},{"../explorer/CommandTemplate.js":1,"../explorer/Environment":2,"../explorer/Explorer":3,"../interface/TTSQueue":9,"../interface/TickyText":10,"../src/buildings/TownHouse":37,"../src/utility":73}],6:[function(require,module,exports){
+},{"../explorer/CommandTemplate.js":1,"../explorer/Environment":2,"../explorer/Explorer":3,"../interface/TTSQueue":9,"../interface/TickyText":10,"../src/buildings/TownHouse":40,"../src/utility":77}],6:[function(require,module,exports){
 const parseText = require("./parseText")
 
 const articles = [
@@ -1243,7 +1240,7 @@ function localstorage() {
 }
 
 }).call(this,require('_process'))
-},{"./debug":14,"_process":78}],14:[function(require,module,exports){
+},{"./debug":14,"_process":82}],14:[function(require,module,exports){
 
 /**
  * This is the common logic for both the Node.js and web browser
@@ -11971,7 +11968,7 @@ if(!module.parent) {
   
 
 }).call(this,require('_process'))
-},{"./first-names.json":18,"./middle-names.json":20,"./names.json":21,"./places.json":22,"_process":78}],20:[function(require,module,exports){
+},{"./first-names.json":18,"./middle-names.json":20,"./names.json":21,"./places.json":22,"_process":82}],20:[function(require,module,exports){
 module.exports=[
 "Aaron"
 ,
@@ -85353,7 +85350,6 @@ const regOp = utility.regex // regular expression operations
 const {randexp} = require("randexp")
 const interpretSpecialArray = require("./interpretSpecialArray")
 const specarr = require("../utility/specarr")
-const PossibilitySet = require("../action/PossibilitySet")
 
 class Noumenon {
 
@@ -85444,15 +85440,46 @@ Noumenon.prototype.addDescription = function(...functions) {
   this.descriptions = this.descriptions.concat(functions)
 }
 
-Noumenon.prototype.possibilities = new PossibilitySet()
-Noumenon.prototype.addPossibilty = function(...possibilities) {
-  this.possibilities = this.possibilities.duplicate()
-  this.possibilities.add(...possibilities)
-}
-
 module.exports = Noumenon
 
-},{"../action/PossibilitySet":36,"../random":54,"../utility":73,"../utility/specarr":75,"./interpretSpecialArray":32,"randexp":17}],30:[function(require,module,exports){
+},{"../random":57,"../utility":77,"../utility/specarr":79,"./interpretSpecialArray":33,"randexp":17}],30:[function(require,module,exports){
+const interpretActionQuery = require("../action/interpretActionQuery")
+const PossibilitySet = require("../action/PossibilitySet")
+const Action = require('../action/Action')
+
+module.exports = Noumenon => {
+  Noumenon.prototype.possibilities = new PossibilitySet()
+  Noumenon.prototype.addPossibilty = function(...possibilities) {
+    this.possibilities = this.possibilities.duplicate()
+    this.possibilities.add(...possibilities)
+  }
+
+  Noumenon.prototype.parseImperative = function parseImperative(str) {
+    // send the noumena a natural language command in the imperative tense
+    let actionQueries = this.possibilities.parseImperative(str)
+    for(var {actionQuery, possibility} of actionQueries) {
+      let interpretted = interpretActionQuery(actionQuery, this)
+      if(!interpretted)
+        continue
+
+      interpretted._subject = this
+
+      console.log(this.ref(), 'interpretted', actionQuery, 'as', interpretted)
+      return new Action(interpretted, possibility)
+    }
+  }
+
+  Noumenon.prototype.command = function command(str) {
+    console.log(this.ref(), 'recieved command:', str)
+    let action = this.parseImperative(str)
+    if(action)
+      return action.execute()
+    else
+      return null
+  }
+}
+
+},{"../action/Action":36,"../action/PossibilitySet":38,"../action/interpretActionQuery":39}],31:[function(require,module,exports){
 const {randexp} = require("randexp")
 const specarr = require("../utility/specarr.js") // special array functions
 
@@ -85514,13 +85541,14 @@ let assignments = {
 
 module.exports = Noumenon => Object.assign(Noumenon.prototype, assignments)
 
-},{"../utility/specarr.js":75,"randexp":17}],31:[function(require,module,exports){
+},{"../utility/specarr.js":79,"randexp":17}],32:[function(require,module,exports){
 let Noumenon = require("./Noumenon.js")
 require("./regex")(Noumenon)
 require("./getDescriptiveReference")(Noumenon)
+require("./actions")(Noumenon)
 module.exports = Noumenon
 
-},{"./Noumenon.js":29,"./getDescriptiveReference":30,"./regex":33}],32:[function(require,module,exports){
+},{"./Noumenon.js":29,"./actions":30,"./getDescriptiveReference":31,"./regex":34}],33:[function(require,module,exports){
 /*
   A function for interpretting a type of structure which exists often in
   noumenon descriptors. An array of strings, regular expressions, and functions.
@@ -85579,7 +85607,7 @@ function interpretSpecialArray(target, specialArr, ctx) {
 }
 module.exports = interpretSpecialArray*/
 
-},{"../utility/specarr":75}],33:[function(require,module,exports){
+},{"../utility/specarr":79}],34:[function(require,module,exports){
 const regOp = require("../utility/regex")
 const interpretSpecialArray = require("./interpretSpecialArray")
 
@@ -85661,7 +85689,7 @@ let assignments = {
 
 module.exports = Noumenon => Object.assign(Noumenon.prototype, assignments)
 
-},{"../utility/regex":74,"./interpretSpecialArray":32}],34:[function(require,module,exports){
+},{"../utility/regex":78,"./interpretSpecialArray":33}],35:[function(require,module,exports){
 /*
   Sub-class of Noumenon. Base class for anything that has a material presence
   in the world.
@@ -85892,7 +85920,74 @@ PhysicalObject.prototype.addDescription(
 
 module.exports = PhysicalObject
 
-},{"./Noumenon":31,"./utility":73}],35:[function(require,module,exports){
+},{"./Noumenon":32,"./utility":77}],36:[function(require,module,exports){
+/*
+  A wrapper class for adding meta data to an action.
+*/
+
+const verbPhrase = require('../utility/conjugate/verbPhrase')
+
+class Action {
+  constructor(action, possibility) {
+    this.action = action
+    this.possibility = possibility
+
+    this.executed = false
+  }
+
+  execute() {
+    if(!this.possibility)
+      throw 'cannot execute an Action that has no possibility'
+
+    // convert action into parameter list
+    let params = this.possibility.actionToParams(this.action)
+    // (will return null if action does not fit this possibility)
+
+    if(params) {
+      // if 'check' function exists call it and potentially fail the execution
+      if(this.possibility.check && this.possibilty.check(this.action))
+        return null// fail iff, 'check' function exists AND it fails
+
+      // call the consequences function
+      let consequences = this.possibility.consequence(...params)
+
+      // add this Action to the history of all the noumena involved
+      for(var noum of this.noumena)
+        noum.history.push(this)
+
+      // NOTE: if the consequence returns null, that doesn't mean it failed
+      if(!consequences)
+        consequences = []
+      consequences.unshift(this)
+
+      // mark this action as executed
+      this.executed = true
+
+      return consequences
+    } else
+      // it failed
+      throw 'execution of action failed because the action did not match its possibility'
+  }
+
+  get noumena() {
+    let list = []
+    for(var i in this.action) {
+      if(i == '_verb') // skip the verb
+        continue
+      if(this.action[i].isNoumenon)
+        list.push(this.action[i])
+    }
+    return list
+  }
+
+  str(tense) {
+    return verbPhrase(this.action, tense).str()
+  }
+}
+Action.prototype.isAction = true
+module.exports = Action
+
+},{"../utility/conjugate/verbPhrase":76}],37:[function(require,module,exports){
  /*
   This class is so abstract I'm having a hard time working out how to explain
   it. In short, represents a template for a sentence (abstracted from tense, and
@@ -85954,13 +86049,25 @@ class Possibility {
   }
 
   execute(action) {
+    // execute an action
+
+    // convert action into parameter list
     let params = this.actionToParams(action)
+    // (will return null if action does not fit this possibility)
+
     if(params) {
+      // if check function exists call it and potentially fail the execution
+      if(this.check && !this.check(action))
+        return null // fail iff check function exists AND it fails
+
+      // call the consequences function
       let consequences = this.consequence(...params)
-      for(var i in action) {
-        if(action[i].isNoumenon)
-          action[i].history.push(action)
-      }
+
+      // NOTE: if the consequence returns null, thats doesn't mean it failed
+      if(!consequences)
+        consequences = []
+      consequences.unshift(action)
+
       return consequences
     }
   }
@@ -85982,18 +86089,19 @@ class Possibility {
   }
 
   parseImperative(str) {
+    // parse an NL string in imperative tense, return an action query
     let result = this.imperativeRegex.exec(str)
 
     if(result) {
-      let action = result.groups
-      action._verb = this.verb
-      return action
+      let actionQuery = result.groups
+      actionQuery._verb = this.verb
+      return actionQuery
     }
   }
 }
 module.exports = Possibility
 
-},{"../utility/conjugate/verbPhrase":72,"@captemulation/get-parameter-names":11}],36:[function(require,module,exports){
+},{"../utility/conjugate/verbPhrase":76,"@captemulation/get-parameter-names":11}],38:[function(require,module,exports){
 /*
   A list of Possibilities
 */
@@ -86006,13 +86114,23 @@ class PossibilitySet {
   }
 
   parseImperative(str) {
-    let possibleActions = []
+    // checks an imperative NL string against all possibilities in the set.
+    // Returning a list of action queries
+    // NOTE: an action query is an intermediary structure using NL string noun-
+    //       phrases in place of noumena
+    // This is because Possibilities and PossibiltySets are abstracted from
+    // the subject. A Noumenon is needed to begin searching for matches to the
+    // noun-phrase strings
+    let actionQueries = []
     for(var i in this.possibilities) {
-      let action = this.possibilities[i].parseImperative(str)
-      if(action)
-        possibleActions.push({action:action, possibility:this.possibilities[i]})
+      let actionQuery = this.possibilities[i].parseImperative(str)
+      if(actionQuery)
+        actionQueries.push({
+          actionQuery:actionQuery,
+          possibility: this.possibilities[i]
+        })
     }
-    return possibleActions
+    return actionQueries
   }
 
   add(...possibilities) {
@@ -86030,11 +86148,47 @@ class PossibilitySet {
   duplicate() {
     return new PossibilitySet(...this.possibilities)
   }
+
+  execute(action) {
+    console.log('calling PossibilitySet#execute')
+    for(var poss of this.possibilities) {
+      let params = poss.actionToParams(action)
+      if(params) {
+        console.log('about to execute', action, 'with', poss)
+        return poss.execute(action)
+      }
+    }
+  }
 }
 PossibilitySet.prototype.isPossibilitySet = true
 module.exports = PossibilitySet
 
-},{"./Possibility":35}],37:[function(require,module,exports){
+},{"./Possibility":37}],39:[function(require,module,exports){
+const {firstMatch} = require("../searchNoumena")
+
+function interpretActionQuery(action, startingPoint) {
+  // replace the noun-phrase-strings in an action query with noumena
+  // return null if one noun-phrase can't be matched with a noumenon
+
+  action = Object.assign({}, action)
+
+  for(var key in action) {
+    if(key == '_verb') // don't interpret the verb!
+      continue
+
+    let nounStr = action[key]
+    let noumenon = firstMatch(nounStr, startingPoint)
+    if(noumenon)
+      action[key] = noumenon
+    else
+      return null // if no match, the whole interpretation fails
+  }
+
+  return action
+}
+module.exports = interpretActionQuery
+
+},{"../searchNoumena":71}],40:[function(require,module,exports){
 /*
   TownHouse is a generative class which builds a structure of various domestic
   subclasses of Rooms.
@@ -86212,12 +86366,12 @@ TownHouse.prototype.addDescriptorFunctions({
 
 module.exports = TownHouse
 
-},{"../Noumenon":31,"../random":54,"../rooms/Bathroom":57,"../rooms/Bedroom":58,"../rooms/Corridor":59,"../rooms/Kitchen":62,"../rooms/LiteralDoor":63,"../rooms/LivingRoom":64,"../rooms/Staircase":66,"../utility":73}],38:[function(require,module,exports){
+},{"../Noumenon":32,"../random":57,"../rooms/Bathroom":60,"../rooms/Bedroom":61,"../rooms/Corridor":62,"../rooms/Kitchen":65,"../rooms/LiteralDoor":66,"../rooms/LivingRoom":67,"../rooms/Staircase":69,"../utility":77}],41:[function(require,module,exports){
 module.exports = {
   TownHouse: require("./TownHouse"),
 }
 
-},{"./TownHouse":37}],39:[function(require,module,exports){
+},{"./TownHouse":40}],42:[function(require,module,exports){
 module.exports = {
   // classes
   Noumenon: require("./Noumenon"),
@@ -86236,7 +86390,7 @@ module.exports = {
   random: require("./random"),
 }
 
-},{"./Noumenon":31,"./buildings":38,"./items":48,"./items/Item":45,"./people":50,"./people/Person":49,"./random":54,"./rooms":67,"./rooms/Room":65,"./utility":73}],40:[function(require,module,exports){
+},{"./Noumenon":32,"./buildings":41,"./items":51,"./items/Item":48,"./people":53,"./people/Person":52,"./random":57,"./rooms":70,"./rooms/Room":68,"./utility":77}],43:[function(require,module,exports){
 /*
   Sub-class of item for representing a bed.
 */
@@ -86275,7 +86429,7 @@ Bed.prototype.addDescriptorFunctions({
 
 module.exports = Bed
 
-},{"./GenericItem":44,"./Item.js":45}],41:[function(require,module,exports){
+},{"./GenericItem":47,"./Item.js":48}],44:[function(require,module,exports){
 /*
   Sub class of Table for representing bedside tables
 */
@@ -86298,7 +86452,7 @@ BedsideTable.prototype.addNouns("bedside table", "night stand")
 BedsideTable.prototype.isBedsideTable
 module.exports = BedsideTable
 
-},{"./GenericItem":44,"./Table":46}],42:[function(require,module,exports){
+},{"./GenericItem":47,"./Table":49}],45:[function(require,module,exports){
 /*
   A base class for all kinds of cupboards.
 */
@@ -86315,7 +86469,7 @@ Cupboard.prototype.isCupboard = true
 Cupboard.prototype.nouns = ['cupboard']
 module.exports = Cupboard
 
-},{"./Item.js":45}],43:[function(require,module,exports){
+},{"./Item.js":48}],46:[function(require,module,exports){
 /*
   Sub-class of table. For representing a desk.
 */
@@ -86328,7 +86482,7 @@ Desk.prototype.nouns = ["desk"]
 Desk.prototype.isDesk = true
 module.exports = Desk
 
-},{"./Table":46}],44:[function(require,module,exports){
+},{"./Table":49}],47:[function(require,module,exports){
 /*
   Subclass of Item. A quick way to generate items which do not do very much.
 */
@@ -86354,7 +86508,7 @@ GenericItem.prototype.addDescription(
 )
 module.exports = GenericItem
 
-},{"../random":54,"../utility/Substitution":68,"./Item":45}],45:[function(require,module,exports){
+},{"../random":57,"../utility/Substitution":72,"./Item":48}],48:[function(require,module,exports){
 /*
   A subclass of Noumenon, used to represent a smallish object such as a bed, a
   desk or a lamp.
@@ -86378,7 +86532,7 @@ Item.prototype.addDescriptorFunctions({
 })
 module.exports = Item
 
-},{"../PhysicalObject":34}],46:[function(require,module,exports){
+},{"../PhysicalObject":35}],49:[function(require,module,exports){
 /*
   Base class for all manner of tables
 */
@@ -86395,7 +86549,7 @@ Table.prototype.isTable = true
 Table.prototype.nouns = ["table"]
 module.exports = Table
 
-},{"./Item":45}],47:[function(require,module,exports){
+},{"./Item":48}],50:[function(require,module,exports){
 /*
   Generative subclass of Cupboard. Automatically populated with clothes.
 */
@@ -86432,13 +86586,13 @@ Wardrobe.prototype.isWardrobe = true
 Wardrobe.prototype.addNouns("wardrobe")
 module.exports = Wardrobe
 
-},{"./Cupboard":42,"./GenericItem":44}],48:[function(require,module,exports){
+},{"./Cupboard":45,"./GenericItem":47}],51:[function(require,module,exports){
 module.exports = {
   Item: require("./Item"),
   GenericItem: require("./GenericItem"),
 }
 
-},{"./GenericItem":44,"./Item":45}],49:[function(require,module,exports){
+},{"./GenericItem":47,"./Item":48}],52:[function(require,module,exports){
 /*
   A class representing a person.
 */
@@ -86446,7 +86600,7 @@ module.exports = {
 const PhysicalObject = require("../PhysicalObject")
 const random = require("../random")
 const utility = require("../utility")
-const Sub = utility.Sub
+const sub = utility.sub
 
 class Person extends PhysicalObject {
   constructor() {
@@ -86484,26 +86638,28 @@ Person.prototype.addDescriptorFunctions({
 })
 
 Person.prototype.addDescription(
-  person => new Sub("_ has _ hair.", person, person.hairColor),
+  person => sub("_ has _ hair.", person, person.hairColor),
   //person => utility.possessive(person.ref({article:'the'}))+ " name is "+person.fullName+'.',
-  person => new Sub("_'s name is _", person, person.fullName),
+  person => sub("_'s name is _", person, person.fullName),
 )
 
 Person.prototype.addPossibilty(
   {
-    verb:'go',
-    consequence: (_subject, to) => _subject.location = to,
+    verb:'admire',
+    consequence: (_subject, _object) => {
+      //console.log(_subject, 'admired', _object)
+    }
   }
 )
 
 module.exports = Person
 
-},{"../PhysicalObject":34,"../random":54,"../utility":73}],50:[function(require,module,exports){
+},{"../PhysicalObject":35,"../random":57,"../utility":77}],53:[function(require,module,exports){
 module.exports = {
   Person: require("./Person"),
 }
 
-},{"./Person":49}],51:[function(require,module,exports){
+},{"./Person":52}],54:[function(require,module,exports){
 const buildingMaterials = [
   // adjectives for describing building materials
   "bricks",
@@ -86517,7 +86673,7 @@ function randomBuildingMaterial() {
 }
 module.exports = randomBuildingMaterial
 
-},{}],52:[function(require,module,exports){
+},{}],55:[function(require,module,exports){
 const colors = [
   "red",
   "orange",
@@ -86532,7 +86688,7 @@ function randomColor() {
 }
 module.exports = randomColor
 
-},{}],53:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 const floorings = ["carpet", "tiled", "lino", "wooden", "concrete", "leather"]
 
 function randomFlooring() {
@@ -86540,7 +86696,7 @@ function randomFlooring() {
 }
 module.exports = randomFlooring
 
-},{}],54:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 const randomName = require("random-name")
 
 module.exports = {
@@ -86553,7 +86709,7 @@ module.exports = {
   material: require("./material.js"),
 }
 
-},{"./buildingMaterial":51,"./color.js":52,"./flooring.js":53,"./material.js":55,"./title.js":56,"random-name":19}],55:[function(require,module,exports){
+},{"./buildingMaterial":54,"./color.js":55,"./flooring.js":56,"./material.js":58,"./title.js":59,"random-name":19}],58:[function(require,module,exports){
 const materials = [
   "silk",
   "denim",
@@ -86573,7 +86729,7 @@ function randomMaterial() {
 }
 module.exports = randomMaterial
 
-},{}],56:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 const titles = ["Mr", "Mrs", "Ms", "Dr", "Professor"]
 
 function randomTitle() {
@@ -86581,7 +86737,7 @@ function randomTitle() {
 }
 module.exports = randomTitle
 
-},{}],57:[function(require,module,exports){
+},{}],60:[function(require,module,exports){
 /*
   Bathroom is a generative subclass of Room
 */
@@ -86604,7 +86760,7 @@ Bathroom.prototype.addNouns("bathroom")
 
 module.exports = Bathroom
 
-},{"./InteriorRoom.js":61}],58:[function(require,module,exports){
+},{"./InteriorRoom.js":64}],61:[function(require,module,exports){
 /*
   A Bedroom is a generative subclass of Room.
 */
@@ -86650,7 +86806,7 @@ Bedroom.prototype.addDescriptorFunctions({
 
 module.exports = Bedroom
 
-},{"../items/Bed":40,"../items/BedsideTable":41,"../items/Desk":43,"../items/Wardrobe":47,"../people/Person":49,"../utility":73,"./InteriorRoom.js":61}],59:[function(require,module,exports){
+},{"../items/Bed":43,"../items/BedsideTable":44,"../items/Desk":46,"../items/Wardrobe":50,"../people/Person":52,"../utility":77,"./InteriorRoom.js":64}],62:[function(require,module,exports){
 /*
   Corridor is a generative subclass of Room
 */
@@ -86667,7 +86823,7 @@ Corridor.prototype.addNouns("corridor")
 
 module.exports = Corridor
 
-},{"./InteriorRoom.js":61}],60:[function(require,module,exports){
+},{"./InteriorRoom.js":64}],63:[function(require,module,exports){
 /*
   The Door class is a sub-class of Noumenon which connects one Room instance to
   another. It needn't represent a literal door, just as Room needn't represent
@@ -86726,7 +86882,7 @@ Door.prototype.addDescriptorFunctions({
 
 module.exports = Door
 
-},{"../Noumenon":31,"../utility/Substitution":68,"../utility/regex":74}],61:[function(require,module,exports){
+},{"../Noumenon":32,"../utility/Substitution":72,"../utility/regex":78}],64:[function(require,module,exports){
 /*
   InteriorRoom is a subclass of Room. It is used as a super class for indoor
   rooms.
@@ -86774,7 +86930,7 @@ InteriorRoom.prototype.addDescription(
 
 module.exports = InteriorRoom
 
-},{"../utility":73,"./Room.js":65}],62:[function(require,module,exports){
+},{"../utility":77,"./Room.js":68}],65:[function(require,module,exports){
 /*
   Kitchen is a generative subclass of Room
 */
@@ -86816,7 +86972,7 @@ Kitchen.prototype.addNouns("kitchen")
 
 module.exports = Kitchen
 
-},{"../items/GenericItem":44,"./InteriorRoom.js":61}],63:[function(require,module,exports){
+},{"../items/GenericItem":47,"./InteriorRoom.js":64}],66:[function(require,module,exports){
 /*
   A sub class of Door for representing actual doors, rather than the base class
   which is more abstract (representing any connection between two Rooms).
@@ -86834,7 +86990,7 @@ class LiteralDoor extends Door {
 }
 module.exports = LiteralDoor
 
-},{"../random":54,"./Door.js":60}],64:[function(require,module,exports){
+},{"../random":57,"./Door.js":63}],67:[function(require,module,exports){
 /*
   LivingRoom is a generative subclass of Room
 */
@@ -86851,7 +87007,7 @@ LivingRoom.prototype.addNouns("living room", "lounge")
 
 module.exports = LivingRoom
 
-},{"./InteriorRoom.js":61}],65:[function(require,module,exports){
+},{"./InteriorRoom.js":64}],68:[function(require,module,exports){
 /*
   Room is an atomic element for the geography. Rooms contain doorways leading
   to other rooms. The can also contain Items and stuff like that. They are not
@@ -86962,7 +87118,7 @@ Room.prototype.isRoom = true
 
 module.exports = Room
 
-},{"../Noumenon":31,"../items":48,"../items/GenericItem":44,"./Door.js":60}],66:[function(require,module,exports){
+},{"../Noumenon":32,"../items":51,"../items/GenericItem":47,"./Door.js":63}],69:[function(require,module,exports){
 /*
   Staircase is a generative subclass of Room
 */
@@ -86988,7 +87144,7 @@ Staircase.prototype.addDescriptorFunctions({
 
 module.exports = Staircase
 
-},{"./InteriorRoom.js":61}],67:[function(require,module,exports){
+},{"./InteriorRoom.js":64}],70:[function(require,module,exports){
 module.exports = {
   // base-classes
   Room: require("./Room"),
@@ -87004,7 +87160,89 @@ module.exports = {
   Staircase: require("./Staircase"),
 }
 
-},{"./Bathroom":57,"./Bedroom":58,"./Corridor":59,"./Door":60,"./InteriorRoom":61,"./Kitchen":62,"./LivingRoom":64,"./Room":65,"./Staircase":66}],68:[function(require,module,exports){
+},{"./Bathroom":60,"./Bedroom":61,"./Corridor":62,"./Door":63,"./InteriorRoom":64,"./Kitchen":65,"./LivingRoom":67,"./Room":68,"./Staircase":69}],71:[function(require,module,exports){
+/*
+  Find noumena which match a given noun-string by searching outwards from a
+  given noumenon
+
+  VOCAB:
+    relationship, a connection between two noumena
+    relation: A noumenon which is in a relationship
+*/
+
+function* immediateRelations(noum) { // noum: Starting point
+  // generate all immediate related noumena, skipping neither duplicates or null
+
+  // PHYSICAL OBJECT RELATIONS
+  // - noum.location
+  yield noum.location
+  // check sub objects
+  // - ...noum.containing
+  if(noum.isContainer)
+    for(var content of noum.containing)
+      yield content
+  // - ...noum.surporting
+  if(noum.isSurface)
+    for(var object of noum.supporting)
+      yield object
+
+  // ROOM RELATIONS
+  if(noum.isRoom) {
+    // room contents
+    for(let item of noum.contents)
+      yield item
+    // room doors
+    for(let door of noum.doors)
+      yield door
+  }
+
+  // DOOR RELATIONS
+  if(noum.isDoor) {
+    yield noum.A
+    yield noum.B
+  }
+}
+exports.immediateRelations = immediateRelations
+
+function* filteredImmediateRelations(noum, yielded) {
+  // filter immediate relations
+  for(let relation of immediateRelations(noum)) {
+    // skip relations which are null, or have already been checked
+    if(!relation || yielded.includes(relation))
+      continue
+
+    yielded.push(relation)
+    yield relation
+  }
+}
+
+function* allRelations(noum, yielded=[noum], limit=Infinity) {
+  // recursively return relations
+  for(let i=0; i<yielded.length && yielded.length < limit; i++)
+    for(let relation of filteredImmediateRelations(yielded[i], yielded))
+      yield relation
+
+}
+exports.allRelations = allRelations
+
+function* search(refString, startingPoint) {
+  for(let noum of allRelations(startingPoint)) {
+    if(noum.matchesRef(refString))
+      yield noum
+  }
+}
+exports.search = search
+
+function firstMatch(refString, startingPoint) {
+  let result = search(refString, startingPoint).next()
+  if(result.value)
+    return result.value
+  else
+    return null
+}
+exports.firstMatch = firstMatch
+
+},{}],72:[function(require,module,exports){
 /*
   Substitution is a class for formatting sentence involving zero or more
   noumena. It can be used to avoid generating the noun phrases until the program
@@ -87103,7 +87341,7 @@ Substitution.prototype.isSubstitution = true
 Substitution.placeholderRegex = placeholderRegex
 module.exports = Substitution
 
-},{"./regex":74,"randexp":17}],69:[function(require,module,exports){
+},{"./regex":78,"randexp":17}],73:[function(require,module,exports){
 /*
   Given the infinitive form of a verb and a person/verbform number (0-8) return
   the conjugated verb form.
@@ -87195,7 +87433,7 @@ function anyPersonRegex(infinitive) {
 module.exports = conjugate
 conjugate.anyPersonRegex
 
-},{"../regex":74,"./irregularConjugations":71}],70:[function(require,module,exports){
+},{"../regex":78,"./irregularConjugations":75}],74:[function(require,module,exports){
 // Determine the numeric person of a given noun phrase
 
 /*
@@ -87247,7 +87485,7 @@ function getPerson(subject) {
 }
 module.exports = getPerson
 
-},{"../Substitution":68}],71:[function(require,module,exports){
+},{"../Substitution":72}],75:[function(require,module,exports){
 // list of irregular verbs with their conjugations.
 // (indexed by infinitive)
 
@@ -87343,7 +87581,7 @@ module.exports = {
 
 }
 
-},{}],72:[function(require,module,exports){
+},{}],76:[function(require,module,exports){
 /*
 Tenses: [source ef.co.uk]
   - Simple Present ("They walk home.")
@@ -87532,7 +87770,7 @@ module.exports = verbPhrase
 verbPhrase.tenses = tenses
 verbPhrase.anyTenseRegex = anyTenseRegex
 
-},{"../index":73,"../regex":74,"./conjugate":69,"./getPerson":70}],73:[function(require,module,exports){
+},{"../index":77,"../regex":78,"./conjugate":73,"./getPerson":74}],77:[function(require,module,exports){
 /*
   Language utility. A set of tools for quickly formatting english.
 */
@@ -87568,7 +87806,7 @@ module.exports = {
   sub: (...args) => new Substitution(...args),
 }
 
-},{"./Substitution":68,"./regex":74}],74:[function(require,module,exports){
+},{"./Substitution":72,"./regex":78}],78:[function(require,module,exports){
 function sourcify(list) {
   return list
     .filter(item => item)
@@ -87635,7 +87873,7 @@ module.exports = {
   autoBracket: autoBracket,
 }
 
-},{}],75:[function(require,module,exports){
+},{}],79:[function(require,module,exports){
 /*
   A set of tools for using the so-called 'special array', or 'specarr'.
 
@@ -87850,9 +88088,9 @@ module.exports = {
   randomStrings: randomStrings,
 }
 
-},{"randexp":17}],76:[function(require,module,exports){
+},{"randexp":17}],80:[function(require,module,exports){
 
-},{}],77:[function(require,module,exports){
+},{}],81:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -88080,7 +88318,7 @@ var substr = 'ab'.substr(-1) === 'b'
 ;
 
 }).call(this,require('_process'))
-},{"_process":78}],78:[function(require,module,exports){
+},{"_process":82}],82:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 

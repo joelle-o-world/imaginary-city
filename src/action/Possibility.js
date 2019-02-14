@@ -59,13 +59,25 @@ class Possibility {
   }
 
   execute(action) {
+    // execute an action
+
+    // convert action into parameter list
     let params = this.actionToParams(action)
+    // (will return null if action does not fit this possibility)
+
     if(params) {
+      // if check function exists call it and potentially fail the execution
+      if(this.check && !this.check(action))
+        return null // fail iff check function exists AND it fails
+
+      // call the consequences function
       let consequences = this.consequence(...params)
-      for(var i in action) {
-        if(action[i].isNoumenon)
-          action[i].history.push(action)
-      }
+
+      // NOTE: if the consequence returns null, thats doesn't mean it failed
+      if(!consequences)
+        consequences = []
+      consequences.unshift(action)
+
       return consequences
     }
   }

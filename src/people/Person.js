@@ -50,8 +50,10 @@ Person.prototype.addDescription(
 
 Person.prototype.addPossibilty(
   {
-    verb:'go',
-    consequence: (_subject, to) => _subject.location = to,
+    verb:'admire',
+    consequence: (_subject, _object) => {
+      //console.log(_subject, 'admired', _object)
+    }
   }
 )
 

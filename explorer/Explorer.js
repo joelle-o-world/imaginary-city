@@ -38,15 +38,18 @@ class Explorer {
     let strNoPunc = str.replace(/[.,?!]/g, "") // string without punctuation
     let commandsMatched = 0
 
-    // use PossibilitySet of protagonist
-    let possibleActions = this.environment.parseImperative(strNoPunc)
-    console.log('possibleActions for \"'+str+'\":', possibleActions)
-    if(possibleActions.length) {
-      let {action, possibility} = possibleActions[0]
-      possibility.execute(action)
-      let output = verbPhrase(action).str()
-      this.writeParagraph(output)
-      return ;
+    let consequences = this.environment.protagonist.command(str)
+    console.log("consequences:", consequences)
+
+    if(consequences) {
+      for(let consequence of consequences) {
+        if(consequence.isAction) {
+          console.log('writing action to game', consequence)
+          console.log(consequence.str())
+          this.writeSentence(consequence.str())
+        }
+      }
+      return
     }
 
     // test each command template for a match

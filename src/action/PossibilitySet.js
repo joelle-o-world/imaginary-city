@@ -21,7 +21,10 @@ class PossibilitySet {
     for(var i in this.possibilities) {
       let actionQuery = this.possibilities[i].parseImperative(str)
       if(actionQuery)
-        actionQueries.push(actionQuery)
+        actionQueries.push({
+          actionQuery:actionQuery,
+          possibility: this.possibilities[i]
+        })
     }
     return actionQueries
   }
@@ -43,6 +46,7 @@ class PossibilitySet {
   }
 
   execute(action) {
+    console.log('calling PossibilitySet#execute')
     for(var poss of this.possibilities) {
       let params = poss.actionToParams(action)
       if(params) {
