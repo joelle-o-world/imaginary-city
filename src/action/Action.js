@@ -21,9 +21,12 @@ class Action {
     // (will return null if action does not fit this possibility)
 
     if(params) {
-      // if 'check' function exists call it and potentially fail the execution
-      if(this.possibility.check && this.possibilty.check(this.action))
-        return null// fail iff, 'check' function exists AND it fails
+      // if 'problem' function exists call it and potentially fail the execution
+      if(this.possibility.problem) {
+        let problem = this.possibility.problem(...params)
+        if(problem)
+          return [problem]
+      }
 
       // call the consequences function
       let consequences = this.possibility.consequence(...params)

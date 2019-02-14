@@ -13,10 +13,10 @@ const interpretActionQuery = require('./interpretActionQuery')
 const Action = require('./Action')
 
 class Possibility {
-  constructor({verb, consequence, condition}) {
+  constructor({verb, consequence, problem}) {
     this.verb = verb // string
     this.consequence = consequence // function
-    this.condition = condition // function, returns bool
+    this.problem = problem // function, returns bool
 
     this.params = getParams(this.consequence).map(param => param.toLowerCase())
 
