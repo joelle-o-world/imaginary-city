@@ -85140,7 +85140,7 @@ PhysicalObject.prototype.addDescription(
   o => (o.locationType == 'surface' ?
        {_subject: o, _verb:'be', on:o.location} : null),
 
-  o => o.neighbours.map(n => ({_subject:o, _verb:'be', 'next to':n}))
+  o => o.neighbours.length ? {_subject:o, _verb:'be', 'next to':o.neighbours} : null
 )
 
 module.exports = PhysicalObject
@@ -85458,17 +85458,24 @@ const random = require('../../random')
 
 module.exports = [
   // looking around
-  {
-    verb:'admire',
+  { verb:'admire',
     consequence: (_subject, _object) => [
       sub('_ soon became shy and looked away', _object)
     ]
   },
-  {
-    verb:'look',
+
+  { verb:'look',
     consequence: (_subject, at) => {
       console.log(at.describe())
       return at.describeAll()
+    }
+  },
+
+  { verb:'look around',
+    consequence: _subject => {
+      let list = _subject.neighbours
+      console.log(list)
+      return {_subject: _subject, _verb:'see', _object:list}
     }
   },
 
@@ -86367,9 +86374,9 @@ InteriorRoom.prototype.addDescriptorFunctions({
 })
 
 InteriorRoom.prototype.addDescription(
-  room => room.contents.map(
-    item => new Action({_subject:room, _verb:'contain', _object:item})
-  )
+  room => room.contents.length ?
+    new Action({_subject:room, _verb:'contain', _object:room.contents})
+    : null
 )
 
 module.exports = InteriorRoom
@@ -86682,7 +86689,7 @@ exports.firstMatch = firstMatch
 
 const {randexp} = require("randexp")
 const placeholderRegex = /_\w*/g
-const {autoBracket} = require("./regex")
+const {autoBracket, kleenePoliteList} = require("./regex")
 const politeList = require('./politeList')
 
 
@@ -86775,7 +86782,8 @@ const formatRegex = o => {
   else if(o.constructor == Number)
     return o.toString()
   else if(o.constructor == Array) {
-    throw "cannot (yet) generate regex from substitution containing an array"
+    //throw "cannot (yet) generate regex from substitution containing an array"
+    return kleenePoliteList(...o.map(formatRegex)).source
   } else if(o.isSubstitution) {
     let regex = o.getRegex()
     if(regex && regex.constructor == RegExp)
@@ -87488,8 +87496,8 @@ function kleeneJoin(operand, seperator) {
   return concat(operand, kleene(concat(seperator, operand)))
 }
 
-function kleenePoliteList(operand) {
-  operand = new RegExp(operand).source
+function kleenePoliteList(...operands) {
+  operand = or(...operands)
   return concat(
     optional(concat(kleeneJoin(operand,', '), ',? and ')),
     operand

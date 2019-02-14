@@ -217,7 +217,7 @@ PhysicalObject.prototype.addDescription(
   o => (o.locationType == 'surface' ?
        {_subject: o, _verb:'be', on:o.location} : null),
 
-  o => o.neighbours.map(n => ({_subject:o, _verb:'be', 'next to':n}))
+  o => o.neighbours.length ? {_subject:o, _verb:'be', 'next to':o.neighbours} : null
 )
 
 module.exports = PhysicalObject

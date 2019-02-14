@@ -36,9 +36,9 @@ InteriorRoom.prototype.addDescriptorFunctions({
 })
 
 InteriorRoom.prototype.addDescription(
-  room => room.contents.map(
-    item => new Action({_subject:room, _verb:'contain', _object:item})
-  )
+  room => room.contents.length ?
+    new Action({_subject:room, _verb:'contain', _object:room.contents})
+    : null
 )
 
 module.exports = InteriorRoom
