@@ -215,6 +215,11 @@ function randomStrings(target, arr, ctx, n=1) {
   return list
 }
 
+function random(target, arr) {
+  let expanded = expand(target, arr)
+  return expanded[Math.floor(Math.random()*expanded.length)]
+}
+
 
 module.exports = {
   toRegexs: specarr_regexs,
@@ -222,4 +227,5 @@ module.exports = {
   cellToString: cellToString,
   randomString: randomString,
   randomStrings: randomStrings,
+  random: random,
 }
