@@ -21,7 +21,9 @@ myGame.createWorld = function() {
 }
 
 myGame.intro = function() {
-  this.print(this.protagonist.ref()+' is in '+this.protagonist.location.ref())
+  this.print(
+    {_subject: this.protagonist, _verb:'be', in: this.protagonist.location}
+  )
 }
 
 module.exports = myGame

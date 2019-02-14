@@ -7,6 +7,7 @@
 const Noumenon = require("../Noumenon")
 const regOp = require("../utility/regex")
 const Sub = require("../utility/Substitution")
+const Action = require('../action/Action')
 
 class Door extends Noumenon {
   constructor(room1, room2) {
@@ -53,5 +54,9 @@ Door.prototype.addDescriptorFunctions({
     door => door.B,
   ]
 })
+
+Door.prototype.addDescription(
+  door => new Action({_subject:door, _verb:'connect', _object:door.A, to:door.B})
+)
 
 module.exports = Door

@@ -211,19 +211,13 @@ PhysicalObject.prototype.addDescriptorFunctions({
 PhysicalObject.prototype.addDescription(
   o => {
     if(o.locationType == 'room' || o.locationType == 'container')
-      return [
-        new Sub("Inside _ there is _.", o.location, o),
-        new Sub("Inside of _ there is _.", o.location, o),
-      ]
+      return {_subject:o, _verb:'be', in:o.location}
+
   },
-  o => {
-    if(o.locationType == 'surface')
-      return [
-        new Sub("_ is resting on _.", o, o.location),
-        new Sub("On top of _ there is _.", o.location, o),
-      ]
-  },
-  o => o.neighbours.map(n => new Sub("Next to _ is _", o, n))
+  o => (o.locationType == 'surface' ?
+       {_subject: o, _verb:'be', on:o.location} : null),
+
+  o => o.neighbours.map(n => ({_subject:o, _verb:'be', 'next to':n}))
 )
 
 module.exports = PhysicalObject
