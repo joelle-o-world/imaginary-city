@@ -2,18 +2,16 @@ const Game = require("./Game")
 const TownHouse = require("../buildings/TownHouse")
 const Person = require("../people/Person")
 
+const allPossibilities = require('../action/possibilities')
 
 
 
 
 // initialise the game
 let myGame = new Game()
-myGame.possibilities.add(
-  {
-    verb:'admire',
-    consequence: (_subject, _object) => console.log('called admire!')
-  }
-)
+for(var poss of allPossibilities)
+  myGame.possibilities.add(poss)
+
 myGame.createWorld = function() {
   let house = new TownHouse
   let protagonist = new Person
