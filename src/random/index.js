@@ -1,7 +1,5 @@
 const randomName = require("random-name")
 
-const pos = require('./pos') // parts of speech
-
 module.exports = {
   buildingMaterial: require("./buildingMaterial"),
   color: require("./color.js"),
@@ -10,6 +8,5 @@ module.exports = {
   surname: randomName.last,
   title: require("./title.js"),
   material: require("./material.js"),
-
-  ...pos,
 }
+Object.assign(module.exports, require('./pos'))
