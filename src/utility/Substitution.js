@@ -29,8 +29,10 @@ class Substitution { // sometimes abbreviated Sub
         return o.toString()
       else if(o.isSubstitution)
         return o.getString(descriptionCtx)
+      else if(o.isAction)
+        return o.str()
       else {
-        console.warn("Couldn't interpret substitution value:", o)
+        console.warn("Couldn't interpret substitution value:", o, this)
         return "???"
       }
     })
