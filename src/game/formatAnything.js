@@ -1,6 +1,6 @@
 const {sentencify} = require('../utility')
 
-function formatAnything(o, ctx) {
+function format(o, ctx) {
   if(!o)
     return null
 
@@ -8,10 +8,10 @@ function formatAnything(o, ctx) {
     return sentencify(o)
 
   if(o.isAction)
-    return o.str('simple_past')
+    return format(o.str('simple_past'))
 
   if(o.isSubstitution)
-    return o.str(ctx)
+    return format(o.str(ctx))
 
 }
-module.exports = formatAnything
+module.exports = format
