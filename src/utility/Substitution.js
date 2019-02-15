@@ -34,7 +34,7 @@ class Substitution { // sometimes abbreviated Sub
       else if(o.isAction)
         return o.str()
       else if(o.constructor == Array)
-        return Substitution.politeList(o).str()
+        return o.length ? Substitution.politeList(o).str() : 'nothing'
       else {
         console.warn("Couldn't interpret substitution value:", o, this)
         return "???"
