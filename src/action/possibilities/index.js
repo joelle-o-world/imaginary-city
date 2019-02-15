@@ -1,6 +1,7 @@
 const {sub} = require('../../utility')
 const Action = require('../Action')
 const random = require('../../random')
+const {getDoors} = require('../../rooms/getRoute')
 
 module.exports = [
   // looking around
@@ -27,8 +28,11 @@ module.exports = [
   { verb:'look around',
     consequence: _subject => {
       let list = _subject.neighbours
-      console.log(list)
-      return {_subject: _subject, _verb:'see', _object:list}
+      console.log('neighbours', list)
+      return [
+        {_subject: _subject, _verb:'be', in:_subject.room},
+        list ? {_subject: _subject, _verb:'see', _object:list} : null,
+      ]
     }
   },
 
@@ -60,13 +64,22 @@ module.exports = [
         return sub('_ cannot move', _subject)
       if(!room)
         return sub('_ is nowhere to be found', to)
-      else if(!_subject.room.accessibleRooms.includes(room))
-        return sub('_ is too far away', to)
+      //else if(!_subject.room.accessibleRooms.includes(room))
+        //return sub('_ is too far away', to)
     },
     consequence: (_subject, to) => {
       let room = to.isRoom ? to : to.room
-      _subject.location = room
-      return room.describeAll()
+
+      let doors = getDoors(_subject.room, to)
+
+      _subject.location = to
+
+      return [
+        {
+          _subject:_subject, _verb:'go', through:doors
+        },
+        ...to.describeAll(),
+      ]
     }
   },
   {
