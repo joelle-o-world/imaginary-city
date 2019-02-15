@@ -48,6 +48,25 @@ function getRoute(A, B) {
 
   return null
 }
+
+function getDoors(A, B) {
+  let route = getRoute(A, B)
+  if(!route)
+    return null
+
+  let doors = []
+  for(var i=1; i<route.length; i++) {
+    let door = route[i-1].getDoorTo(route[i])
+    if(door)
+      doors.push(door)
+    else
+      return null
+  }
+
+  return doors
+}
+
 module.exports = getRoute
+module.exports.getDoors = getDoors
 module.exports.explore = explore
 module.exports.getDistance = getDistance
