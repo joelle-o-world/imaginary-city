@@ -39,7 +39,7 @@ const PAST_TENSE = 9
 
 const actionReservedWords = ['_verb', '_object', '_subject']
 
-function verbPhrase(action, tense='simple_present') {
+function verbPhrase(action, tense='simple_present', omitSubject=false) {
   let vp = tenses[tense](action)
 
   if(action._object)
@@ -50,10 +50,25 @@ function verbPhrase(action, tense='simple_present') {
       vp = sub('_ _ _', vp, prep, action[prep])
   }
 
-  if(tense != 'imperative')
+  if(!(omitSubject || tense == 'imperative'))
     vp = sub('_ _', action._subject, vp)
 
   return vp
+}
+
+function contractedBySubject(actions, tense) {
+  // format a set of actions as a contracted phrases sharing the same subject
+
+  // first check that the subjects match
+  let subject = actions[0]._subject
+  for(let action of actions)
+    if(action._subject != subject)
+      throw "cannot perform contraction because the subjects do not match"
+
+  return sub(
+    '_ _', subject,
+    actions.map(action => verbPhrase(action, tense, true))
+  )
 }
 
 function anyTenseRegex(verb) {
@@ -182,5 +197,6 @@ const tenses = {
 }
 
 module.exports = verbPhrase
+verbPhrase.contractedBySubject = contractedBySubject
 verbPhrase.tenses = tenses
 verbPhrase.anyTenseRegex = anyTenseRegex
