@@ -1,9 +1,10 @@
 const {randexp} = require("randexp")
 const specarr = require("../utility/specarr.js") // special array functions
+//const DescriptionContext = require('../DescriptionContext')
 
 let assignments = {
 
-  getDescriptiveReference(ctx={}) {
+  generateReference(ctx) {
     // return a noun phrase which refers to this noumenon
     /*ctx.mode = "generate"
     let reg = this.refRegex(ctx)
@@ -11,6 +12,7 @@ let assignments = {
     return ret*/
 
     // NEW VERSION::
+
 
     let numberOfAdjectives = 2
     let numberOfPrepositionPhrases = 0//Math.floor(Math.random()*2)
@@ -46,8 +48,26 @@ let assignments = {
           break
       }
 
-      return [article, ...adjs, noun, ...prepositionPhrases].join(" ")
+      let str = [article, ...adjs, noun, ...prepositionPhrases].join(" ")
+
+      return str
     }
+  },
+
+  getDescriptiveReference(ctx) {
+
+    let str
+    if(ctx && ctx.it == this && Math.random() < 0.5)
+      str = 'it'
+    else
+      str = this.generateReference(ctx)
+
+    if(ctx)
+      ctx.log(this, str)
+    else
+      console.warn('generating ref without ctx:', str)
+
+    return str
   },
 
   ref(ctx) {

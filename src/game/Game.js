@@ -1,12 +1,14 @@
 const PossibilitySet = require('../action/PossibilitySet')
 const formatAnything = require('./formatAnything.js')
 const recursivelyExecute = require('../action/recursivelyExecute')
+const DescriptionContext = require('../DescriptionContext')
 
 class Game {
   constructor() {
     this.protagonist
     this.possibilities = new PossibilitySet()
     this._write = str => process.stdout.write(str)
+    this.descriptionCtx = new DescriptionContext
   }
 
   input(str) {
@@ -36,7 +38,7 @@ class Game {
   // output functions
   print(...stuff) {
     for(let bit of stuff) {
-      let formatted = formatAnything(bit)
+      let formatted = formatAnything(bit, this.descriptionCtx)
       if(formatted)
         this.write(formatted)
     }

@@ -92,8 +92,8 @@ class Action {
   phrase(tense) {
     return verbPhrase(this.action, tense)
   }
-  str(tense) {
-    return this.phrase(tense).str()
+  str(tense, ctx) {
+    return this.phrase(tense).str(ctx)
   }
 }
 Action.prototype.isAction = true

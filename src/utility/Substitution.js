@@ -17,12 +17,12 @@ class Substitution { // sometimes abbreviated Sub
     this.noumena = noumena
   }
 
-  getString(descriptionCtx) {
+  getString(ctx) {
     let toSubIn = this.noumena.map(o => {
       if(o == null || o == undefined)
         return null
       else if(o.isNoumenon)
-        return o.ref(descriptionCtx)
+        return o.ref(ctx)
       else if(o.constructor == String)
         return o
       else if(o.construtor == RegExp)
@@ -30,11 +30,11 @@ class Substitution { // sometimes abbreviated Sub
       else if(o.constructor == Number)
         return o.toString()
       else if(o.isSubstitution)
-        return o.getString(descriptionCtx)
+        return o.getString(ctx)
       else if(o.isAction)
         return o.str()
       else if(o.constructor == Array)
-        return o.length ? Substitution.politeList(o).str() : 'nothing'
+        return o.length ? Substitution.politeList(o).str(ctx) : 'nothing'
       else {
         console.warn("Couldn't interpret substitution value:", o, this)
         return "???"
