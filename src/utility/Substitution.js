@@ -82,6 +82,25 @@ class Substitution { // sometimes abbreviated Sub
     let template = politeList(placeholders)
     return new Substitution(template, ...items)
   }
+
+  static concat(...toConcat) {
+    // concatenate many substitutions and strings into a new substitution
+    let strs = []
+    let noumena = []
+
+    for(let bit of toConcat) {
+      if(bit.constructor == String)
+        strs.push(bit)
+      if(bit.constructor == Substitution) {
+        strs.push(bit.template)
+        noumena = noumena.concat(bit.noumena)
+      }
+    }
+
+    let template = strs.join('')
+    console.log(template, noumena)
+    return new Substitution(template, ...noumena)
+  }
 }
 
 Substitution.prototype.isSubstitution = true

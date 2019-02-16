@@ -30,6 +30,7 @@ Tenses: [source ef.co.uk]
 const conjugate = require("./conjugate")
 const getPerson = require("./getPerson")
 const {sub} = require('../index')
+const Substitution = require("../Substitution")
 const regOps = require("../regex")
 
 const GERUND = 7
@@ -48,6 +49,9 @@ function verbPhrase(action, tense='simple_present') {
     if(!actionReservedWords.includes(prep))
       vp = sub('_ _ _', vp, prep, action[prep])
   }
+
+  if(tense != 'imperative')
+    vp = sub('_ _', action._subject, vp)
 
   return vp
 }
@@ -69,8 +73,7 @@ const tenses = {
   simple_present(action) {
     let person = getPerson(action._subject)
     return sub(
-      "_ _",
-      action._subject,
+      "_",
       conjugate(action._verb, person)
     )
   },
@@ -78,8 +81,7 @@ const tenses = {
   present_continuous(action) {
     let person = getPerson(action._subject)
     return sub(
-      "_ _ _",
-      action._subject,
+      "_ _",
       conjugate('be', person),
       conjugate(action._verb, GERUND)
     )
@@ -88,8 +90,7 @@ const tenses = {
   simple_past(action) {
     let person = getPerson(action._subject)
     return sub(
-      '_ _',
-      action._subject,
+      '_',
       conjugate(action._verb, PAST_TENSE)
     )
   },
@@ -97,8 +98,7 @@ const tenses = {
   past_continuous(action) {
     let person = getPerson(action._subject)
     return sub(
-      '_ _ _',
-      action._subject,
+      '_ _',
       conjugate('were', person),
       conjugate(action._verb, GERUND)
     )
@@ -107,8 +107,7 @@ const tenses = {
   present_perfect(action) {
     let person = getPerson(action._subject)
     return sub(
-      '_ _ _',
-      action._subject,
+      '_ _',
       conjugate('have', person),
       conjugate(action._verb, PAST_PARTICIPLE)
     )
@@ -117,8 +116,7 @@ const tenses = {
   present_perfect_continuous(action) {
     let person = getPerson(action._subject)
     return sub(
-      '_ _ been _',
-      action._subject,
+      '_ been _',
       conjugate('have', person),
       conjugate(action._verb, GERUND)
     )
@@ -127,8 +125,7 @@ const tenses = {
   past_perfect(action) {
     let person = getPerson(action._subject)
     return sub(
-      '_ _ _',
-      action._subject,
+      '_ _',
       conjugate('have', person),
       conjugate(action._verb, PAST_PARTICIPLE)
     )
@@ -136,16 +133,14 @@ const tenses = {
 
   past_perfect_continuous(action) {
     return sub(
-      '_ had been _',
-      action._subject,
+      'had been _',
       conjugate(action._verb, GERUND)
     )
   },
 
   future_perfect(action) { // we will have verbed
     return sub(
-      '_ will have _',
-      action._subject,
+      'will have _',
       conjugate(action._verb, PAST_PARTICIPLE)
     )
   },
@@ -153,8 +148,7 @@ const tenses = {
   // Future Perfect Continuous ("you will have been studying for five years")
   future_perfect_continuous(action) {
     return sub(
-      '_ will have been _',
-      action._subject,
+      'will have been _',
       conjugate(action._verb, GERUND)
     )
   },
@@ -162,8 +156,7 @@ const tenses = {
   // Simple Future ("They will go to Italy next week.")
   simple_future(action) {
     return sub(
-      '_ will _',
-      action._subject,
+      'will _',
       action._verb,
     )
   },
@@ -171,8 +164,7 @@ const tenses = {
   // Future Continuous ("I will be travelling by train.")
   future_continuous({_subject, _verb}) {
     return sub(
-      '_ will be _',
-      _subject,
+      'will be _',
       conjugate(_verb, GERUND)
     )
   },
@@ -182,10 +174,10 @@ const tenses = {
   },
 
   negative_possible_present({_subject, _verb}) {
-    return sub('_ cannot _', _subject, _verb)
+    return sub('cannot _', _verb)
   },
   negative_possible_past({_subject, _verb}) {
-    return sub('_ could not _', _subject, _verb)
+    return sub('could not _', _verb)
   }
 }
 
