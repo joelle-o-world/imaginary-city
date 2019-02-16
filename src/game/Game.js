@@ -25,7 +25,7 @@ class Game {
         gathered.push(o)
       this.print(...gathered)
     } else
-      this.print("I don't understand '"+str+"'")
+      this.print("I'm sorry, my programmer hasn't thought of a response to '"+str+"'.")
   }
 
   begin() {
