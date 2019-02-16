@@ -1,5 +1,6 @@
 const PossibilitySet = require('../action/PossibilitySet')
 const formatAnything = require('./formatAnything.js')
+const recursivelyExecute = require('../action/recursivelyExecute')
 
 class Game {
   constructor() {
@@ -11,9 +12,16 @@ class Game {
   input(str) {
     let action = this.possibilities.parseImperative(str, this.protagonist)
     if(action) {
-      let consequences = action.execute()
-      if(consequences)
+      /*let {consequences} = action.execute()
+      if(consequences) {
+        this.print(action)
         this.print(...consequences)
+      }*/
+      let toPrint = recursivelyExecute([action], this.possibilities)
+      let gathered = []
+      for(let o of toPrint)
+        gathered.push(o)
+      this.print(...gathered)
     } else
       this.print("I don't understand '"+str+"'")
   }

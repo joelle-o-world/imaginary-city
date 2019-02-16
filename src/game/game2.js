@@ -14,7 +14,7 @@ for(var poss of allPossibilities)
   myGame.possibilities.add(poss)
 myGame.possibilities.add({
   verb: 'become',
-  consequence: (_subject, _object) => {
+  expand: (_subject, _object) => {
     myGame.protagonist = _object
     return {
       _subject: sub('the spirit of _', _subject),
@@ -22,7 +22,7 @@ myGame.possibilities.add({
       _object: sub('the body of _', _object)
     }
   },
-  returnSelfAsConsequence: false
+  returnSelfAsConsequence:false
 })
 
 myGame.createWorld = function() {

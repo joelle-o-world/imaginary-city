@@ -85292,7 +85292,7 @@ class Possibility {
     this.consequence = consequence // function
     this.problem = problem // function, returns bool
 
-    this.params = params || getParams(this.consequence||this.expand||this.problem).map(param => param.toLowerCase())
+    this.params = params || getParams(this.consequence).map(param => param.toLowerCase())
     // NOTE: 'in' is a reserved word so cannot be a function argument. The
     //        solution was to use 'IN' and convert all params to lower case.
 
@@ -85497,7 +85497,9 @@ module.exports = [
     problem: (_subject, at) => {
       if(_subject.room != at.room)
         return [
-          sub("in order to see _ one must first go to where _ is", at, at),
+          sub("_ is too far away", at),
+          "NOTE: you can only interact with things in the same room.",
+          "To leave the room try 'go through the door'"
         ]
     },
     consequence: (_subject, at) => {
@@ -85524,7 +85526,6 @@ const {getDoors} = require('../../rooms/getRoute')
 module.exports = [
   // go through doors!
   { verb:'go',
-    params: ['_subject', 'through'],
     problem: (_subject, through) => {
       if(!through.isDoor)
         return sub('_ is not a door', through)
@@ -85532,12 +85533,12 @@ module.exports = [
         return sub('_ is nowhere to be seen', through)
 
     },
-    expand: (_subject, through) => {
+    consequence: (_subject, through) => {
       let destination = through.fromTo(_subject.room)
       _subject.location = destination
-      return [
-        {_subject:_subject, _verb:'go', through:through, into: destination},
-        ...destination.describeAll()
+      return [{
+          _subject:_subject, _verb:'enter', _object: destination,
+        }
       ]
     }
   },
@@ -85556,6 +85557,7 @@ module.exports = [
       let room = to.isRoom ? to : to.room
 
       let doors = getDoors(_subject.room, room)
+      console.log('doors:',doors)
 
       return [
         ...doors.map(door => ({
@@ -85616,10 +85618,10 @@ function* recursivelyExecute(stuff, pset) {
     if(this.constructor == String)
       yield thing
 
-    if(typeof thing == 'object' && thing._verb)
+    if(typeof thing == 'object' && thing._verb) {
       // convert rough actions to ready actions
       thing = new Action(thing)
-
+    }
     if(thing.isAction) {
       let action = thing
       if(!action.possibility)
@@ -85632,7 +85634,6 @@ function* recursivelyExecute(stuff, pset) {
         if(problems) {
           for(let problem of recursivelyExecute(problems, pset))
             yield problem
-          continue
         }
 
         if(expanded)
@@ -85641,9 +85642,9 @@ function* recursivelyExecute(stuff, pset) {
         else yield action
 
         if(consequences)
-          for(let consequence of recursivelyExecute(consequences, pset))
+          for(let consequence of recursivelyExecute(consequences, pset)) {
             yield consequence
-
+          }
       } else {
         // action has no possibility so yield without executing
         yield action
@@ -85932,7 +85933,7 @@ for(var poss of allPossibilities)
   myGame.possibilities.add(poss)
 myGame.possibilities.add({
   verb: 'become',
-  expand: (_subject, _object) => {
+  consequence: (_subject, _object) => {
     myGame.protagonist = _object
     return {
       _subject: sub('the spirit of _', _subject),

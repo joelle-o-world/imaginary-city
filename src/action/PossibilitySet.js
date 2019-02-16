@@ -51,9 +51,10 @@ class PossibilitySet {
       // assume it a object relation
       action = action.action
 
-    for(var poss of this.possibilities)
-      if(poss.actionsToParams(action))
+    for(var poss of this.possibilities) {
+      if(poss.actionToParams(action))
         return poss
+      }
   }
 }
 PossibilitySet.prototype.isPossibilitySet = true

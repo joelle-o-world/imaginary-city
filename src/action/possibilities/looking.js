@@ -13,9 +13,7 @@ module.exports = [
     problem: (_subject, at) => {
       if(_subject.room != at.room)
         return [
-          sub("_ is too far away", at),
-          "NOTE: you can only interact with things in the same room.",
-          "To leave the room try 'go through the door'"
+          sub("in order to see _ one must first go to where _ is", at, at),
         ]
     },
     consequence: (_subject, at) => {
@@ -26,7 +24,6 @@ module.exports = [
   { verb:'look around',
     consequence: _subject => {
       let list = _subject.neighbours
-      console.log('neighbours', list)
       return [
         {_subject: _subject, _verb:'be', in:_subject.room},
         list ? {_subject: _subject, _verb:'see', _object:list} : null,

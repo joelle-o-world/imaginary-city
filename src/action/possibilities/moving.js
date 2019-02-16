@@ -5,6 +5,7 @@ const {getDoors} = require('../../rooms/getRoute')
 module.exports = [
   // go through doors!
   { verb:'go',
+    params: ['_subject', 'through'],
     problem: (_subject, through) => {
       if(!through.isDoor)
         return sub('_ is not a door', through)
@@ -12,12 +13,12 @@ module.exports = [
         return sub('_ is nowhere to be seen', through)
 
     },
-    consequence: (_subject, through) => {
+    expand: (_subject, through) => {
       let destination = through.fromTo(_subject.room)
       _subject.location = destination
-      return [{
-          _subject:_subject, _verb:'enter', _object: destination,
-        }
+      return [
+        {_subject:_subject, _verb:'go', through:through, into: destination},
+        ...destination.describeAll()
       ]
     }
   },
@@ -37,22 +38,20 @@ module.exports = [
 
       let doors = getDoors(_subject.room, room)
 
-      _subject.location = room
-
       return [
-        {
-          _subject:_subject, _verb:'go', through:doors
-        },
+        ...doors.map(door => ({
+          _subject:_subject, _verb:'go', through:door
+        })),
         ...to.describeAll(),
       ]
     }
   },
   { verb: 'go out',
-    consequence: _subject => {
+    params: ['_subject'],
+    expand: _subject => {
       let room = _subject.room
       let door = room.randomExit()
       return {_subject:_subject, _verb:'go', through:door}
     },
-    returnSelfAsConsequence:false,
   },
 ]

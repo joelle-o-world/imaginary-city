@@ -28,37 +28,51 @@ class Action {
       if(this.possibility.problem) {
         let problems = this.possibility.problem(...params)
         if(problems === true)
-          return [this.phrase('negative_possible_past')]
+          return {problems:[this.phrase('negative_possible_past')]}
         else if(problems) {
           if(problems.constructor != Array)
             problems = [problems]
-          console.log(problems[0])
           problems[0] = sub(
             '_ because _', this.phrase('negative_possible_past'), problems[0])
-          return problems
+          return {problems:problems}
         }
       }
 
-      // call the consequences function
-      let consequences = this.possibility.consequence(...params)
+      // call the expand function, if it exists
+      var expanded = null
+      if(this.possibility.expand) {
+        expanded = this.possibility.expand(...params)
+
+        if(expanded && expanded.constructor != Array)
+          expanded = [expanded]
+      }
+
+      // call the consequences function, if it exists
+      var consequences = null
+      if(this.possibility.consequence) {
+        consequences = this.possibility.consequence(...params)
+
+
+        // NOTE: if the consequence returns null, that doesn't mean it failed
+        if(consequences && consequences.constructor != Array)
+          consequences = [consequences] // allows us to return single consequences
+      }
+
+
+      // mark this action as executed
+      this.executed = true
+
 
       // add this Action to the history of all the noumena involved
       for(var noum of this.noumena)
         noum.history.push(this)
 
-      // NOTE: if the consequence returns null, that doesn't mean it failed
-      if(!consequences)
-        consequences = []
-      if(consequences.constructor != Array)
-        consequences = [consequences] // allows us to return single consequences
 
-      if(this.possibility.returnSelfAsConsequence)
-        consequences.unshift(this)
-
-      // mark this action as executed
-      this.executed = true
-
-      return consequences
+      return {
+        action: this,
+        expanded: expanded,
+        consequences: consequences
+      }
     } else
       // it failed
       throw 'execution of action failed because the it did not match its possibility'

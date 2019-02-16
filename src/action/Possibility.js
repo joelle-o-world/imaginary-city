@@ -35,15 +35,14 @@ const Action = require('./Action')
 
 class Possibility {
   constructor({
-    params, verb, consequence, problem, returnSelfAsConsequence=true
+    params, verb, consequence, problem, expand
   }) {
     this.verb = verb // string
+    this.expand = expand
     this.consequence = consequence // function
     this.problem = problem // function, returns bool
 
-    this.returnSelfAsConsequence = returnSelfAsConsequence
-
-    this.params = params || getParams(this.consequence).map(param => param.toLowerCase())
+    this.params = params || getParams(this.consequence||this.expand||this.problem).map(param => param.toLowerCase())
     // NOTE: 'in' is a reserved word so cannot be a function argument. The
     //        solution was to use 'IN' and convert all params to lower case.
 
