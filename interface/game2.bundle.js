@@ -85526,6 +85526,8 @@ module.exports = [
   { verb:'go',
     params: ['_subject', 'through'],
     problem: (_subject, through) => {
+      if(!_subject.isPhysicalObject)
+        return sub('_ cannot move', _subject)
       if(!through.isDoor)
         return sub('_ is not a door', through)
       if(!through.fromTo(_subject.room))
@@ -85567,6 +85569,10 @@ module.exports = [
   },
   { verb: 'go out',
     params: ['_subject'],
+    problem: _subject => {
+      if(!_subject.isPhysicalObject)
+        return sub('_ cannot move', _subject)
+    },
     expand: _subject => {
       let room = _subject.room
       let door = room.randomExit()
