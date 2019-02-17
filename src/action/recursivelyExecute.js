@@ -28,7 +28,7 @@ function* recursivelyExecute(stuff, pset) {
       if(!action.possibility)
         action.possibility = pset.findMatch(action)
 
-      if(action.possibility) {
+      if(action.possibility && !action.executed) {
         // action has possibility so execute
         let {expanded, consequences, problems} = action.execute()
 

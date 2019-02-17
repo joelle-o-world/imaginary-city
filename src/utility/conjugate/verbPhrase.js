@@ -56,7 +56,7 @@ function verbPhrase(action, tense='simple_present', omitSubject=false) {
   return vp
 }
 
-function contractedBySubject(actions, tense) {
+function contractBySubject(actions, tense) {
   // format a set of actions as a contracted phrases sharing the same subject
 
   // first check that the subjects match
@@ -197,6 +197,6 @@ const tenses = {
 }
 
 module.exports = verbPhrase
-verbPhrase.contractedBySubject = contractedBySubject
+verbPhrase.contractBySubject = contractBySubject
 verbPhrase.tenses = tenses
 verbPhrase.anyTenseRegex = anyTenseRegex

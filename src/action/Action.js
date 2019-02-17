@@ -95,6 +95,16 @@ class Action {
   str(tense, ctx) {
     return this.phrase(tense).str(ctx)
   }
+
+  get subject() {
+    return this.action._subject
+  }
+  get verb() {
+    return this.action._verb
+  }
+  get object() {
+    return this.action._object
+  }
 }
 Action.prototype.isAction = true
 module.exports = Action

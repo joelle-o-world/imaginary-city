@@ -9,7 +9,6 @@ class DescriptionContext {
   log(noumenon, str) {
     // log a reference to the history
     this.refHistory.push({noumenon: noumenon, ref:str})
-    console.log(this)
   }
 
   get it() {

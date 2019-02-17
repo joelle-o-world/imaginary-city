@@ -2,6 +2,7 @@ const PossibilitySet = require('../action/PossibilitySet')
 const formatAnything = require('./formatAnything.js')
 const recursivelyExecute = require('../action/recursivelyExecute')
 const DescriptionContext = require('../DescriptionContext')
+const groupContractables = require("../action/groupContractables")
 
 class Game {
   constructor() {
@@ -37,6 +38,7 @@ class Game {
 
   // output functions
   print(...stuff) {
+    stuff = groupContractables(stuff, 'simple_past')
     for(let bit of stuff) {
       let formatted = formatAnything(bit, this.descriptionCtx)
       if(formatted)
