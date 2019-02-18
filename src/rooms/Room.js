@@ -109,7 +109,7 @@ class Room extends Noumenon {
     // recursively generate list of all objects in the room
     let list = []
     for(var i in this.contents)
-      list.push(...this.contents[i].all)
+      list.push(...this.contents[i].locating)
     return list
   }
 }

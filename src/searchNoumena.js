@@ -15,13 +15,9 @@ function* immediateRelations(noum) { // noum: Starting point
   yield noum.location
   // check sub objects
   // - ...noum.containing
-  if(noum.isContainer)
-    for(var content of noum.containing)
-      yield content
-  // - ...noum.surporting
-  if(noum.isSurface)
-    for(var object of noum.supporting)
-      yield object
+  if(noum.isPhysicalObject)
+    for(let item of noum.locating)
+      yield item
 
   // ROOM RELATIONS
   if(noum.isRoom) {
