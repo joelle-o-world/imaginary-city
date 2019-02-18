@@ -47,6 +47,8 @@ module.exports = {
   have: {3:'has', 8:'had', 9:"had"},
   eat: {7:'eating', 8:'eaten', 9:'ate'},
   contain: {7:'containing', 8:'contained', 9:'contained'},
+  hold: {8:'held', 9:'held'},
+  put: {8:'put', 9:'put'},
 
   // give
   // find
@@ -56,11 +58,9 @@ module.exports = {
   // show
   // leave
   // feel
-  // put
   // bring
   // begin
   // keep
-  // hold
   // write
   // stand
   // hear

@@ -40,7 +40,7 @@ class Game {
   print(...stuff) {
     stuff = groupContractables(stuff, 'simple_past')
     for(let bit of stuff) {
-      let formatted = formatAnything(bit, this.descriptionCtx)
+      let formatted = formatAnything(bit, new DescriptionContext())
       if(formatted)
         this.write(formatted)
     }

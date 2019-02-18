@@ -57,7 +57,7 @@ let assignments = {
   getDescriptiveReference(ctx) {
 
     let str
-    if(ctx && ctx.it == this && Math.random() < 0.5)
+    if(ctx && ctx.it == this)
       str = 'it'
     else
       str = this.generateReference(ctx)

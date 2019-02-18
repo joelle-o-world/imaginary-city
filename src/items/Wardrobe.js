@@ -31,5 +31,5 @@ class Wardrobe extends Cupboard {
   }
 }
 Wardrobe.prototype.isWardrobe = true
-Wardrobe.prototype.addNouns("wardrobe")
+Wardrobe.prototype.nouns = ['wardrobe']
 module.exports = Wardrobe

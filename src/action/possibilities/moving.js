@@ -15,12 +15,12 @@ module.exports = [
         return sub('_ is nowhere to be seen', through)
 
     },
-    consequence: (_subject, through) => {
+    expand: (_subject, through) => {
       let destination = through.fromTo(_subject.room)
       _subject.location = destination
       return [
-        {_subject:_subject, _verb:'enter', _object: destination},
-        ...destination.describeAll()
+        {_subject:_subject, _verb:'go', through:through,into: destination},
+        //...destination.describeAll()
       ]
     }
   },

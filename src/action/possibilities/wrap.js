@@ -1,12 +1,14 @@
-function do(action) {
-  return {do:true, action:action}
-}
+const Action = require("../Action")
 
 function observe(action) {
-  return {do: false, action:action}
+  if(!action.isAction && action._verb)
+    action = new Action(action)
+
+  action.executed = true
+
+  return action
 }
 
 module.exports = {
-  do: do,
   observe: observe,
 }

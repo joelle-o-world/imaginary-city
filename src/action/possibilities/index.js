@@ -11,5 +11,6 @@ module.exports = [
   ...require('./moving.js'),
 
   // POINTLESS THINGS
-  ...require('./pointless.js')
+  ...require('./pointless.js'),
+  ...require("./carrying.js")
 ]

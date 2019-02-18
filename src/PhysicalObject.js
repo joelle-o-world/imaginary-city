@@ -119,6 +119,10 @@ class PhysicalObject extends Noumenon {
     return this.locating.filter(item => item.locationType == 'container')
   }
 
+  get holding() {
+    return this.locating.filter(item => item.locationType == 'holder')
+  }
+
   get neighbours() {
     // return a list of items which share the same location, exclude this
 
@@ -167,10 +171,14 @@ PhysicalObject.prototype.addDescription(
   o => (o.locationType == 'surface' ?
        {_subject: o, _verb:'be', on:o.location} : null),
 
+  o => (o.locationType == 'holder' ?
+        {_subject: o, _verb:'hold', by:o.locaton} : null),
+
   o => o.neighbours.length ? {_subject:o, _verb:'be', 'next to':o.neighbours} : null,
 
   o => o.supporting.length ? new Sub('On top of _ there is _', o, o.supporting) : null,
   o => o.containing.length ? new Sub('inside _ there is _', o, o.containing) : null,
+  o => o.holding.length ? new Sub('_ is holding _', o, o.holding) : null,
 )
 
 module.exports = PhysicalObject
