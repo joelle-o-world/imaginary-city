@@ -49,6 +49,7 @@ module.exports = {
   contain: {7:'containing', 8:'contained', 9:'contained'},
   hold: {8:'held', 9:'held'},
   put: {8:'put', 9:'put'},
+  poop: {7:'pooping', 8:'pooped', 9:'pooped'},
 
   // give
   // find
