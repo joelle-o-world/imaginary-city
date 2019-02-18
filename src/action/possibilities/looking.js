@@ -15,10 +15,6 @@ lookAround.expand = _subject => {
 }
 
 const lookAt = {verb: 'look'}
-/*lookAt.problem = (_subject, at) => {
-  if(_subject.room != at.room && at != _subject.location)
-    return sub("in order to see _ one must first go to where _ is", at, at)
-}*/
 lookAt.expand = (_subject, at) => {
   if(_subject.room != at.room && at != _subject.location)
     return [
@@ -32,6 +28,20 @@ lookAt.expand = (_subject, at) => {
     ]
 }
 
+const lookIn = {verb: 'look'}
+lookIn.expand = (_subject, IN) => {
+  if(_subject.room != IN.room && IN != _subject.location)
+    return [
+      {_subject:_subject, _verb:'go', to:IN.room},
+      {_subject:_subject, _verb:'look', in:IN},
+    ]
+  else
+    return [
+      observe({_subject:_subject, _verb:'look', in:IN}),
+      sub('inside _ there is _', IN, IN.containing || IN.contents)
+    ]
+}
+
 const admire = {verb:'admire'}
 admire.consequence = (_subject, _object) =>
   sub('_ soon became shy and looked away', _object)
@@ -40,6 +50,7 @@ module.exports = [
   // looking around
   admire,
   lookAt,
+  lookIn,
   look,
   lookAround,
 ]

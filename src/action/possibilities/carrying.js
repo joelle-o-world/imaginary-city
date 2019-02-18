@@ -26,6 +26,8 @@ putDown.expand = (_subject, _object) =>
 
 const putIn = {verb:'put', params:['_subject', '_object', 'in']}
 putIn.problem = (_subject, _object, location) => {
+  if(!_subject.canBeLocationType.includes('holder'))
+    return sub('_ cannot pick things up', _subject)
   if(location.isRoom)
     return null
   else if(location.isPhysicalObject
@@ -59,6 +61,8 @@ putIn.expand = (_subject, _object, location) => {
 
 const putOn = {verb:'put', params:['_subject', '_object', 'on']}
 putOn.problem = (_subject, _object, location) => {
+  if(!_subject.canBeLocationType.includes('holder'))
+    return sub('_ cannot pick things up', _subject)
   if(location.isPhysicalObject
     && location.canBeLocationType.includes('surface')
     && _object.canHaveLocationType.includes('surface'))

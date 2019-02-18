@@ -85553,6 +85553,8 @@ putDown.expand = (_subject, _object) =>
 
 const putIn = {verb:'put', params:['_subject', '_object', 'in']}
 putIn.problem = (_subject, _object, location) => {
+  if(!_subject.canBeLocationType.includes('holder'))
+    return sub('_ cannot pick things up', _subject)
   if(location.isRoom)
     return null
   else if(location.isPhysicalObject
@@ -85586,6 +85588,8 @@ putIn.expand = (_subject, _object, location) => {
 
 const putOn = {verb:'put', params:['_subject', '_object', 'on']}
 putOn.problem = (_subject, _object, location) => {
+  if(!_subject.canBeLocationType.includes('holder'))
+    return sub('_ cannot pick things up', _subject)
   if(location.isPhysicalObject
     && location.canBeLocationType.includes('surface')
     && _object.canHaveLocationType.includes('surface'))
@@ -85656,10 +85660,6 @@ lookAround.expand = _subject => {
 }
 
 const lookAt = {verb: 'look'}
-/*lookAt.problem = (_subject, at) => {
-  if(_subject.room != at.room && at != _subject.location)
-    return sub("in order to see _ one must first go to where _ is", at, at)
-}*/
 lookAt.expand = (_subject, at) => {
   if(_subject.room != at.room && at != _subject.location)
     return [
@@ -85673,6 +85673,20 @@ lookAt.expand = (_subject, at) => {
     ]
 }
 
+const lookIn = {verb: 'look'}
+lookIn.expand = (_subject, IN) => {
+  if(_subject.room != IN.room && IN != _subject.location)
+    return [
+      {_subject:_subject, _verb:'go', to:IN.room},
+      {_subject:_subject, _verb:'look', in:IN},
+    ]
+  else
+    return [
+      observe({_subject:_subject, _verb:'look', in:IN}),
+      sub('inside _ there is _', IN, IN.containing || IN.contents)
+    ]
+}
+
 const admire = {verb:'admire'}
 admire.consequence = (_subject, _object) =>
   sub('_ soon became shy and looked away', _object)
@@ -85681,6 +85695,7 @@ module.exports = [
   // looking around
   admire,
   lookAt,
+  lookIn,
   look,
   lookAround,
 ]
