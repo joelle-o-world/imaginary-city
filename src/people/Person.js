@@ -48,13 +48,4 @@ Person.prototype.addDescription(
   person => sub("_'s name is _", person, person.fullName),
 )
 
-Person.prototype.addPossibilty(
-  {
-    verb:'admire',
-    consequence: (_subject, _object) => {
-      //console.log(_subject, 'admired', _object)
-    }
-  }
-)
-
 module.exports = Person

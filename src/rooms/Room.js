@@ -45,6 +45,11 @@ class Room extends Noumenon {
     // add a two way door
     new Door(this, room)
   }
+  getDoorTo(otherRoom) {
+    for(var exit of this.exits)
+      if(exit.A == otherRoom || exit.B == otherRoom)
+        return exit
+  }
 
   get exits() {
     // list of doors which lead from this room
@@ -55,6 +60,10 @@ class Room extends Noumenon {
   }
   get numberOfExits() {
     return this.exits.length
+  }
+  randomExit() {
+    let doors = this.exits
+    return doors[Math.floor(Math.random()*doors.length)]
   }
   get entrances() {
     // list of doors which lead to this room

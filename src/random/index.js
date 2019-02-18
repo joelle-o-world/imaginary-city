@@ -9,3 +9,4 @@ module.exports = {
   title: require("./title.js"),
   material: require("./material.js"),
 }
+Object.assign(module.exports, require('./pos'))

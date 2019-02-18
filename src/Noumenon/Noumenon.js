@@ -65,9 +65,12 @@ class Noumenon {
     return this.properNouns && this.properNouns.length
   }
 
-  describe(ctx) {
+  describe() {
     // compose a sentence describing this noumenon
-    return specarr.randomString(this, this.descriptions, ctx)
+    return specarr.random(this, this.descriptions)
+  }
+  describeAll() {
+    return specarr.expand(this, this.descriptions)
   }
 }
 Noumenon.prototype.isNoumenon = true
@@ -91,9 +94,7 @@ Noumenon.prototype.addDescriptorFunctions = function(functionArraysByPreposition
   this.descriptorFunctions = newfunctions
 }
 
-Noumenon.prototype.descriptions = [
-  noumenon => "There is "+noumenon.ref({article:'a'})+".",
-] // special array
+Noumenon.prototype.descriptions = [] // special array
 Noumenon.prototype.addDescription = function(...functions) {
   this.descriptions = this.descriptions.concat(functions)
 }

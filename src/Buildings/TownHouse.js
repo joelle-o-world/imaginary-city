@@ -43,7 +43,7 @@ const LiteralDoor = require("../rooms/LiteralDoor")
 
 const random = require("../random")
 
-const {printList} = require("../utility")
+const {politeList} = require("../utility")
 
 class TownHouse extends Noumenon {
   constructor(seed={}) {

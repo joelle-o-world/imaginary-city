@@ -46,6 +46,7 @@ module.exports = {
   were: {1:'was', 3:'was'}, // this is a cludge and i know it
   have: {3:'has', 8:'had', 9:"had"},
   eat: {7:'eating', 8:'eaten', 9:'ate'},
+  contain: {7:'containing', 8:'contained', 9:'contained'},
 
   // give
   // find

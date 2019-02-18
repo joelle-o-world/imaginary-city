@@ -3,6 +3,7 @@
 */
 
 const verbPhrase = require('../utility/conjugate/verbPhrase')
+const {sub} = require('../utility')
 
 class Action {
   constructor(action, possibility) {
@@ -15,35 +16,66 @@ class Action {
   execute() {
     if(!this.possibility)
       throw 'cannot execute an Action that has no possibility'
+    if(this.executed)
+      console.warn('Re excuting action that has already been executed', this)
 
     // convert action into parameter list
     let params = this.possibility.actionToParams(this.action)
     // (will return null if action does not fit this possibility)
 
     if(params) {
-      // if 'check' function exists call it and potentially fail the execution
-      if(this.possibility.check && this.possibilty.check(this.action))
-        return null// fail iff, 'check' function exists AND it fails
+      // if 'problem' function exists call it and potentially fail the execution
+      if(this.possibility.problem) {
+        let problems = this.possibility.problem(...params)
+        if(problems === true)
+          return {problems:[this.phrase('negative_possible_past')]}
+        else if(problems) {
+          if(problems.constructor != Array)
+            problems = [problems]
+          problems[0] = sub(
+            '_ because _', this.phrase('negative_possible_past'), problems[0])
+          return {problems:problems}
+        }
+      }
 
-      // call the consequences function
-      let consequences = this.possibility.consequence(...params)
+      // call the expand function, if it exists
+      var expanded = null
+      if(this.possibility.expand) {
+        expanded = this.possibility.expand(...params)
+
+        if(expanded && expanded.constructor != Array)
+          expanded = [expanded]
+      }
+
+      // call the consequences function, if it exists
+      var consequences = null
+      if(this.possibility.consequence) {
+        consequences = this.possibility.consequence(...params)
+
+
+        // NOTE: if the consequence returns null, that doesn't mean it failed
+        if(consequences && consequences.constructor != Array)
+          consequences = [consequences] // allows us to return single consequences
+      }
+
+
+      // mark this action as executed
+      this.executed = true
+
 
       // add this Action to the history of all the noumena involved
       for(var noum of this.noumena)
         noum.history.push(this)
 
-      // NOTE: if the consequence returns null, that doesn't mean it failed
-      if(!consequences)
-        consequences = []
-      consequences.unshift(this)
 
-      // mark this action as executed
-      this.executed = true
-
-      return consequences
+      return {
+        action: this,
+        expanded: expanded,
+        consequences: consequences
+      }
     } else
       // it failed
-      throw 'execution of action failed because the action did not match its possibility'
+      throw 'execution of action failed because the it did not match its possibility'
   }
 
   get noumena() {
@@ -57,8 +89,21 @@ class Action {
     return list
   }
 
-  str(tense) {
-    return verbPhrase(this.action, tense).str()
+  phrase(tense) {
+    return verbPhrase(this.action, tense)
+  }
+  str(tense, ctx) {
+    return this.phrase(tense).str(ctx)
+  }
+
+  get subject() {
+    return this.action._subject
+  }
+  get verb() {
+    return this.action._verb
+  }
+  get object() {
+    return this.action._object
   }
 }
 Action.prototype.isAction = true

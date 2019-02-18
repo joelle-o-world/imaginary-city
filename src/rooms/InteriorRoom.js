@@ -6,6 +6,7 @@
 const Room = require("./Room.js")
 const utility = require("../utility")
 const Sub = utility.Sub
+const Action = require("../action/Action")
 
 class InteriorRoom extends Room {
   // TODO
@@ -35,12 +36,9 @@ InteriorRoom.prototype.addDescriptorFunctions({
 })
 
 InteriorRoom.prototype.addDescription(
-  room => room.contents.length
-    ? "Inside "+room.ref()+" there is "+room.randomItem().ref()+"."
-    : null,
-  room => room.contents.map(
-    item => new Sub("Inside _ there is _.", room, item)
-  )
+  room => room.contents.length ?
+    new Action({_subject:room, _verb:'contain', _object:room.contents})
+    : null
 )
 
 module.exports = InteriorRoom

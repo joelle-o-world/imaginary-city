@@ -30,6 +30,7 @@ Tenses: [source ef.co.uk]
 const conjugate = require("./conjugate")
 const getPerson = require("./getPerson")
 const {sub} = require('../index')
+const Substitution = require("../Substitution")
 const regOps = require("../regex")
 
 const GERUND = 7
@@ -38,7 +39,7 @@ const PAST_TENSE = 9
 
 const actionReservedWords = ['_verb', '_object', '_subject']
 
-function verbPhrase(action, tense='simple_present') {
+function verbPhrase(action, tense='simple_present', omitSubject=false) {
   let vp = tenses[tense](action)
 
   if(action._object)
@@ -49,7 +50,25 @@ function verbPhrase(action, tense='simple_present') {
       vp = sub('_ _ _', vp, prep, action[prep])
   }
 
+  if(!(omitSubject || tense == 'imperative'))
+    vp = sub('_ _', action._subject, vp)
+
   return vp
+}
+
+function contractBySubject(actions, tense) {
+  // format a set of actions as a contracted phrases sharing the same subject
+
+  // first check that the subjects match
+  let subject = actions[0]._subject
+  for(let action of actions)
+    if(action._subject != subject)
+      throw "cannot perform contraction because the subjects do not match"
+
+  return sub(
+    '_ _', subject,
+    actions.map(action => verbPhrase(action, tense, true))
+  )
 }
 
 function anyTenseRegex(verb) {
@@ -69,8 +88,7 @@ const tenses = {
   simple_present(action) {
     let person = getPerson(action._subject)
     return sub(
-      "_ _",
-      action._subject,
+      "_",
       conjugate(action._verb, person)
     )
   },
@@ -78,8 +96,7 @@ const tenses = {
   present_continuous(action) {
     let person = getPerson(action._subject)
     return sub(
-      "_ _ _",
-      action._subject,
+      "_ _",
       conjugate('be', person),
       conjugate(action._verb, GERUND)
     )
@@ -88,8 +105,7 @@ const tenses = {
   simple_past(action) {
     let person = getPerson(action._subject)
     return sub(
-      '_ _',
-      action._subject,
+      '_',
       conjugate(action._verb, PAST_TENSE)
     )
   },
@@ -97,8 +113,7 @@ const tenses = {
   past_continuous(action) {
     let person = getPerson(action._subject)
     return sub(
-      '_ _ _',
-      action._subject,
+      '_ _',
       conjugate('were', person),
       conjugate(action._verb, GERUND)
     )
@@ -107,8 +122,7 @@ const tenses = {
   present_perfect(action) {
     let person = getPerson(action._subject)
     return sub(
-      '_ _ _',
-      action._subject,
+      '_ _',
       conjugate('have', person),
       conjugate(action._verb, PAST_PARTICIPLE)
     )
@@ -117,8 +131,7 @@ const tenses = {
   present_perfect_continuous(action) {
     let person = getPerson(action._subject)
     return sub(
-      '_ _ been _',
-      action._subject,
+      '_ been _',
       conjugate('have', person),
       conjugate(action._verb, GERUND)
     )
@@ -127,8 +140,7 @@ const tenses = {
   past_perfect(action) {
     let person = getPerson(action._subject)
     return sub(
-      '_ _ _',
-      action._subject,
+      '_ _',
       conjugate('have', person),
       conjugate(action._verb, PAST_PARTICIPLE)
     )
@@ -136,16 +148,14 @@ const tenses = {
 
   past_perfect_continuous(action) {
     return sub(
-      '_ had been _',
-      action._subject,
+      'had been _',
       conjugate(action._verb, GERUND)
     )
   },
 
   future_perfect(action) { // we will have verbed
     return sub(
-      '_ will have _',
-      action._subject,
+      'will have _',
       conjugate(action._verb, PAST_PARTICIPLE)
     )
   },
@@ -153,8 +163,7 @@ const tenses = {
   // Future Perfect Continuous ("you will have been studying for five years")
   future_perfect_continuous(action) {
     return sub(
-      '_ will have been _',
-      action._subject,
+      'will have been _',
       conjugate(action._verb, GERUND)
     )
   },
@@ -162,8 +171,7 @@ const tenses = {
   // Simple Future ("They will go to Italy next week.")
   simple_future(action) {
     return sub(
-      '_ will _',
-      action._subject,
+      'will _',
       action._verb,
     )
   },
@@ -171,8 +179,7 @@ const tenses = {
   // Future Continuous ("I will be travelling by train.")
   future_continuous({_subject, _verb}) {
     return sub(
-      '_ will be _',
-      _subject,
+      'will be _',
       conjugate(_verb, GERUND)
     )
   },
@@ -180,8 +187,16 @@ const tenses = {
   imperative({_verb}) {
     return sub(_verb)
   },
+
+  negative_possible_present({_subject, _verb}) {
+    return sub('cannot _', _verb)
+  },
+  negative_possible_past({_subject, _verb}) {
+    return sub('could not _', _verb)
+  }
 }
 
 module.exports = verbPhrase
+verbPhrase.contractBySubject = contractBySubject
 verbPhrase.tenses = tenses
 verbPhrase.anyTenseRegex = anyTenseRegex

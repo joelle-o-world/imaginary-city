@@ -8,7 +8,7 @@ function bracket(str) {
   return "(?:" + str + ")"
 }
 function autoBracket(str) {
-  if(/^[\w ]+$/.test(str))
+  if(/^[\w, ]+$/.test(str))
     return str
   else
     return bracket(str)
@@ -46,6 +46,24 @@ function kleene(operand) {
   return operand + "*"
 }
 
+function kleeneSpaced(operand) {
+  return kleeneJoin(operand, ' ')
+}
+
+function kleeneJoin(operand, seperator) {
+  operand = new RegExp(operand).source
+  seperator = new RegExp(seperator).source
+  return concat(operand, kleene(concat(seperator, operand)))
+}
+
+function kleenePoliteList(...operands) {
+  operand = or(...operands)
+  return concat(
+    optional(concat(kleeneJoin(operand,', '), ',? and ')),
+    operand
+  )
+}
+
 function optionalConcatSpaced(stem, ...optionalAppendages) {
   stem = autoBracket(new RegExp(stem).source)
   optionalAppendages = sourcify(optionalAppendages)
@@ -60,6 +78,9 @@ module.exports = {
   or: or,
   optional: optional,
   kleene: kleene,
+  kleeneJoin: kleeneJoin,
+  kleeneSpaced: kleeneSpaced,
+  kleenePoliteList: kleenePoliteList,
   optionalConcatSpaced: optionalConcatSpaced,
   autoBracket: autoBracket,
 }

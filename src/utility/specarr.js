@@ -129,6 +129,12 @@ function expand(target, specialArr) {
     else if(item.isNoumenon) // accept noumenon
       out.push(item)
 
+    else if(item.isAction) // accept actions
+      out.push(item)
+
+    else if(typeof item == 'object' && item._verb) // accept rough actions
+      out.push(item)
+
     // execute functions
     else if(item.constructor == Function) {
       let result = item(target)
@@ -146,6 +152,12 @@ function expand(target, specialArr) {
         out.push(result)
 
       else if(result.isNoumenon) // accept noumena
+        out.push(result)
+
+      else if(result.isAction) // accept actions
+        out.push(result)
+
+      else if(typeof result == 'object' && result._verb) // accept rough actions
         out.push(result)
 
       else if(result.constructor == Array)
@@ -203,6 +215,11 @@ function randomStrings(target, arr, ctx, n=1) {
   return list
 }
 
+function random(target, arr) {
+  let expanded = expand(target, arr)
+  return expanded[Math.floor(Math.random()*expanded.length)]
+}
+
 
 module.exports = {
   toRegexs: specarr_regexs,
@@ -210,4 +227,5 @@ module.exports = {
   cellToString: cellToString,
   randomString: randomString,
   randomStrings: randomStrings,
+  random: random,
 }
