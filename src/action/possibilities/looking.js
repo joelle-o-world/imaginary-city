@@ -22,10 +22,10 @@ module.exports = [
   },
 
   { verb:'look around',
-    consequence: _subject => {
+    expand: _subject => {
       let list = _subject.neighbours
       return [
-        {_subject: _subject, _verb:'be', in:_subject.room},
+        {_subject: _subject, _verb:'look around', _object:_subject.room},
         list ? {_subject: _subject, _verb:'see', _object:list} : null,
       ]
     }

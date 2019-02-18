@@ -26,6 +26,7 @@ module.exports = [
   },
 
   { verb:'go',
+    params: ['_subject', 'to'],
     problem: (_subject, to) => {
       let room = to.isRoom ? to : to.room
       if(!_subject.isPhysicalObject)
@@ -35,7 +36,7 @@ module.exports = [
       //else if(!_subject.room.accessibleRooms.includes(room))
         //return sub('_ is too far away', to)
     },
-    consequence: (_subject, to) => {
+    expand: (_subject, to) => {
       let room = to.isRoom ? to : to.room
 
       let doors = getDoors(_subject.room, room)
@@ -44,7 +45,6 @@ module.exports = [
         ...doors.map(door => ({
           _subject:_subject, _verb:'go', through:door
         })),
-        ...to.describeAll(),
       ]
     }
   },
