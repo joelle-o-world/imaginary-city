@@ -1,6 +1,7 @@
 const {sub} = require('../../utility')
 const Action = require('../Action')
 const random = require('../../random')
+const {getDoors} = require('../../rooms/getRoute')
 
 module.exports = [
   // looking around
