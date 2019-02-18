@@ -134,8 +134,20 @@ class PhysicalObject extends Noumenon {
   }
 }
 PhysicalObject.prototype.isPhysicalObject = true
-PhysicalObject.prototype.canBeLocationType = ['container', 'surface']
-PhysicalObject.prototype.canHaveLocationType = ['container', 'surface', 'room']
+PhysicalObject.prototype.canBeLocationType = ['surface']
+PhysicalObject.prototype.canHaveLocationType = [
+  'container', 'surface', 'room', 'holder'
+]
+PhysicalObject.prototype.canBe = function(...locationTypes) {
+  this.canBeLocationType = this.canBeLocationType.concat(
+    locationTypes.filter(type => !this.canBeLocationType.includes(type))
+  )
+}
+PhysicalObject.prototype.canHave = function(...locationTypes) {
+  this.canHaveLocationType = this.canHaveLocationType.concat(
+    locationTypes.filter(type => !this.canHaveLocationType.includes(type))
+  )
+}
 
 PhysicalObject.prototype.addDescriptorFunctions({
   on: [

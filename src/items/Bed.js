@@ -9,8 +9,6 @@ class Bed extends Item {
   constructor() {
     super()
 
-    this.isSurface = true
-
     this.bedsheets = new GenericItem('bedsheet')
     this.bedsheets.location = this
 
@@ -18,11 +16,13 @@ class Bed extends Item {
     this.pillow.location = this
 
     this.bedsize = Math.random() < 0.5 ? 'double' : 'single'
-    this.fourPoster = Math.random() < 0.2
+    this.fourPoster = Math.random() < 0.1
   }
 }
 
 Bed.prototype.isBed = true
+
+Bed.prototype.canBe('surface')
 
 Bed.prototype.nouns = ['bed']
 

@@ -25,6 +25,7 @@ class Person extends PhysicalObject {
 }
 
 Person.prototype.isPerson = true
+Person.prototype.canBeLocationType = ['holder', 'wearer']
 
 Person.prototype.nouns = [
   "person", "human", "human being",

@@ -7,9 +7,9 @@ const Item = require("./Item.js")
 class Cupboard extends Item {
   constructor() {
     super()
-    this.isContainer = true
   }
 }
 Cupboard.prototype.isCupboard = true
 Cupboard.prototype.nouns = ['cupboard']
+Cupboard.prototype.canBe('container')
 module.exports = Cupboard

@@ -37,7 +37,7 @@ class BodyPart extends PhysicalObject {
 BodyPart.prototype.isBodyPart = true
 BodyPart.prototype.nouns = ["body part"]
 
-BodyPart.prototype.isSurface = true
+BodyPart.prototype.canBe('surface')
 // BodyPart's are attached together by putting them on top of each other.
 
 module.exports = BodyPart

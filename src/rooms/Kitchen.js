@@ -19,11 +19,11 @@ class Kitchen extends InteriorRoom {
     ].map(item => new GenericItem(item))
 
     let spoon = new GenericItem("spoon")
-    stuff[1].isContainer = true
+    stuff[1].canBe('container')
     spoon.container = stuff[1]
 
     let table = new GenericItem('table')
-    table.isSurface = true
+    table.canBe('surface')
     let courgette = new GenericItem('courgette')
     courgette.location = table
     stuff.push(table)

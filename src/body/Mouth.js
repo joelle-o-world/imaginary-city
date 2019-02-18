@@ -12,5 +12,5 @@ class Mouth extends BodyPart {
 Mouth.prototype.isMouth = true
 Mouth.prototype.nouns = ["mouth"]
 
-Mouth.prototype.isContainer = true
+Mouth.prototype.canBe('container')
 module.exports = Mouth

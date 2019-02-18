@@ -7,7 +7,7 @@ const BodyPart = require("./BodyPart")
 class Hand extends BodyPart {
 
 }
-Hand.prototype.isContainer = true
+Hand.prototype.canBe('container')
 Hand.prototype.isHand = true
 Hand.prototype.nouns = ["hand"]
 module.exports = Hand

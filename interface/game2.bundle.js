@@ -85110,8 +85110,20 @@ class PhysicalObject extends Noumenon {
   }
 }
 PhysicalObject.prototype.isPhysicalObject = true
-PhysicalObject.prototype.canBeLocationType = ['container', 'surface']
-PhysicalObject.prototype.canHaveLocationType = ['container', 'surface', 'room']
+PhysicalObject.prototype.canBeLocationType = ['surface']
+PhysicalObject.prototype.canHaveLocationType = [
+  'container', 'surface', 'room', 'holder'
+]
+PhysicalObject.prototype.canBe = function(...locationTypes) {
+  this.canBeLocationType = this.canBeLocationType.concat(
+    locationTypes.filter(type => !this.canBeLocationType.includes(type))
+  )
+}
+PhysicalObject.prototype.canHave = function(...locationTypes) {
+  this.canHaveLocationType = this.canHaveLocationType.concat(
+    locationTypes.filter(type => !this.canHaveLocationType.includes(type))
+  )
+}
 
 PhysicalObject.prototype.addDescriptorFunctions({
   on: [
@@ -86023,8 +86035,6 @@ class Bed extends Item {
   constructor() {
     super()
 
-    this.isSurface = true
-
     this.bedsheets = new GenericItem('bedsheet')
     this.bedsheets.location = this
 
@@ -86032,11 +86042,13 @@ class Bed extends Item {
     this.pillow.location = this
 
     this.bedsize = Math.random() < 0.5 ? 'double' : 'single'
-    this.fourPoster = Math.random() < 0.2
+    this.fourPoster = Math.random() < 0.1
   }
 }
 
 Bed.prototype.isBed = true
+
+Bed.prototype.canBe('surface')
 
 Bed.prototype.nouns = ['bed']
 
@@ -86083,11 +86095,11 @@ const Item = require("./Item.js")
 class Cupboard extends Item {
   constructor() {
     super()
-    this.isContainer = true
   }
 }
 Cupboard.prototype.isCupboard = true
 Cupboard.prototype.nouns = ['cupboard']
+Cupboard.prototype.canBe('container')
 module.exports = Cupboard
 
 },{"./Item.js":48}],46:[function(require,module,exports){
@@ -86163,11 +86175,11 @@ const Item = require("./Item")
 class Table extends Item {
   constructor() {
     super()
-    this.isSurface = true // things can be placed on tables
   }
 }
 Table.prototype.isTable = true
 Table.prototype.nouns = ["table"]
+Table.prototype.canBe('surface')
 module.exports = Table
 
 },{"./Item":48}],50:[function(require,module,exports){
@@ -86241,6 +86253,7 @@ class Person extends PhysicalObject {
 }
 
 Person.prototype.isPerson = true
+Person.prototype.canBeLocationType = ['holder', 'wearer']
 
 Person.prototype.nouns = [
   "person", "human", "human being",
@@ -86602,11 +86615,11 @@ class Kitchen extends InteriorRoom {
     ].map(item => new GenericItem(item))
 
     let spoon = new GenericItem("spoon")
-    stuff[1].isContainer = true
+    stuff[1].canBe('container')
     spoon.container = stuff[1]
 
     let table = new GenericItem('table')
-    table.isSurface = true
+    table.canBe('surface')
     let courgette = new GenericItem('courgette')
     courgette.location = table
     stuff.push(table)
