@@ -30,11 +30,42 @@ const poop = {
   },
   consequence: _subject => {
     let thepoop = new GenericItem('poop')
-    thepoop.room = _subject.room
+    if(_subject.locationType == 'surface' || _subject.locationType == 'container')
+      thepoop.setLocation(_subject.location, _subject.locationType)
+    else
+      thepoop.room = _subject.room
     thepoop.owner = _subject
     _subject.hasPooped = true
     return thepoop.describeAll()
   }
+}
+
+const poopIn = {
+  verb:'poop',
+  params: ['_subject', 'in'],
+  expand(_subject, location) {
+    if(_subject.location != location)
+      return [
+        {_subject:_subject, _verb:'get', into:location},
+        {_subject:_subject, _verb:'poop'},
+      ]
+    else
+      return {_subject:_subject, _verb:'poop'}
+  },
+}
+
+const poopOn = {
+  verb:'poop',
+  params: ['_subject', 'on'],
+  expand(_subject, location) {
+    if(_subject.location != location)
+      return [
+        {_subject:_subject, _verb:'get', onto:location},
+        {_subject:_subject, _verb:'poop'},
+      ]
+    else
+      return {_subject:_subject, _verb:'poop'}
+  },
 }
 
 const poo = {
@@ -45,6 +76,6 @@ const poo = {
 module.exports = [
   dance,
   jump,
-  poop, poo,
+  poop, poo, poopIn, poopOn,
   playWith
 ]

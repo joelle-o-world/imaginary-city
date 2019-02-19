@@ -4,13 +4,9 @@ const random = require('../../random')
 const {getDoors} = require('../../rooms/getRoute')
 
 module.exports = [
-  // looking around
   ...require('./looking.js'),
-
-  // MOVING ARROUND
   ...require('./moving.js'),
-
-  // POINTLESS THINGS
   ...require('./pointless.js'),
-  ...require("./carrying.js")
+  ...require("./carrying.js"),
+  ...require('./activities.js'),
 ]

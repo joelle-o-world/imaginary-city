@@ -22,7 +22,7 @@ class Bed extends Item {
 
 Bed.prototype.isBed = true
 
-Bed.prototype.canBe('surface')
+Bed.prototype.canBe('surface', 'container')
 
 Bed.prototype.nouns = ['bed']
 
