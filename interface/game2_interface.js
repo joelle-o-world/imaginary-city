@@ -7,7 +7,7 @@ const TTSQueue = require("./TTSQueue")
 window.onload = function() {
   let ticky_text = new TickyText(document.getElementById('output'))
 
-  const tts = new TTSQueue(responsiveVoice)
+  const tts = window.responsiveVoice ? new TTSQueue(window.responsiveVoice) : null
 
   myGame._write = str => {
     ticky_text.write(str)

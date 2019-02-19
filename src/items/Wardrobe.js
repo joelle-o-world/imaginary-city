@@ -4,6 +4,7 @@
 
 const Cupboard = require("./Cupboard")
 const GenericItem = require("./GenericItem")
+const Garment = require('../garments/Garment')
 
 const typesOfClothes = [
   "pair of trousers",
@@ -25,8 +26,9 @@ class Wardrobe extends Cupboard {
     let numberOfItemsOfClothing = Math.random() * 5
     for(var i=0; i<numberOfItemsOfClothing; ++i) {
       let type = typesOfClothes[Math.floor(Math.random()*typesOfClothes.length)]
-      let item = new GenericItem(type)
+      let item = new Garment(type)
       item.container = this
+      console.log(item)
     }
   }
 }
