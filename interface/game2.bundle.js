@@ -86341,9 +86341,11 @@ class Game {
     if(str == '') {
       action = this.possibilities.randomActionFor(this.protagonist)
 
-      this.writeln('chosen random command:\n' + verbPhrase(action, 'imperative').str())
-    } else
+      this.writeln('chosen random command,\n' + verbPhrase(action, 'imperative').str()+':')
+    } else {
       action = this.possibilities.parseImperative(str, this.protagonist)
+      this.writeln(str+':')
+    }
 
     if(action) {
       /*let {consequences} = action.execute()
