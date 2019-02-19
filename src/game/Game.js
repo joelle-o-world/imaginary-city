@@ -3,6 +3,8 @@ const formatAnything = require('./formatAnything.js')
 const recursivelyExecute = require('../action/recursivelyExecute')
 const DescriptionContext = require('../DescriptionContext')
 const groupContractables = require("../action/groupContractables")
+const searchNoumena = require('../searchNoumena')
+const verbPhrase = require('../utility/conjugate/verbPhrase')
 
 class Game {
   constructor() {
@@ -13,7 +15,14 @@ class Game {
   }
 
   input(str) {
-    let action = this.possibilities.parseImperative(str, this.protagonist)
+    let action
+    if(str == '') {
+      action = this.possibilities.randomActionFor(this.protagonist)
+
+      this.writeln('chosen random command:\n' + verbPhrase(action, 'imperative').str())
+    } else
+      action = this.possibilities.parseImperative(str, this.protagonist)
+
     if(action) {
       /*let {consequences} = action.execute()
       if(consequences) {

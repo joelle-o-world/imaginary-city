@@ -85306,6 +85306,7 @@ const getParams = require("@captemulation/get-parameter-names")
 const verbPhrase = require("../utility/conjugate/verbPhrase")
 const interpretActionQuery = require('./interpretActionQuery')
 const Action = require('./Action')
+const searchNoumena = require('../searchNoumena')
 
 class Possibility {
   constructor({
@@ -85398,10 +85399,42 @@ class Possibility {
 
     return new Action(action, this)
   }
+
+  randomAction(noumena) {
+    // generate a random action for this possibility given a pool of noumena
+    // to choose from.
+    if(!noumena || noumena.constructor != Array)
+      throw 'possibility#randomAction expects an array of noumena'
+    if(!this.problem)
+      console.warn('trying to generate action for possibility with no problem function defined')
+    let action = {_verb:this.verb}
+    for(var param of this.params)
+      action[param] = noumena[Math.floor(Math.random()*noumena.length)]
+
+    return action
+  }
+
+  randomActionFor(subject) {
+    if(!subject)
+      throw 'possibility#randomActionFor expects a noumenon'
+    if(!this.problem)
+      console.warn('trying to generate action for possibility with no problem function defined')
+
+    let noumena = searchNoumena.getList(subject, 100)
+
+    let action = {_verb:this.verb, _subject:subject}
+    for(var param of this.params) {
+      if(param == '_subject')
+        continue
+      action[param] = noumena[Math.floor(Math.random()*noumena.length)]
+    }
+
+    return action
+  }
 }
 module.exports = Possibility
 
-},{"../utility/conjugate/verbPhrase":79,"./Action":29,"./interpretActionQuery":33,"@captemulation/get-parameter-names":4}],31:[function(require,module,exports){
+},{"../searchNoumena":74,"../utility/conjugate/verbPhrase":79,"./Action":29,"./interpretActionQuery":33,"@captemulation/get-parameter-names":4}],31:[function(require,module,exports){
 /*
   A list of Possibilities
 */
@@ -85455,10 +85488,21 @@ class PossibilitySet {
       // assume it a object relation
       action = action.action
 
-    for(var poss of this.possibilities) {
+    for(var poss of this.possibilities)
       if(poss.actionToParams(action))
         return poss
-      }
+  }
+
+  randomAction(noumena) {
+    // make a random action for a given pool of noumena
+    let possibility = this.possibilities[Math.floor(Math.random()*this.possibilities.length)]
+    return possibility.randomAction(noumena)
+  }
+
+  randomActionFor(subject) {
+    // make a random action for a given subject
+    let possibility = this.possibilities[Math.floor(Math.random()*this.possibilities.length)]
+    return possibility.randomActionFor(subject)
   }
 }
 PossibilitySet.prototype.isPossibilitySet = true
@@ -85825,7 +85869,7 @@ const goOut = { verb: 'go out',
 const getOnto = {
   verb:'get',
   params:['_subject', 'onto'],
-  problems(subject, surface) {
+  problem(subject, surface) {
     if(!subject.isPhysicalObject || !subject.canHaveLocationType.includes('surface'))
       return true
     if(!surface.isPhysicalObject || !surface.canBeLocationType.includes('surface'))
@@ -85852,7 +85896,7 @@ const getOn = {
 const getInto = {
   verb:'get',
   params:['_subject', 'into'],
-  problems(subject, container) {
+  problem(subject, container) {
     if(!subject.isPhysicalObject || !subject.canHaveLocationType.includes('container'))
       return true
     if(!container.isPhysicalObject || !container.canBeLocationType.includes('container'))
@@ -85879,6 +85923,10 @@ const getIn = {
 
 const getOut = {
   verb:'get out',
+  problem(_subject) {
+    if(_subject.locationType != 'container' && _subject.locationType != 'room')
+      return sub("_ isn't inside anything", _subject)
+  },
   expand(_subject) {
     if(_subject.locationType == 'container') {
       let container = _subject.location
@@ -85889,12 +85937,18 @@ const getOut = {
         'out of': container,
         into:_subject.location,
       })
+    } else if(_subject.locationType == 'room') {
+      return {_subject:_subject, _verb:'go out'}
     }
   }
 }
 
 const getOff = {
   verb:'get off',
+  problem(_subject) {
+    if(_subject.locationType !='surface')
+      return sub("_ isn't on anything", _subject)
+  },
   expand(_subject) {
     if(_subject.locationType == 'surface') {
       let surface = _subject.location
@@ -86271,6 +86325,8 @@ const formatAnything = require('./formatAnything.js')
 const recursivelyExecute = require('../action/recursivelyExecute')
 const DescriptionContext = require('../DescriptionContext')
 const groupContractables = require("../action/groupContractables")
+const searchNoumena = require('../searchNoumena')
+const verbPhrase = require('../utility/conjugate/verbPhrase')
 
 class Game {
   constructor() {
@@ -86281,7 +86337,14 @@ class Game {
   }
 
   input(str) {
-    let action = this.possibilities.parseImperative(str, this.protagonist)
+    let action
+    if(str == '') {
+      action = this.possibilities.randomActionFor(this.protagonist)
+
+      this.writeln('chosen random command:\n' + verbPhrase(action, 'imperative').str())
+    } else
+      action = this.possibilities.parseImperative(str, this.protagonist)
+
     if(action) {
       /*let {consequences} = action.execute()
       if(consequences) {
@@ -86329,7 +86392,7 @@ class Game {
 module.exports = Game
 
 }).call(this,require('_process'))
-},{"../DescriptionContext":22,"../action/PossibilitySet":31,"../action/groupContractables":32,"../action/recursivelyExecute":41,"./formatAnything.js":44,"_process":90}],44:[function(require,module,exports){
+},{"../DescriptionContext":22,"../action/PossibilitySet":31,"../action/groupContractables":32,"../action/recursivelyExecute":41,"../searchNoumena":74,"../utility/conjugate/verbPhrase":79,"./formatAnything.js":44,"_process":90}],44:[function(require,module,exports){
 const {sentencify} = require('../utility')
 const Action = require('../action/Action')
 
@@ -86586,7 +86649,7 @@ class Wardrobe extends Cupboard {
     super()
 
     // randomly populate the wardrobe
-    let numberOfItemsOfClothing = Math.random() * 20
+    let numberOfItemsOfClothing = Math.random() * 5
     for(var i=0; i<numberOfItemsOfClothing; ++i) {
       let type = typesOfClothes[Math.floor(Math.random()*typesOfClothes.length)]
       let item = new GenericItem(type)
@@ -87329,6 +87392,14 @@ function* allRelations(noum, yielded=[noum], limit=Infinity) {
 
 }
 exports.allRelations = allRelations
+
+function getList(startingNoum, n=100) {
+  let list = [startingNoum]
+  for(let noum of allRelations(startingNoum, list, n))
+    continue
+  return list
+}
+exports.getList = getList
 
 function* search(refString, startingPoint) {
   if(startingPoint.matchesRef(refString))

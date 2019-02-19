@@ -22,7 +22,7 @@ class Wardrobe extends Cupboard {
     super()
 
     // randomly populate the wardrobe
-    let numberOfItemsOfClothing = Math.random() * 20
+    let numberOfItemsOfClothing = Math.random() * 5
     for(var i=0; i<numberOfItemsOfClothing; ++i) {
       let type = typesOfClothes[Math.floor(Math.random()*typesOfClothes.length)]
       let item = new GenericItem(type)

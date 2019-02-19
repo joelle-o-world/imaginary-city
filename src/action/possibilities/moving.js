@@ -75,7 +75,7 @@ const goOut = { verb: 'go out',
 const getOnto = {
   verb:'get',
   params:['_subject', 'onto'],
-  problems(subject, surface) {
+  problem(subject, surface) {
     if(!subject.isPhysicalObject || !subject.canHaveLocationType.includes('surface'))
       return true
     if(!surface.isPhysicalObject || !surface.canBeLocationType.includes('surface'))
@@ -102,7 +102,7 @@ const getOn = {
 const getInto = {
   verb:'get',
   params:['_subject', 'into'],
-  problems(subject, container) {
+  problem(subject, container) {
     if(!subject.isPhysicalObject || !subject.canHaveLocationType.includes('container'))
       return true
     if(!container.isPhysicalObject || !container.canBeLocationType.includes('container'))
@@ -129,6 +129,10 @@ const getIn = {
 
 const getOut = {
   verb:'get out',
+  problem(_subject) {
+    if(_subject.locationType != 'container' && _subject.locationType != 'room')
+      return sub("_ isn't inside anything", _subject)
+  },
   expand(_subject) {
     if(_subject.locationType == 'container') {
       let container = _subject.location
@@ -139,12 +143,18 @@ const getOut = {
         'out of': container,
         into:_subject.location,
       })
+    } else if(_subject.locationType == 'room') {
+      return {_subject:_subject, _verb:'go out'}
     }
   }
 }
 
 const getOff = {
   verb:'get off',
+  problem(_subject) {
+    if(_subject.locationType !='surface')
+      return sub("_ isn't on anything", _subject)
+  },
   expand(_subject) {
     if(_subject.locationType == 'surface') {
       let surface = _subject.location

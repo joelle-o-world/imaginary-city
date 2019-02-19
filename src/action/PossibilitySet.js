@@ -51,10 +51,21 @@ class PossibilitySet {
       // assume it a object relation
       action = action.action
 
-    for(var poss of this.possibilities) {
+    for(var poss of this.possibilities)
       if(poss.actionToParams(action))
         return poss
-      }
+  }
+
+  randomAction(noumena) {
+    // make a random action for a given pool of noumena
+    let possibility = this.possibilities[Math.floor(Math.random()*this.possibilities.length)]
+    return possibility.randomAction(noumena)
+  }
+
+  randomActionFor(subject) {
+    // make a random action for a given subject
+    let possibility = this.possibilities[Math.floor(Math.random()*this.possibilities.length)]
+    return possibility.randomActionFor(subject)
   }
 }
 PossibilitySet.prototype.isPossibilitySet = true

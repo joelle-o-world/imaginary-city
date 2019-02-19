@@ -32,6 +32,7 @@ const getParams = require("@captemulation/get-parameter-names")
 const verbPhrase = require("../utility/conjugate/verbPhrase")
 const interpretActionQuery = require('./interpretActionQuery')
 const Action = require('./Action')
+const searchNoumena = require('../searchNoumena')
 
 class Possibility {
   constructor({
@@ -123,6 +124,38 @@ class Possibility {
     action._subject = subject
 
     return new Action(action, this)
+  }
+
+  randomAction(noumena) {
+    // generate a random action for this possibility given a pool of noumena
+    // to choose from.
+    if(!noumena || noumena.constructor != Array)
+      throw 'possibility#randomAction expects an array of noumena'
+    if(!this.problem)
+      console.warn('trying to generate action for possibility with no problem function defined')
+    let action = {_verb:this.verb}
+    for(var param of this.params)
+      action[param] = noumena[Math.floor(Math.random()*noumena.length)]
+
+    return action
+  }
+
+  randomActionFor(subject) {
+    if(!subject)
+      throw 'possibility#randomActionFor expects a noumenon'
+    if(!this.problem)
+      console.warn('trying to generate action for possibility with no problem function defined')
+
+    let noumena = searchNoumena.getList(subject, 100)
+
+    let action = {_verb:this.verb, _subject:subject}
+    for(var param of this.params) {
+      if(param == '_subject')
+        continue
+      action[param] = noumena[Math.floor(Math.random()*noumena.length)]
+    }
+
+    return action
   }
 }
 module.exports = Possibility

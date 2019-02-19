@@ -58,6 +58,14 @@ function* allRelations(noum, yielded=[noum], limit=Infinity) {
 }
 exports.allRelations = allRelations
 
+function getList(startingNoum, n=100) {
+  let list = [startingNoum]
+  for(let noum of allRelations(startingNoum, list, n))
+    continue
+  return list
+}
+exports.getList = getList
+
 function* search(refString, startingPoint) {
   if(startingPoint.matchesRef(refString))
     yield startingPoint
