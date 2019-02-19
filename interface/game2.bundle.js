@@ -84761,7 +84761,7 @@ let assignments = {
     // NEW VERSION::
 
 
-    let numberOfAdjectives = 2
+    let numberOfAdjectives = Math.floor(Math.random()*3)
     let numberOfPrepositionPhrases = 0//Math.floor(Math.random()*2)
 
     // if available, use propernoun
