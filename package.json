@@ -4,8 +4,8 @@
   "description": "A generative text adventure game",
   "main": "index.js",
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/joelyjoel/imaginary-city"
+    "type": "git",
+    "url": "https://github.com/joelyjoel/imaginary-city"
   },
   "directories": {
     "test": "test"
@@ -17,7 +17,7 @@
   "license": "ISC",
   "dependencies": {
     "@captemulation/get-parameter-names": "^1.2.0",
-    "dusp": "^1.0.1",
+    "dusp": "^1.0.3",
     "node-diagrams": "^0.1.0",
     "randexp": "^0.5.3",
     "random-name": "^0.1.2"
