@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "@captemulation/get-parameter-names": "^1.2.0",
+    "dusp": "^1.0.1",
     "node-diagrams": "^0.1.0",
     "randexp": "^0.5.3",
     "random-name": "^0.1.2"
