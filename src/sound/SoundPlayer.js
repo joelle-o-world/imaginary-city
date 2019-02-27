@@ -1,10 +1,10 @@
 // NOTE: a browser-only class
 if(!AudioContext)
-  throw "AmbientSoundPlayer only works in a browser with Web Audio API"
+  throw "SoundPlayer only works in a browser with Web Audio API"
 
 const ZEROLEVEL = 0.01
 
-class AmbientSoundPlayer {
+class SoundPlayer {
   constructor(destination) {
     this.destination = destination
     this.currentMix = []  // a list of all the sounds currently playing, with mix details
@@ -111,4 +111,4 @@ class AmbientSoundPlayer {
       )
   }
 }
-module.exports = AmbientSoundPlayer
+module.exports = SoundPlayer

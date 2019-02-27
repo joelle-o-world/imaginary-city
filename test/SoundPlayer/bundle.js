@@ -11530,13 +11530,93 @@ function WAAWriter (target, options) {
 }
 
 },{"audio-buffer-list":4,"audio-buffer-utils":6,"is-audio-buffer":170,"object-assign":178,"pcm-util":179}],198:[function(require,module,exports){
+const Sound = require('./Sound')
+const {unDusp, renderAudioBuffer} = require('dusp')
+
+class DuspLoop extends Sound {
+  constructor(duspStr, duration=10) {
+    super()
+    this.duspStr = duspStr
+    this.duration = duration
+
+    this.behaviour = 'loop'
+    this.fadeIn = 3
+    this.fadeOut = 1
+    this.adjustTime = 1
+  }
+
+  _generate() {
+    return renderAudioBuffer(unDusp(this.duspStr), this.duration)
+  }
+}
+module.exports = DuspLoop
+
+},{"./Sound":200,"dusp":102}],199:[function(require,module,exports){
+const Sound = require('./Sound')
+const {unDusp, renderAudioBuffer} = require('dusp')
+
+class DuspOnde extends Sound {
+  constructor(duspStr, duration=10) {
+    super()
+    this.duspStr = duspStr
+    this.duration = duration
+
+    this.behaviour = 'once'
+    this.fadeIn = null
+    this.fadeOut = 1
+    this.adjustTime = 1
+  }
+
+  _generate() {
+    return renderAudioBuffer(unDusp(this.duspStr), this.duration)
+  }
+}
+module.exports = DuspOnde
+
+},{"./Sound":200,"dusp":102}],200:[function(require,module,exports){
+// so far this class is just a conceptual sketch
+
+class Sound {
+  constructor() {
+    this.behaviour = 'once' // "loop" or "once" (Add more later)
+    this.fadeIn = null  // null or fade in duration in seconds
+    this.fadeOut = 0.25    // null or fade out duration in seconds
+    this.adjustTime = 0.25
+
+    this._audiobuffer = null // an audiobuffer of a pre-rendered sample
+    this._generate // function, a generative way to make this sound
+
+    this.emitter = null
+  }
+
+  get audiobuffer() {
+    if(this._audiobuffer)
+      return this._audiobuffer
+    else if(this._generate)
+      return this.generate()
+
+    console.warn('could not generate audio buffer', this)
+  }
+
+  async generate() {
+    if(!this._generate)
+      console.warn("sound has no generate function")
+    this._audiobuffer = await this._generate()
+    if(!this._audiobuffer)
+      console.warn("sound.generate() failed")
+    return this._audiobuffer
+  }
+}
+module.exports = Sound
+
+},{}],201:[function(require,module,exports){
 // NOTE: a browser-only class
 if(!AudioContext)
-  throw "AmbientSoundPlayer only works in a browser with Web Audio API"
+  throw "SoundPlayer only works in a browser with Web Audio API"
 
 const ZEROLEVEL = 0.01
 
-class AmbientSoundPlayer {
+class SoundPlayer {
   constructor(destination) {
     this.destination = destination
     this.currentMix = []  // a list of all the sounds currently playing, with mix details
@@ -11643,90 +11723,10 @@ class AmbientSoundPlayer {
       )
   }
 }
-module.exports = AmbientSoundPlayer
-
-},{}],199:[function(require,module,exports){
-const Sound = require('./Sound')
-const {unDusp, renderAudioBuffer} = require('dusp')
-
-class DuspLoop extends Sound {
-  constructor(duspStr, duration=10) {
-    super()
-    this.duspStr = duspStr
-    this.duration = duration
-
-    this.behaviour = 'loop'
-    this.fadeIn = 3
-    this.fadeOut = 1
-    this.adjustTime = 1
-  }
-
-  _generate() {
-    return renderAudioBuffer(unDusp(this.duspStr), this.duration)
-  }
-}
-module.exports = DuspLoop
-
-},{"./Sound":201,"dusp":102}],200:[function(require,module,exports){
-const Sound = require('./Sound')
-const {unDusp, renderAudioBuffer} = require('dusp')
-
-class DuspOnde extends Sound {
-  constructor(duspStr, duration=10) {
-    super()
-    this.duspStr = duspStr
-    this.duration = duration
-
-    this.behaviour = 'once'
-    this.fadeIn = null
-    this.fadeOut = 1
-    this.adjustTime = 1
-  }
-
-  _generate() {
-    return renderAudioBuffer(unDusp(this.duspStr), this.duration)
-  }
-}
-module.exports = DuspOnde
-
-},{"./Sound":201,"dusp":102}],201:[function(require,module,exports){
-// so far this class is just a conceptual sketch
-
-class Sound {
-  constructor() {
-    this.behaviour = 'once' // "loop" or "once" (Add more later)
-    this.fadeIn = null  // null or fade in duration in seconds
-    this.fadeOut = 0.25    // null or fade out duration in seconds
-    this.adjustTime = 0.25
-
-    this._audiobuffer = null // an audiobuffer of a pre-rendered sample
-    this._generate // function, a generative way to make this sound
-
-    this.emitter = null
-  }
-
-  get audiobuffer() {
-    if(this._audiobuffer)
-      return this._audiobuffer
-    else if(this._generate)
-      return this.generate()
-
-    console.warn('could not generate audio buffer', this)
-  }
-
-  async generate() {
-    if(!this._generate)
-      console.warn("sound has no generate function")
-    this._audiobuffer = await this._generate()
-    if(!this._audiobuffer)
-      console.warn("sound.generate() failed")
-    return this._audiobuffer
-  }
-}
-module.exports = Sound
+module.exports = SoundPlayer
 
 },{}],202:[function(require,module,exports){
-const AmbientSoundPlayer = require("../../src/sound/AmbientSoundPlayer")
+const SoundPlayer = require("../../src/sound/SoundPlayer")
 const Sound = require('../../src/sound/Sound')
 const DuspLoop = require('../../src/sound/DuspLoop')
 const DuspOnce = require('../../src/sound/DuspOnce')
@@ -11737,7 +11737,7 @@ const {
 
 window.onclick = () => {
   let audioctx = new AudioContext
-  let player = new AmbientSoundPlayer(audioctx.destination)
+  let player = new SoundPlayer(audioctx.destination)
 
   let sound1 = new DuspLoop('O3000 * D0.025/ 10', 2)
   let sound2 = new DuspLoop('Noise / 1000', 2)
@@ -11757,7 +11757,7 @@ window.onclick = () => {
   }, 10000)
 }
 
-},{"../../src/sound/AmbientSoundPlayer":198,"../../src/sound/DuspLoop":199,"../../src/sound/DuspOnce":200,"../../src/sound/Sound":201,"dusp":102}],203:[function(require,module,exports){
+},{"../../src/sound/DuspLoop":198,"../../src/sound/DuspOnce":199,"../../src/sound/Sound":200,"../../src/sound/SoundPlayer":201,"dusp":102}],203:[function(require,module,exports){
 'use strict'
 
 exports.byteLength = byteLength

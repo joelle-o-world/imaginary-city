@@ -1,4 +1,4 @@
-const AmbientSoundPlayer = require("../../src/sound/AmbientSoundPlayer")
+const SoundPlayer = require("../../src/sound/SoundPlayer")
 const Sound = require('../../src/sound/Sound')
 const DuspLoop = require('../../src/sound/DuspLoop')
 const DuspOnce = require('../../src/sound/DuspOnce')
@@ -9,7 +9,7 @@ const {
 
 window.onclick = () => {
   let audioctx = new AudioContext
-  let player = new AmbientSoundPlayer(audioctx.destination)
+  let player = new SoundPlayer(audioctx.destination)
 
   let sound1 = new DuspLoop('O3000 * D0.025/ 10', 2)
   let sound2 = new DuspLoop('Noise / 1000', 2)
