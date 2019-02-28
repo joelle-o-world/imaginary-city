@@ -15,25 +15,25 @@ class Room extends Noumenon {
   constructor() {
     super()
 
-    // contents
-    this.contents = [] // list of stuff thats in the room.
-    this.__suspendInit__("contents", function() {
+    // locating
+    this.locating = [] // list of stuff thats in the room.
+    this.__suspendInit__("locating", function() {
       if(this.generateContents) {
-        this.contents = []
-        let contents = this.generateContents(this)
-        if(!contents) {
-          console.warn("Generate contents failed")
+        this.locating = []
+        let locating = this.generateContents(this)
+        if(!locating) {
+          console.warn("Generate locating failed")
           return []
         }
 
         // convert strings to GenericItem's
-        for(var i in contents) {
-          if(contents[i].constructor == String)
-            contents[i] = new GenericItem(contents[i])
+        for(var i in locating) {
+          if(locating[i].constructor == String)
+            locating[i] = new GenericItem(locating[i])
 
-          contents[i].location = this
+          locating[i].location = this
         }
-        return contents
+        return locating
 
       } else
         return []
@@ -91,16 +91,16 @@ class Room extends Noumenon {
 
   randomItem() {
     // return a random item from this room
-    if(this.contents.length)
-      return this.contents[Math.floor(Math.random()*this.contents.length)]
+    if(this.locating.length)
+      return this.locating[Math.floor(Math.random()*this.locating.length)]
     else
       return null
   }
 
   removeContent(obj) {
-    // remove an object from the contents of the room
-    if(this.contents.includes(obj))
-      this.contents.splice(this.contents.indexOf(obj), 1)
+    // remove an object from the locating of the room
+    if(this.locating.includes(obj))
+      this.locating.splice(this.locating.indexOf(obj), 1)
     else
       console.warn("WARNING: Tried to remove an object from a room but it couldn't be found")
   }
@@ -108,9 +108,14 @@ class Room extends Noumenon {
   get all() {
     // recursively generate list of all objects in the room
     let list = []
-    for(var i in this.contents)
-      list.push(...this.contents[i].locating)
+    for(var i in this.locating)
+      list.push(...this.locating[i].locating)
     return list
+  }
+
+  get contents() {
+    // alias to `locating` for backwards compatibility
+    return this.locating
   }
 }
 Room.prototype.isRoom = true

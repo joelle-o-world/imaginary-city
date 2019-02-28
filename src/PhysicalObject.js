@@ -64,7 +64,7 @@ class PhysicalObject extends Noumenon {
       this.removeSelfFromLocation()
       this.locationType = 'room'
       this._location = location
-      location.contents.push(this)
+      location.locating.push(this)
 
       this.emit('enter', this._location, this.locationType)
       this._location.emit('entered', this, this.locationType)
@@ -151,7 +151,7 @@ class PhysicalObject extends Noumenon {
 
     // if location is surface, return all objects on the surface except this
     if(this.locationType == 'room')
-      return this._location.contents.filter(o => o != this)
+      return this._location.locating.filter(o => o != this)
     if(this._location)
       return this._location.locating.filter(o => o != this)
 
