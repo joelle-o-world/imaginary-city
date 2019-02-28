@@ -28,7 +28,10 @@ class PhysicalObject extends Noumenon {
   }
 
   removeSelfFromLocation() {
-    // extract
+    // remember previous location for the event afterwards
+    let before = {location:this._location, locationType:this.locationType}
+
+    // remove self from location's locating list
     if(this._location) {
       if(this.locationType == 'room')
         // room is a special case because Room does not inherit from PhysicalObject
@@ -36,37 +39,57 @@ class PhysicalObject extends Noumenon {
       else
         this._location.locating.splice(this._location.locating.indexOf(this),1)
     }
+    // set location to null
     this.locationType = 'null'
     this._location = null
+
+    // Emit an exit event after has been removed from location, detailing where
+    // it was removed from.
+    this.emit('exit', before.location, before.locationType)
+    if(before.location)
+      before.location.emit('exited', this, before.locationType)
+
   }
 
   setLocation(location, locationType) {
-    if(!location) {
+    let before = {location:this.location, locationType:this.locationType}
+
+    if(!location)
       this.removeSelfFromLocation()
-      return
-    }
 
-    if(!locationType)
-      throw "Cannot set location of PhysicalObject without locationType"
+    else if(!locationType)
+      throw "Cannot set location of PhysicalObject without a locationType"
 
-    if(location.isRoom) {
+    else if(location.isRoom) {
       this.removeSelfFromLocation()
       this.locationType = 'room'
       this._location = location
       location.contents.push(this)
-      return
+
+      this.emit('enter', this._location, this.locationType)
+      this._location.emit('entered', this, this.locationType)
     }
 
-    if(location.canBeLocationType.includes(locationType)
+    else if(location.canBeLocationType.includes(locationType)
       && this.canHaveLocationType.includes(locationType)) {
       this.removeSelfFromLocation()
       this.locationType = locationType
       this._location = location
       this._location.locating.push(this)
+
+      this.emit('enter', this._location, this.locationType)
+      this._location.emit('entered', this, this.locationType)
+    } else {
+      console.warn('setLocation was unsuccessful')
       return
     }
 
-    console.warn('setLocation was unsuccessful')
+    this.emit('move',
+      before,
+      {location: this.location, locationType: this.locationType}
+    )
+
+    return;
   }
 
   get location() {
