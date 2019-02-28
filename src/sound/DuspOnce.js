@@ -1,7 +1,7 @@
 const Sound = require('./Sound')
 const {unDusp, renderAudioBuffer} = require('dusp')
 
-class DuspOnde extends Sound {
+class DuspOnce extends Sound {
   constructor(duspStr, duration=10) {
     super()
     this.duspStr = duspStr
@@ -17,4 +17,4 @@ class DuspOnde extends Sound {
     return renderAudioBuffer(unDusp(this.duspStr), this.duration)
   }
 }
-module.exports = DuspOnde
+module.exports = DuspOnce
