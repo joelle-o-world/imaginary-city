@@ -5,7 +5,7 @@ const DescriptionContext = require('../DescriptionContext')
 const groupContractables = require("../action/groupContractables")
 const searchNoumena = require('../searchNoumena')
 const verbPhrase = require('../utility/conjugate/verbPhrase')
-const SoundPlayer = require("../sound/SoundPlayer")
+const LocationSoundPlayer = require("../sound/LocationSoundPlayer")
 
 
 const EventEmitter = require('events')
@@ -24,18 +24,8 @@ class Game extends EventEmitter {
 
     this.audioctx = new AudioContext
     this.audibleLocations = []
-    this.on('protagonistMove', (from, to) => {
-      let location
-      while(location = this.audibleLocations.shift()) {
-        location.soundPlayer.stopAll()
-        location.soundPlayer = null
-      }
-
-      to.location.soundPlayer = new SoundPlayer(this.audioctx.destination)
-      this.audibleLocations.push(to.location)
-
-      console.log(this.audibleLocations)
-    })
+    this.on('protagonistMove', () => this.refreshAudio())
+    this.on('changeProtagonist', () => this.refreshAudio())
   }
 
   input(str) {
@@ -91,6 +81,20 @@ class Game extends EventEmitter {
   newline(n=1) {
     for(var i=0; i<n; i++)
       this.write('\n')
+  }
+
+  refreshAudio() {
+    let oldLocation
+    while(oldLocation = this.audibleLocations.shift()) {
+      oldLocation.soundPlayer.stopAll()
+      oldLocation.soundPlayer = null
+    }
+
+    let location = this.protagonist.location
+    location.soundPlayer = new LocationSoundPlayer(location, this.audioctx.destination)
+    this.audibleLocations.push(location)
+
+    console.log('audibleLocations:', this.audibleLocations)
   }
 
   get protagonist() {

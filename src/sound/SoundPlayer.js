@@ -102,6 +102,7 @@ class SoundPlayer {
       sound = this.currentMix[i].sound
     }
     let channel = this.currentMix[i]
+    console.log(sound, channel, i)
 
     // fade it out or stop it immediately
     if(sound.fadeOut) {

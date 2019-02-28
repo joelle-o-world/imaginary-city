@@ -4,6 +4,7 @@ const Person = require("../people/Person")
 const {sub} = require("../utility")
 const SoundPlayer = require("../sound/SoundPlayer")
 const DuspOnce = require('../sound/DuspOnce')
+const DuspLoop = require('../sound/DuspLoop')
 
 const allPossibilities = require('../action/possibilities')
 
@@ -32,9 +33,19 @@ myGame.createWorld = function() {
   let protagonist = new Person
   protagonist.location = house.randomRoom()
 
-  setInterval(() => {
+  /*setInterval(() => {
     house.kitchen.randomItem().makeSound(new DuspOnce('O1000 * D0.1', 0.5))
-  }, 3000)
+  }, 3000)*/
+
+  house.kitchen.randomItem().makeSound(
+    new DuspLoop('Noise/1000', 1)
+  )
+
+  for(let room of house.allRooms) {
+    room.makeSound(
+      new DuspLoop('[Osc F:random*200]/10 + ([Noise f:random*4000] * random)/1000')
+    )
+  }
 
   protagonist.room.soundPlayer = new SoundPlayer(new AudioContext().destination)
 

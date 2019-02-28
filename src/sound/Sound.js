@@ -110,4 +110,5 @@ class Sound extends EventEmitter{
       this.noumenonSource.location.soundPlayer
   }
 }
+Sound.prototype.isSound = true
 module.exports = Sound
