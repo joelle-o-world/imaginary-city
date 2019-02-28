@@ -12,7 +12,7 @@ window.onload = function() {
   myGame._write = str => {
     ticky_text.write(str)
     if(tts)
-      tts.speak(str, "UK English Male", {rate: 1, pitch:2})
+      tts.speak(str, "UK English Male", {rate: 1, pitch:1/2})
   }
 }
 

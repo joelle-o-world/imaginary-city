@@ -1,8 +1,30 @@
 # Events in imaginary-city
 
+## Game
+`changeProtagonist`  Emitted after a change of protagonist.
+  arguments: `newProtagonist`
+
+`protagonistMove` Emitted after the protagonist moves.
+  arguments: *copied from PhysicalObject's move event*
+
 ## Physical Object
-`exit`    emitted after `this` exits another object. (Before it enters another)
-`enter`   emitted after `this` enters another object
-`move`    emitted after `this` moves
-`exited`  emitted after another object exits `this` as a location
-`entered` emitted after another object enters `this` as a location
+`exit`    Emitted after `this` exits another object, before it enters another.
+  arguments: (oldLocation, oldLocationType)
+
+`enter`   Emitted after `this` enters another object.
+  arguments: `newLocation`, `newLocationType`
+
+`move`    Emitted after `this` moves.
+  arguments:
+    - `from`  An object with two keys: `location` and `locationType`
+    - `to`    An object with two keys: `location` and `locationType`
+
+`exited`  Emitted after another object exits `this` as a location.
+  arguments:
+    - `exitter`         The object which has exited `this` object as a location.
+    - `oldLocationType`
+
+`entered` Emitted after another object enters `this` as a location.
+  arguments
+    - `enterer`
+    - `locationType`

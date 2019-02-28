@@ -6,12 +6,19 @@ const groupContractables = require("../action/groupContractables")
 const searchNoumena = require('../searchNoumena')
 const verbPhrase = require('../utility/conjugate/verbPhrase')
 
-class Game {
+const EventEmitter = require('events')
+
+class Game extends EventEmitter {
   constructor() {
+    super()
     this.protagonist
     this.possibilities = new PossibilitySet()
     this._write = str => process.stdout.write(str)
     this.descriptionCtx = new DescriptionContext
+
+    this.onProtagonistMove = (...args) => {
+      this.emit('protagonistMove', ...args)
+    }
   }
 
   input(str) {
@@ -67,6 +74,27 @@ class Game {
   newline(n=1) {
     for(var i=0; i<n; i++)
       this.write('\n')
+  }
+
+  get protagonist() {
+    return this._protagonist
+  }
+  set protagonist(protagonist) {
+    if(!protagonist || !protagonist.isNoumenon)
+      throw "Game#set protagonist expects a Noumenon"
+
+    // remove listeners from old protagonist
+    if(this._protagonist)
+      this._protagonist.removeListener('move', this.onProtagonistMove)
+
+    // change the protagonist
+    this._protagonist = protagonist
+
+    // add listeners to the new protagonist
+    protagonist.on('move', this.onProtagonistMove)
+
+    // emit the `newProtagonist` event
+    this.emit('changeProtagonist', this._protagonist)
   }
 }
 module.exports = Game
