@@ -110,5 +110,10 @@ class SoundPlayer {
         newMixParameters.gain, adjustedTime
       )
   }
+
+  stopAll() {
+    for(let {sound} of this.currentMix)
+      this.stop(sound)
+  }
 }
 module.exports = SoundPlayer
