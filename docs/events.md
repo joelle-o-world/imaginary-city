@@ -28,3 +28,23 @@
   arguments
     - `enterer`
     - `locationType`
+
+## Sound
+`start` Emitted when the sound is first emitted, even if it is inaudible.
+  arguements: none.
+
+`stop`  For continuous sounds, emitted when they are told to stop. If they are
+        playing then they immediated `end` otherwise they wait for an
+        `audioPaused` and then `end`.
+  arguments: none
+
+`end`  Emitted when a sound has finished and will never sound again
+  arguments: none.
+
+`audioPlaying`  Emitted when audio of this sound begins playing.
+  arguments: none.
+
+`audioPaused`   Emitted when audio of this sound has stopped. Doesn't necessarily
+              mean the sound is over conceptually, it may have been paused
+              because it has become inaudible.
+  arguments: none.

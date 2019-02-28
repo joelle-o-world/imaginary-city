@@ -2,6 +2,8 @@ const Game = require("./Game")
 const TownHouse = require("../buildings/TownHouse")
 const Person = require("../people/Person")
 const {sub} = require("../utility")
+const SoundPlayer = require("../sound/SoundPlayer")
+const DuspOnce = require('../sound/DuspOnce')
 
 const allPossibilities = require('../action/possibilities')
 
@@ -29,6 +31,12 @@ myGame.createWorld = function() {
   let house = new TownHouse
   let protagonist = new Person
   protagonist.location = house.randomRoom()
+
+  setInterval(() => {
+    house.kitchen.randomItem().makeSound(new DuspOnce('O1000 * D0.1', 0.5))
+  }, 3000)
+
+  protagonist.room.soundPlayer = new SoundPlayer(new AudioContext().destination)
 
   myGame.protagonist = protagonist
 }

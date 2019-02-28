@@ -5,6 +5,8 @@ const DescriptionContext = require('../DescriptionContext')
 const groupContractables = require("../action/groupContractables")
 const searchNoumena = require('../searchNoumena')
 const verbPhrase = require('../utility/conjugate/verbPhrase')
+const SoundPlayer = require("../sound/SoundPlayer")
+
 
 const EventEmitter = require('events')
 
@@ -19,6 +21,21 @@ class Game extends EventEmitter {
     this.onProtagonistMove = (...args) => {
       this.emit('protagonistMove', ...args)
     }
+
+    this.audioctx = new AudioContext
+    this.audibleLocations = []
+    this.on('protagonistMove', (from, to) => {
+      let location
+      while(location = this.audibleLocations.shift()) {
+        location.soundPlayer.stopAll()
+        location.soundPlayer = null
+      }
+
+      to.location.soundPlayer = new SoundPlayer(this.audioctx.destination)
+      this.audibleLocations.push(to.location)
+
+      console.log(this.audibleLocations)
+    })
   }
 
   input(str) {

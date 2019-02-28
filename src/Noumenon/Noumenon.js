@@ -15,6 +15,7 @@ class Noumenon extends EventEmitter{
   constructor() {
     super()
     this.history = [] // history of all actions involving this noumenon
+    this.nowPlayingSounds = [] // all the sounds currently playing
   }
 
   // Suspended Initialisation

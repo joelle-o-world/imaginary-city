@@ -67,6 +67,8 @@ class SoundPlayer {
     gainNode.connect(this.ctx.destination)
 
     source.start()
+    sound.emit('audioPlaying')
+    sound.soundPlayer = this
 
     let channel = {
       sound: sound,
@@ -78,18 +80,30 @@ class SoundPlayer {
 
     source.onended = () => {
       let i = this.currentMix.indexOf(channel)
+
       if(i != -1)
         this.currentMix.splice(i, 1)
-      if(sound.onended)
-        sound.onended()
+
+      sound.emit('audioPaused', source)
+      if(sound.behaviour == 'once')
+        sound.emit('end')
+
       console.log('ended:', sound)
     }
   }
 
   stop(sound) {
-    let i = this.currentMix.findIndex(channel => channel.sound == sound)
+    // find the channel of the sound
+    let i
+    if(sound.isSound)
+      i = this.currentMix.findIndex(channel => channel.sound == sound)
+    else if(sound.constructor == Number) {
+      i = sound
+      sound = this.currentMix[i].sound
+    }
     let channel = this.currentMix[i]
 
+    // fade it out or stop it immediately
     if(sound.fadeOut) {
       let endTime = sound.fadeOut + this.ctx.currentTime
       channel.gainNode.gain.linearRampToValueAtTime(ZEROLEVEL, endTime)
