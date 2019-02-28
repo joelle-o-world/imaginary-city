@@ -28,7 +28,6 @@ class Wardrobe extends Cupboard {
       let type = typesOfClothes[Math.floor(Math.random()*typesOfClothes.length)]
       let item = new Garment(type)
       item.container = this
-      console.log(item)
     }
   }
 }
