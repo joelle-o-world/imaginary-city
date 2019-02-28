@@ -2,6 +2,7 @@
   Noumenon is the super class for everything which exists in the world.
 */
 
+const EventEmitter = require('events')
 const random = require("../random")
 const utility = require("../utility")
 const regOp = utility.regex // regular expression operations
@@ -9,9 +10,10 @@ const {randexp} = require("randexp")
 const interpretSpecialArray = require("./interpretSpecialArray")
 const specarr = require("../utility/specarr")
 
-class Noumenon {
+class Noumenon extends EventEmitter{
 
   constructor() {
+    super()
     this.history = [] // history of all actions involving this noumenon
   }
 
