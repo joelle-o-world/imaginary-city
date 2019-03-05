@@ -96899,7 +96899,7 @@ class Possibility {
     // NOTE: 'in' is a reserved word so cannot be a function argument. The
     //        solution was to use 'IN' and convert all params to lower case.
 
-    this.imperativeRegex = this.getImperateRegex()
+    this.imperativeRegex = this.getImperativeRegex()
   }
 
   actionToParams(action) {
@@ -96947,7 +96947,7 @@ class Possibility {
     return verbPhrase(action, 'imperative').str()
   }
 
-  getImperateRegex() {
+  getImperativeRegex() {
     let action = {_verb: this.verb}
     for(var i in this.params) {
       action[this.params[i]] = '(?<'+this.params[i]+'>.+)'
