@@ -99180,6 +99180,16 @@ class LocationSoundPlayer extends SoundPlayer {
       for(let sound of nowPlayingSounds)
         this.play(sound)
     }
+
+    this.location.on('exited', noumenon => {
+      for(let sound of noumenon.nowPlayingSounds)
+        this.stop(sound)
+    })
+
+    this.location.on('entered', noumenon => {
+      for(let sound of noumenon.nowPlayingSounds)
+        this.play(sound)
+    })
   }
 }
 module.exports = LocationSoundPlayer
@@ -99441,7 +99451,7 @@ class SoundPlayer {
 module.exports = SoundPlayer
 
 },{}],281:[function(require,module,exports){
-const {components, quick, renderAudioBuffer} = require('dusp')
+const {components, quick, renderAudioBuffer, } = require('dusp')
 const Sound = require('../Sound')
 
 const MAINSFREQUENCY = 50 // Hz (UK & Europe)

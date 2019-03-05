@@ -12,6 +12,16 @@ class LocationSoundPlayer extends SoundPlayer {
       for(let sound of nowPlayingSounds)
         this.play(sound)
     }
+
+    this.location.on('exited', noumenon => {
+      for(let sound of noumenon.nowPlayingSounds)
+        this.stop(sound)
+    })
+
+    this.location.on('entered', noumenon => {
+      for(let sound of noumenon.nowPlayingSounds)
+        this.play(sound)
+    })
   }
 }
 module.exports = LocationSoundPlayer

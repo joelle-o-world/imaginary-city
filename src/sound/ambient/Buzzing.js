@@ -1,4 +1,4 @@
-const {components, quick, renderAudioBuffer} = require('dusp')
+const {components, quick, renderAudioBuffer, } = require('dusp')
 const Sound = require('../Sound')
 
 const MAINSFREQUENCY = 50 // Hz (UK & Europe)
@@ -17,8 +17,6 @@ class Buzzing extends Sound {
 
     let f = 10000 + Math.random()*10000
     let filter = new components.Filter(osc, f, 'HP')
-
-    unDusp("Z(50 ) -> HP10000", )
 
     return renderAudioBuffer(quick.multiply(filter, 0.1*Math.random()), Math.random()*5)
   }
