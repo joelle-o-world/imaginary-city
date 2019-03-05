@@ -14,6 +14,8 @@ window.onload = function() {
     if(tts)
       tts.speak(str, "UK English Male", {rate: 1, pitch:1/2})
   }
+
+  document.getElementById('help').innerHTML = myGame.helpHTML
 }
 
 window.onclick = function() {

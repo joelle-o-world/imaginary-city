@@ -117,5 +117,10 @@ class Game extends EventEmitter {
     // emit the `newProtagonist` event
     this.emit('changeProtagonist', this._protagonist)
   }
+
+  get helpHTML() {
+    return "Available commands:<br>"
+      + this.possibilities.exampleStrings.map(str => '<li>'+str+"</li>").join('')
+  }
 }
 module.exports = Game

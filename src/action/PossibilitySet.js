@@ -67,6 +67,10 @@ class PossibilitySet {
     let possibility = this.possibilities[Math.floor(Math.random()*this.possibilities.length)]
     return possibility.randomActionFor(subject)
   }
+
+  get exampleStrings() {
+    return this.possibilities.map(poss => poss.imperativeExample())
+  }
 }
 PossibilitySet.prototype.isPossibilitySet = true
 module.exports = PossibilitySet
