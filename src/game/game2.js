@@ -28,6 +28,8 @@ myGame.possibilities.add({
   returnSelfAsConsequence:false
 })
 
+console.log(myGame.possibilities.exampleStrings)
+
 myGame.createWorld = function() {
   let house = new TownHouse
   let protagonist = new Person

@@ -87,10 +87,10 @@ class Possibility {
     else return false
   }
 
-  imperativeCommandString() {
+  imperativeExample() {
     let action = {_verb: this.verb}
     for(var i in this.params) {
-      action[this.params[i]] = '_'
+      action[this.params[i]] = '___'
     }
     return verbPhrase(action, 'imperative').str()
   }

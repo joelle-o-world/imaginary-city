@@ -126,6 +126,8 @@ window.onload = function() {
     if(tts)
       tts.speak(str, "UK English Male", {rate: 1, pitch:1/2})
   }
+
+  document.getElementById('help').innerHTML = myGame.helpHTML
 }
 
 window.onclick = function() {
@@ -96939,10 +96941,10 @@ class Possibility {
     else return false
   }
 
-  imperativeCommandString() {
+  imperativeExample() {
     let action = {_verb: this.verb}
     for(var i in this.params) {
-      action[this.params[i]] = '_'
+      action[this.params[i]] = '___'
     }
     return verbPhrase(action, 'imperative').str()
   }
@@ -97081,6 +97083,10 @@ class PossibilitySet {
     // make a random action for a given subject
     let possibility = this.possibilities[Math.floor(Math.random()*this.possibilities.length)]
     return possibility.randomActionFor(subject)
+  }
+
+  get exampleStrings() {
+    return this.possibilities.map(poss => poss.imperativeExample())
   }
 }
 PossibilitySet.prototype.isPossibilitySet = true
@@ -98017,6 +98023,11 @@ class Game extends EventEmitter {
     // emit the `newProtagonist` event
     this.emit('changeProtagonist', this._protagonist)
   }
+
+  get helpHTML() {
+    return "Available commands:<br>"
+      + this.possibilities.exampleStrings.map(str => '<li>'+str+"</li>").join('')
+  }
 }
 module.exports = Game
 
@@ -98074,6 +98085,8 @@ myGame.possibilities.add({
   },
   returnSelfAsConsequence:false
 })
+
+console.log(myGame.possibilities.exampleStrings)
 
 myGame.createWorld = function() {
   let house = new TownHouse
