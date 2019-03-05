@@ -97086,7 +97086,7 @@ class PossibilitySet {
   }
 
   get exampleStrings() {
-    return this.possibilities.map(poss => poss.imperativeExample())
+    return this.possibilities.map(poss => poss.imperativeExample()).sort()
   }
 }
 PossibilitySet.prototype.isPossibilitySet = true
