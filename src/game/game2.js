@@ -21,7 +21,7 @@ myGame.possibilities.add({
     myGame.protagonist = _object
     return {
       _subject: sub('the spirit of _', _subject),
-      _verb:'posess',
+      _verb: 'posess',
       _object: sub('the body of _', _object)
     }
   },
@@ -37,15 +37,12 @@ myGame.createWorld = function() {
     house.kitchen.randomItem().makeSound(new DuspOnce('O1000 * D0.1', 0.5))
   }, 3000)*/
 
-  house.kitchen.randomItem().makeSound(
-    new DuspLoop('Noise/1000', 1)
-  )
 
-  for(let room of house.allRooms) {
+  /*for(let room of house.allRooms) {
     room.makeSound(
       new DuspLoop('[Osc F:random*200]/10 + ([Noise f:random*4000] * random)/1000')
     )
-  }
+  }*/
 
   protagonist.room.soundPlayer = new SoundPlayer(new AudioContext().destination)
 

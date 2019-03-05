@@ -1,12 +1,16 @@
 const EventEmitter = require('events')
 
 class Sound extends EventEmitter{
-  constructor() {
+  constructor({
+    behaviour = "once",
+    fadeIn = null,
+    fadeOut = 0.25,
+  } = {}) {
     super()
     // behaviour details
-    this.behaviour = 'once' // "loop" or "once" (Add more later)
-    this.fadeIn = null  // null or fade in duration in seconds
-    this.fadeOut = 0.25    // null or fade out duration in seconds
+    this.behaviour = behaviour // "loop" or "once" (Add more later)
+    this.fadeIn = fadeIn  // null or fade in duration in seconds
+    this.fadeOut = fadeOut    // null or fade out duration in seconds
     this.adjustTime = 0.25
 
     // buffer/sample/generation

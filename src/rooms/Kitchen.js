@@ -4,6 +4,8 @@
 
 const InteriorRoom = require("./InteriorRoom.js")
 const GenericItem = require("../items/GenericItem")
+const Refridgerator = require('../items/Refridgerator')
+const Microwave = require('../items/Microwave')
 
 class Kitchen extends InteriorRoom {
   constructor() {
@@ -15,7 +17,6 @@ class Kitchen extends InteriorRoom {
       "sink",
       "oven",
       "hob",
-      "microwave",
     ].map(item => new GenericItem(item))
 
     let spoon = new GenericItem("spoon")
@@ -27,6 +28,9 @@ class Kitchen extends InteriorRoom {
     let courgette = new GenericItem('courgette')
     courgette.location = table
     stuff.push(table)
+
+    stuff.push(new Refridgerator)
+    stuff.push(new Microwave)
 
 
     return stuff
